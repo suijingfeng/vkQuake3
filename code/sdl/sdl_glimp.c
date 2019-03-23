@@ -709,7 +709,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder, qbool
 			}
 		}
 
-		qglClearColor( 0, 0, 0, 1 );
+        qglClearColor( 0, 0, 0, 1 );
 		qglClear( GL_COLOR_BUFFER_BIT );
 		SDL_GL_SwapWindow( SDL_window );
 
@@ -1034,6 +1034,8 @@ success:
 	if (*glConfig.renderer_string && glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] == '\n')
 		glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] = 0;
 	Q_strncpyz( glConfig.version_string, (char *) qglGetString (GL_VERSION), sizeof( glConfig.version_string ) );
+
+		ri.Printf( PRINT_ALL, "GL_VERSION %s\n", glConfig.version_string );
 
 	// manually create extension list if using OpenGL 3
 	if ( qglGetStringi )

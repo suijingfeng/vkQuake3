@@ -392,6 +392,36 @@ void RE_RenderScene( const refdef_t *fd ) {
 	
 	parms.stereoFrame = tr.refdef.stereoFrame;
 
+    qboolean	customscrn = !(fd->rdflags & RDF_NOWORLDMODEL);
+	// leilei - widescreen
+	// recalculate fov according to widescreen parameters
+	if (customscrn) // don't affect interface refdefs
+	{
+		// figure out our zoom or changed fov magnitiude from cg_fov and cg_zoomfov
+		//float zoomfov = tr.refdef.fov_x / 90;
+		// find aspect to immediately match our vidwidth for perfect match with resized screens...
+		//float erspact = tr.refdef.width / tr.refdef.height;
+		//float aspact = glConfig.vidWidth / glConfig.vidHeight;
+
+	
+		// try not to recalculate fov of ui and hud elements
+		//if (((tr.refdef.fov_x /  tr.refdef.fov_y) > 1.3) && (tr.refdef.width > 320) && (tr.refdef.height > 240))
+		//if (((tr.refdef.fov_x /  tr.refdef.fov_y) > 1.3) && (tr.refdef.width > (320 * refdefscalex)) && (tr.refdef.height > (240 * refdefscaley)))
+		float x_div_y = tr.refdef.fov_x / tr.refdef.fov_y;
+
+		if ((x_div_y > 1.3) && (tr.refdef.width / tr.refdef.height == glConfig.vidWidth / glConfig.vidHeight))
+		{
+			// undo vert-
+			parms.fovY *= x_div_y * (73.739792 / 90.0);
+			
+			// recalculate the fov
+			parms.fovX = atan( tan(parms.fovY * (M_PI / 360.0f)) * glConfig.vidWidth / glConfig.vidHeight ) * (360.0f / M_PI);
+			parms.fovY = atan( tan(parms.fovX * (M_PI / 360.0f)) * glConfig.vidHeight / glConfig.vidWidth ) * (360.0f / M_PI);
+		}
+	}
+	// leilei - end
+
+
 	VectorCopy( fd->vieworg, parms.or.origin );
 	VectorCopy( fd->viewaxis[0], parms.or.axis[0] );
 	VectorCopy( fd->viewaxis[1], parms.or.axis[1] );

@@ -2658,11 +2658,11 @@ shader_t *R_FindShader( const char *name, int lightmapIndex, qboolean mipRawImag
 }
 
 
-qhandle_t RE_RegisterShaderFromImage(const char *name, int lightmapIndex, image_t *image, qboolean mipRawImage) {
-	int			hash;
+qhandle_t RE_RegisterShaderFromImage(const char *name, int lightmapIndex, image_t *image, qboolean mipRawImage)
+{
 	shader_t	*sh;
 
-	hash = generateHashValue(name, FILE_HASH_SIZE);
+	int hash = generateHashValue(name, FILE_HASH_SIZE);
 
 	// probably not necessary since this function
 	// only gets called from tr_font.c with lightmapIndex == LIGHTMAP_2D

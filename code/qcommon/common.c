@@ -112,8 +112,8 @@ int		time_game;
 int		time_frontend;		// renderer frontend time
 int		time_backend;		// renderer backend time
 
-int			com_frameTime;
-int			com_frameNumber;
+int		com_frameTime;
+int		com_frameNumber;
 
 qboolean	com_errorEntered = qfalse;
 qboolean	com_fullyInitialized = qfalse;
@@ -359,9 +359,9 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		VM_Forced_Unload_Done();
 	}
 
-	Com_Shutdown ();
+	Com_Shutdown();
 
-	Sys_Error ("%s", com_errorMessage);
+	Sys_Error("%s", com_errorMessage);
 }
 
 
@@ -794,19 +794,14 @@ typedef struct {
 } memzone_t;
 
 // main zone for all "dynamic" memory allocation
-static memzone_t	*mainzone;
+static memzone_t *mainzone;
 // we also have a small zone for small allocations that would only
-// fragment the main zone (think of cvar and cmd strings)
-static memzone_t	*smallzone;
+static memzone_t *smallzone;
 
 static void Z_CheckHeap( void );
 
-/*
-========================
-Z_ClearZone
-========================
-*/
-static void Z_ClearZone( memzone_t *zone, int size ) {
+static void Z_ClearZone( memzone_t *zone, int size )
+{
 	memblock_t	*block;
 	
 	// set the entire zone to one free block
@@ -844,11 +839,7 @@ int Z_AvailableMemory( void ) {
 	return Z_AvailableZoneMemory( mainzone );
 }
 
-/*
-========================
-Z_Free
-========================
-*/
+
 void Z_Free( void *ptr ) {
 	memblock_t	*block, *other;
 	memzone_t *zone;
@@ -1533,13 +1524,9 @@ void Hunk_SmallLog( void) {
 	FS_Write(buf, strlen(buf), logfile);
 }
 
-/*
-=================
-Com_InitHunkZoneMemory
-=================
-*/
-void Com_InitHunkMemory( void ) {
-	cvar_t	*cv;
+
+void Com_InitHunkMemory( void )
+{
 	int nMinAlloc;
 	char *pMsg = NULL;
 
@@ -1552,7 +1539,7 @@ void Com_InitHunkMemory( void ) {
 	}
 
 	// allocate the stack based hunk allocator
-	cv = Cvar_Get( "com_hunkMegs", DEF_COMHUNKMEGS_S, CVAR_LATCH | CVAR_ARCHIVE );
+	cvar_t* cv = Cvar_Get( "com_hunkMegs", DEF_COMHUNKMEGS_S, CVAR_LATCH | CVAR_ARCHIVE );
 	Cvar_SetDescription(cv, "The size of the hunk memory segment");
 
 	// if we are not dedicated min allocation is 56, otherwise min is 1
@@ -1595,8 +1582,9 @@ void Com_InitHunkMemory( void ) {
 Hunk_MemoryRemaining
 ====================
 */
-int	Hunk_MemoryRemaining( void ) {
-	int		low, high;
+int	Hunk_MemoryRemaining( void )
+{
+	int	low, high;
 
 	low = hunk_low.permanent > hunk_low.temp ? hunk_low.permanent : hunk_low.temp;
 	high = hunk_high.permanent > hunk_high.temp ? hunk_high.permanent : hunk_high.temp;
@@ -1674,7 +1662,7 @@ void Hunk_Clear( void ) {
 	hunk_permanent = &hunk_low;
 	hunk_temp = &hunk_high;
 
-	Com_Printf( "Hunk_Clear: reset the hunk ok\n" );
+	Com_Printf("Hunk_Clear: reset the hunk ok\n");
 	VM_Clear();
 #ifdef HUNK_DEBUG
 	hunkblocks = NULL;
@@ -1785,7 +1773,8 @@ Multiple files can be loaded in temporary memory.
 When the files-in-use count reaches zero, all temp memory will be deleted
 =================
 */
-void *Hunk_AllocateTempMemory( int size ) {
+void *Hunk_AllocateTempMemory( int size )
+{
 	void		*buf;
 	hunkHeader_t	*hdr;
 
@@ -1893,8 +1882,7 @@ void Hunk_ClearTempMemory( void ) {
 
 EVENTS AND JOURNALING
 
-In addition to these events, .cfg files are also copied to the
-journaled file
+In addition to these events, .cfg files are also copied to the journaled file
 ===================================================================
 */
 
@@ -1903,12 +1891,9 @@ static int com_pushedEventsHead = 0;
 static int com_pushedEventsTail = 0;
 static sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
 
-/*
-=================
-Com_InitJournaling
-=================
-*/
-void Com_InitJournaling( void ) {
+
+void Com_InitJournaling( void )
+{
 	Com_StartupVariable( "journal" );
 	com_journal = Cvar_Get ("journal", "0", CVAR_INIT);
 	if ( !com_journal->integer ) {
@@ -2091,12 +2076,9 @@ sysEvent_t	Com_GetRealEvent( void ) {
 }
 
 
-/*
-=================
-Com_InitPushEvent
-=================
-*/
-void Com_InitPushEvent( void ) {
+
+static void Com_InitPushEvent( void )
+{
   // clear the static buffer array
   // this requires SE_NONE to be accepted as a valid but NOP event
   memset( com_pushedEvents, 0, sizeof(com_pushedEvents) );
@@ -2112,8 +2094,9 @@ void Com_InitPushEvent( void ) {
 Com_PushEvent
 =================
 */
-void Com_PushEvent( sysEvent_t *event ) {
-	sysEvent_t		*ev;
+void Com_PushEvent( sysEvent_t *event )
+{
+	sysEvent_t *ev;
 	static int printedWarning = 0;
 
 	ev = &com_pushedEvents[ com_pushedEventsHead & (MAX_PUSHED_EVENTS-1) ];
@@ -2138,13 +2121,11 @@ void Com_PushEvent( sysEvent_t *event ) {
 	com_pushedEventsHead++;
 }
 
-/*
-=================
-Com_GetEvent
-=================
-*/
-sysEvent_t	Com_GetEvent( void ) {
-	if ( com_pushedEventsHead > com_pushedEventsTail ) {
+
+sysEvent_t Com_GetEvent( void )
+{
+	if ( com_pushedEventsHead > com_pushedEventsTail )
+    {
 		com_pushedEventsTail++;
 		return com_pushedEvents[ (com_pushedEventsTail-1) & (MAX_PUSHED_EVENTS-1) ];
 	}
@@ -2251,12 +2232,12 @@ Com_Milliseconds
 Can be used for profiling, but will be journaled accurately
 ================
 */
-int Com_Milliseconds (void) {
-	sysEvent_t	ev;
+int Com_Milliseconds (void)
+{
+	sysEvent_t ev;
 
 	// get events and push them until we get a null event with the current time
 	do {
-
 		ev = Com_GetRealEvent();
 		if ( ev.evType != SE_NONE ) {
 			Com_PushEvent( &ev );
@@ -2461,7 +2442,9 @@ Com_ReadCDKey
 =================
 */
 qboolean CL_CDKeyValidate( const char *key, const char *checksum );
-void Com_ReadCDKey( const char *filename ) {
+
+void Com_ReadCDKey( const char *filename )
+{
 	fileHandle_t	f;
 	char			buffer[33];
 	char			fbuffer[MAX_OSPATH];
@@ -2530,9 +2513,7 @@ static void Com_WriteCDKey( const char *filename, const char *ikey ) {
 	mode_t			savedumask;
 #endif
 
-
 	Com_sprintf(fbuffer, sizeof(fbuffer), "%s/q3key", filename);
-
 
 	Q_strncpyz( key, ikey, 17 );
 
@@ -2647,13 +2628,11 @@ static void Com_InitRand(void)
 		srand(time(NULL));
 }
 
-/*
-=================
-Com_Init
-=================
-*/
-void Com_Init( char *commandLine ) {
-	char	*s;
+
+
+void Com_Init(char *commandLine )
+{
+	char *s;
 	int	qport;
 
 	Com_Printf( "%s %s %s\n", Q3_VERSION, PLATFORM_STRING, PRODUCT_DATE );
@@ -2672,7 +2651,7 @@ void Com_Init( char *commandLine ) {
 	Com_InitPushEvent();
 
 	Com_InitSmallZoneMemory();
-	Cvar_Init ();
+	Cvar_Init();
 
 	// prepare enough of the subsystems to handle
 	// cvar and command buffer management
@@ -2687,7 +2666,7 @@ void Com_Init( char *commandLine ) {
 	Com_StartupVariable( NULL );
 
 	Com_InitZoneMemory();
-	Cmd_Init ();
+	Cmd_Init();
 
 	// get the developer cvar set as early as possible
 	com_developer = Cvar_Get("developer", "0", CVAR_TEMP);
@@ -2993,8 +2972,9 @@ void Com_WriteConfig_f( void ) {
 Com_ModifyMsec
 ================
 */
-int Com_ModifyMsec( int msec ) {
-	int		clampTime;
+int Com_ModifyMsec( int msec )
+{
+	int	clampTime;
 
 	//
 	// modify time for debugging values
@@ -3047,9 +3027,7 @@ Com_TimeVal
 
 int Com_TimeVal(int minMsec)
 {
-	int timeVal;
-
-	timeVal = Sys_Milliseconds() - com_frameTime;
+	int timeVal = Sys_Milliseconds() - com_frameTime;
 
 	if(timeVal >= minMsec)
 		timeVal = 0;
@@ -3094,7 +3072,7 @@ void Com_Frame( void ) {
 	// main event loop
 	//
 	if ( com_speeds->integer ) {
-		timeBeforeFirstEvents = Sys_Milliseconds ();
+		timeBeforeFirstEvents = Sys_Milliseconds();
 	}
 
 	// Figure out how much time we have
@@ -3169,7 +3147,7 @@ void Com_Frame( void ) {
 	// server side
 	//
 	if ( com_speeds->integer ) {
-		timeBeforeServer = Sys_Milliseconds ();
+		timeBeforeServer = Sys_Milliseconds();
 	}
 
 	SV_Frame( msec );
@@ -3264,12 +3242,10 @@ void Com_Frame( void ) {
 	com_frameNumber++;
 }
 
-/*
-=================
-Com_Shutdown
-=================
-*/
-void Com_Shutdown (void) {
+
+
+void Com_Shutdown (void)
+{
 	if (logfile) {
 		FS_FCloseFile (logfile);
 		logfile = 0;
@@ -3293,13 +3269,9 @@ command line completion
 ===========================================
 */
 
-/*
-==================
-Field_Clear
-==================
-*/
-void Field_Clear( field_t *edit ) {
-  memset(edit->buffer, 0, MAX_EDIT_LINE);
+void Field_Clear( field_t *edit )
+{
+    memset(edit->buffer, 0, MAX_EDIT_LINE);
 	edit->cursor = 0;
 	edit->scroll = 0;
 }
@@ -3440,8 +3412,7 @@ void Field_CompleteKeyname( void )
 Field_CompleteFilename
 ===============
 */
-void Field_CompleteFilename( const char *dir,
-		const char *ext, qboolean stripExt, qboolean allowNonPureFilesOnDisk )
+void Field_CompleteFilename( const char *dir, const char *ext, qboolean stripExt, qboolean allowNonPureFilesOnDisk )
 {
 	matchCount = 0;
 	shortestMatch[ 0 ] = 0;

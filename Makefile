@@ -248,6 +248,7 @@ SDIR=$(MOUNT_DIR)/server
 RCOMMONDIR=$(MOUNT_DIR)/renderercommon
 RGL1DIR=$(MOUNT_DIR)/renderergl1
 RGL2DIR=$(MOUNT_DIR)/renderergl2
+RVULKANDIR=$(MOUNT_DIR)/renderer_vulkan
 CMDIR=$(MOUNT_DIR)/qcommon
 SDLDIR=$(MOUNT_DIR)/sdl
 ASMDIR=$(MOUNT_DIR)/asm
@@ -991,15 +992,21 @@ endif
 
 ifneq ($(BUILD_CLIENT),0)
   ifneq ($(USE_RENDERER_DLOPEN),0)
-    TARGETS += $(B)/$(CLIENTBIN)$(FULLBINEXT) $(B)/renderer_opengl1_$(SHLIBNAME)
+    TARGETS += $(B)/$(CLIENTBIN)$(FULLBINEXT) $(B)/renderer_opengl1_$(SHLIBNAME) 
     ifneq ($(BUILD_RENDERER_OPENGL2),0)
       TARGETS += $(B)/renderer_opengl2_$(SHLIBNAME)
     endif
+##################  VULKAN  ###################
+    TARGETS += $(B)/renderer_vulkan_$(SHLIBNAME)
+###############################################
   else
     TARGETS += $(B)/$(CLIENTBIN)$(FULLBINEXT)
     ifneq ($(BUILD_RENDERER_OPENGL2),0)
       TARGETS += $(B)/$(CLIENTBIN)_opengl2$(FULLBINEXT)
     endif
+##################  VULKAN  ###################
+    TARGETS += $(B)/$(CLIENTBIN)_vulkan$(FULLBINEXT)
+###############################################
   endif
 endif
 
@@ -1426,6 +1433,7 @@ makedirs:
 	@$(MKDIR) $(B)/renderergl1
 	@$(MKDIR) $(B)/renderergl2
 	@$(MKDIR) $(B)/renderergl2/glsl
+	@$(MKDIR) $(B)/renderer_vulkan
 	@$(MKDIR) $(B)/ded
 	@$(MKDIR) $(B)/$(BASEGAME)/cgame
 	@$(MKDIR) $(B)/$(BASEGAME)/game
@@ -1771,6 +1779,100 @@ else
     $(B)/client/con_tty.o
 endif
 
+
+
+######################  VULKAN  ######################
+
+Q3VKOBJ = \
+  $(B)/renderer_vulkan/R_DEBUG.o \
+  $(B)/renderer_vulkan/matrix_multiplication.o \
+  $(B)/renderer_vulkan/tr_globals.o \
+  $(B)/renderer_vulkan/tr_cvar.o \
+  $(B)/renderer_vulkan/tr_animation.o \
+  $(B)/renderer_vulkan/tr_bsp.o \
+  $(B)/renderer_vulkan/tr_cmds.o \
+  $(B)/renderer_vulkan/tr_curve.o \
+  $(B)/renderer_vulkan/tr_fonts.o \
+  $(B)/renderer_vulkan/tr_image.o \
+  $(B)/renderer_vulkan/R_FindShader.o \
+  $(B)/renderer_vulkan/R_ListShader.o \
+  $(B)/renderer_vulkan/R_ImageProcess.o \
+  $(B)/renderer_vulkan/tr_init.o \
+  $(B)/renderer_vulkan/tr_light.o \
+  $(B)/renderer_vulkan/tr_main.o \
+  $(B)/renderer_vulkan/tr_marks.o \
+  $(B)/renderer_vulkan/tr_mesh.o \
+  $(B)/renderer_vulkan/R_AddAnimSurfaces.o \
+  $(B)/renderer_vulkan/tr_model.o \
+  $(B)/renderer_vulkan/tr_model_iqm.o \
+  $(B)/renderer_vulkan/RE_RegisterModel.o \
+  $(B)/renderer_vulkan/R_ModelBounds.o \
+  $(B)/renderer_vulkan/R_LoadMD3.o \
+  $(B)/renderer_vulkan/R_LoadMDR.o \
+  $(B)/renderer_vulkan/R_LerpTag.o \
+  $(B)/renderer_vulkan/tr_noise.o \
+  $(B)/renderer_vulkan/tr_scene.o \
+  $(B)/renderer_vulkan/tr_shade.o \
+  $(B)/renderer_vulkan/tr_shade_calc.o \
+  $(B)/renderer_vulkan/tr_shader.o \
+  $(B)/renderer_vulkan/tr_shadows.o \
+  $(B)/renderer_vulkan/tr_sky.o \
+  $(B)/renderer_vulkan/tr_surface.o \
+  $(B)/renderer_vulkan/RB_SurfaceAnim.o \
+  $(B)/renderer_vulkan/tr_flares.o \
+  $(B)/renderer_vulkan/tr_fog.o \
+  $(B)/renderer_vulkan/tr_world.o \
+  $(B)/renderer_vulkan/tr_common.o \
+  $(B)/renderer_vulkan/tr_displayResolution.o \
+  $(B)/renderer_vulkan/vk_instance.o \
+  $(B)/renderer_vulkan/vk_cmd.o \
+  $(B)/renderer_vulkan/vk_image.o \
+  $(B)/renderer_vulkan/vk_image_sampler2.o \
+  $(B)/renderer_vulkan/vk_pipelines.o \
+  $(B)/renderer_vulkan/vk_frame.o \
+  $(B)/renderer_vulkan/vk_swapchain.o \
+  $(B)/renderer_vulkan/vk_screenshot.o \
+  $(B)/renderer_vulkan/vk_shade_geometry.o \
+  $(B)/renderer_vulkan/vk_depth_attachment.o \
+  \
+  $(B)/renderer_vulkan/vk_shaders.o \
+  $(B)/renderer_vulkan/multi_texture_add_frag.o \
+  $(B)/renderer_vulkan/multi_texture_clipping_plane_vert.o \
+  $(B)/renderer_vulkan/multi_texture_mul_frag.o \
+  $(B)/renderer_vulkan/multi_texture_vert.o \
+  $(B)/renderer_vulkan/single_texture_clipping_plane_vert.o \
+  $(B)/renderer_vulkan/single_texture_frag.o \
+  $(B)/renderer_vulkan/single_texture_vert.o \
+  \
+  $(B)/renderer_vulkan/R_LoadImage2.o \
+  $(B)/renderer_vulkan/R_StretchRaw.o \
+  $(B)/renderer_vulkan/R_ImageJPG.o \
+  $(B)/renderer_vulkan/RB_ShowImages.o \
+  $(B)/renderer_vulkan/RB_DrawNormals.o \
+  $(B)/renderer_vulkan/RB_DrawTris.o \
+  $(B)/renderer_vulkan/tr_backend.o \
+  $(B)/renderer_vulkan/tr_Cull.o \
+  $(B)/renderer_vulkan/glConfig.o \
+  $(B)/renderer_vulkan/R_PortalPlane.o \
+  $(B)/renderer_vulkan/R_PrintMat.o
+#  $(B)/renderer_vulkan/R_LoadImage.o \
+  $(B)/renderer_vulkan/tr_image_png.o \
+  $(B)/renderer_vulkan/tr_image_jpg.o \
+  $(B)/renderer_vulkan/tr_image_bmp.o \
+  $(B)/renderer_vulkan/tr_image_tga.o \
+  $(B)/renderer_vulkan/tr_image_pcx.o \
+
+ifeq ($(BUILD_WITH_XCB), 1)
+  Q3VKOBJ += $(B)/renderer_vulkan/vk_create_window_XCB.o
+else
+  Q3VKOBJ += $(B)/renderer_vulkan/vk_create_window_SDL.o
+endif
+
+######################################################
+
+
+
+
 Q3R2OBJ = \
   $(B)/renderergl2/tr_animation.o \
   $(B)/renderergl2/tr_backend.o \
@@ -1890,6 +1992,16 @@ ifneq ($(USE_RENDERER_DLOPEN), 0)
     $(B)/renderergl1/puff.o \
     $(B)/renderergl1/q_math.o \
     $(B)/renderergl1/tr_subs.o
+
+############### VULKAN ###################
+
+  Q3VKOBJ += \
+	$(B)/renderergl1/q_shared.o \
+	$(B)/renderergl1/puff.o \
+	$(B)/renderergl1/q_math.o
+
+##########################################
+
 endif
 
 ifneq ($(USE_INTERNAL_JPEG),0)
@@ -2200,6 +2312,19 @@ $(B)/renderer_opengl2_$(SHLIBNAME): $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) \
 		$(THREAD_LIBS) $(LIBSDLMAIN) $(RENDERER_LIBS) $(LIBS)
+
+
+######################## VULKAN ##############################
+
+$(B)/renderer_vulkan_$(SHLIBNAME): $(Q3VKOBJ) $(JPGOBJ)
+	$(echo_cmd) "LD $@"
+	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3VKOBJ) $(JPGOBJ) \
+		$(THREAD_LIBS) $(RENDERER_LIBS) $(LIBSDLMAIN) $(LIBS)
+# $(XCB_LIBS)
+
+##############################################################
+
+
 else
 $(B)/$(CLIENTBIN)$(FULLBINEXT): $(Q3OBJ) $(Q3ROBJ) $(JPGOBJ) $(LIBSDLMAIN)
 	$(echo_cmd) "LD $@"
@@ -2212,6 +2337,16 @@ $(B)/$(CLIENTBIN)_opengl2$(FULLBINEXT): $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(J
 	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) \
 		-o $@ $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) \
 		$(LIBSDLMAIN) $(CLIENT_LIBS) $(RENDERER_LIBS) $(LIBS)
+
+######################## VULKAN ##############################
+$(B)/$(CLIENTBIN)_vulkan$(FULLBINEXT): $(Q3OBJ) $(Q3VKOBJ) $(JPGOBJ)
+	$(echo_cmd) "LD $@"
+	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) \
+		-o $@ $(Q3OBJ) $(Q3VKOBJ) $(JPGOBJ) \
+		$(LIBSDLMAIN) $(CLIENT_LIBS) $(RENDERER_LIBS) $(LIBS)  
+
+##############################################################
+
 endif
 
 ifneq ($(strip $(LIBSDLMAIN)),)
@@ -2738,6 +2873,29 @@ $(B)/renderergl2/%.o: $(RGL2DIR)/%.c
 	$(DO_REF_CC)
 
 
+############### VULKAN ######################
+
+$(B)/renderer_vulkan/%.o: $(CMDIR)/%.c
+	$(DO_REF_CC)
+
+$(B)/renderer_vulkan/%.o: $(SDLDIR)/%.c
+	$(DO_REF_CC)
+
+$(B)/renderer_vulkan/%.o: $(JPDIR)/%.c
+	$(DO_REF_CC)
+
+$(B)/renderer_vulkan/%.o: $(RCOMMONDIR)/%.c
+	$(DO_REF_CC)
+
+$(B)/renderer_vulkan/%.o: $(RVULKANDIR)/%.c
+	$(DO_REF_CC)
+
+$(B)/renderer_vulkan/%.o: $(MOUNT_DIR)/renderer_vulkan/shaders/Compiled/%.c
+	$(DO_REF_CC)
+
+##############################################
+
+
 $(B)/ded/%.o: $(ASMDIR)/%.s
 	$(DO_AS)
 
@@ -2861,7 +3019,7 @@ $(B)/$(MISSIONPACK)/qcommon/%.asm: $(CMDIR)/%.c $(Q3LCC)
 # MISC
 #############################################################################
 
-OBJ = $(Q3OBJ) $(Q3ROBJ) $(Q3R2OBJ) $(Q3DOBJ) $(JPGOBJ) \
+OBJ = $(Q3OBJ) $(Q3ROBJ) $(Q3R2OBJ) $(Q3VKOBJ) $(Q3DOBJ) $(JPGOBJ) \
   $(MPGOBJ) $(Q3GOBJ) $(Q3CGOBJ) $(MPCGOBJ) $(Q3UIOBJ) $(MPUIOBJ) \
   $(MPGVMOBJ) $(Q3GVMOBJ) $(Q3CGVMOBJ) $(MPCGVMOBJ) $(Q3UIVMOBJ) $(MPUIVMOBJ)
 TOOLSOBJ = $(LBURGOBJ) $(Q3CPPOBJ) $(Q3RCCOBJ) $(Q3LCCOBJ) $(Q3ASMOBJ)
@@ -2937,7 +3095,8 @@ clean2:
 	@rm -f $(OBJ_D_FILES)
 	@rm -f $(STRINGOBJ)
 	@rm -f $(TARGETS)
-
+	@rm -f $(Q3VKOBJ)
+	
 toolsclean: toolsclean-debug toolsclean-release
 
 toolsclean-debug:

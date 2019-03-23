@@ -210,14 +210,14 @@ static const unsigned int missionpak_checksums[] =
 #define MAX_FILEHASH_SIZE	1024
 
 typedef struct fileInPack_s {
-	char					*name;		// name of the file
+	char*                   name;		// name of the file
 	unsigned long			pos;		// file info position in zip
 	unsigned long			len;		// uncompress file size
 	struct	fileInPack_s*	next;		// next file in the hash
 } fileInPack_t;
 
 typedef struct {
-        char			pakPathname[MAX_OSPATH];	// c:\quake3\baseq3
+    char			pakPathname[MAX_OSPATH];	// c:\quake3\baseq3
 	char			pakFilename[MAX_OSPATH];	// c:\quake3\baseq3\pak0.pk3
 	char			pakBasename[MAX_OSPATH];	// pak0
 	char			pakGamename[MAX_OSPATH];	// baseq3
@@ -337,7 +337,8 @@ qboolean FS_Initialized( void ) {
 FS_PakIsPure
 =================
 */
-qboolean FS_PakIsPure( pack_t *pack ) {
+qboolean FS_PakIsPure( pack_t *pack )
+{
 	int i;
 
 	if ( fs_numServerPaks ) {
@@ -1112,7 +1113,6 @@ qboolean FS_IsDemoExt(const char *filename, int namelen)
 			return qtrue;
 		}
 	}
-
 	return qfalse;
 }
 
@@ -1124,11 +1124,11 @@ Tries opening file "filename" in searchpath "search"
 Returns filesize and an open FILE pointer.
 ===========
 */
-extern qboolean		com_fullyInitialized;
+extern qboolean	com_fullyInitialized;
 
 long FS_FOpenFileReadDir(const char *filename, searchpath_t *search, fileHandle_t *file, qboolean uniqueFILE, qboolean unpure)
 {
-	long			hash;
+	long		hash;
 	pack_t		*pak;
 	fileInPack_t	*pakFile;
 	directory_t	*dir;
@@ -1405,7 +1405,6 @@ long FS_FOpenFileRead(const char *filename, fileHandle_t *file, qboolean uniqueF
 			if(len >= 0 && *file)
 				return len;
 		}
-
 	}
 	
 #ifdef FS_MISSING
@@ -1626,7 +1625,9 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 	return len;
 }
 
-void QDECL FS_Printf( fileHandle_t h, const char *fmt, ... ) {
+
+void QDECL FS_Printf( fileHandle_t h, const char *fmt, ... )
+{
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
 
@@ -1743,7 +1744,8 @@ CONVENIENCE FUNCTIONS FOR ENTIRE FILES
 ======================================================================================
 */
 
-int	FS_FileIsInPAK(const char *filename, int *pChecksum ) {
+int	FS_FileIsInPAK(const char *filename, int *pChecksum )
+{
 	searchpath_t	*search;
 	pack_t			*pak;
 	fileInPack_t	*pakFile;
@@ -1858,8 +1860,9 @@ long FS_ReadFileDir(const char *qpath, void *searchPath, qboolean unpure, void *
 			buf = Hunk_AllocateTempMemory(len+1);
 			*buffer = buf;
 
-			r = FS_Read( buf, len, com_journalDataFile );
-			if ( r != len ) {
+			r = FS_Read(buf, len, com_journalDataFile);
+			if( r != len )
+            {
 				Com_Error( ERR_FATAL, "Read from journalDataFile failed" );
 			}
 
@@ -1908,7 +1911,7 @@ long FS_ReadFileDir(const char *qpath, void *searchPath, qboolean unpure, void *
 			FS_Write( &len, sizeof( len ), com_journalDataFile );
 			FS_Flush( com_journalDataFile );
 		}
-		FS_FCloseFile( h);
+		FS_FCloseFile(h);
 		return len;
 	}
 
@@ -2286,11 +2289,11 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, char *filt
 					// unique the match
 					nfiles = FS_AddFileToList( name, list, nfiles );
 				}
-				else {
-
+				else
+                {
 					zpathLen = FS_ReturnPath(name, zpath, &depth);
 
-					if ( (depth-pathDepth)>2 || pathLength > zpathLen || Q_stricmpn( name, path, pathLength ) ) {
+					if( (depth-pathDepth)>2 || pathLength > zpathLen || Q_stricmpn( name, path, pathLength ) ) {
 						continue;
 					}
 
@@ -2359,13 +2362,10 @@ char **FS_ListFiles( const char *path, const char *extension, int *numfiles ) {
 	return FS_ListFilteredFiles( path, extension, NULL, numfiles, qfalse );
 }
 
-/*
-=================
-FS_FreeFileList
-=================
-*/
-void FS_FreeFileList( char **list ) {
-	int		i;
+
+void FS_FreeFileList( char **list )
+{
+	int	i;
 
 	if ( !fs_searchpaths ) {
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization" );
@@ -3223,7 +3223,7 @@ Frees all resources.
 ================
 */
 void FS_Shutdown( qboolean closemfp ) {
-	searchpath_t	*p, *next;
+	searchpath_t *p, *next;
 	int	i;
 
 	for(i = 0; i < MAX_FILE_HANDLES; i++) {
@@ -3461,7 +3461,6 @@ static void FS_CheckPak0( void )
 {
 	searchpath_t	*path;
 	pack_t		*curpack;
-	const char	*pakBasename;
 	qboolean founddemo = qfalse;
 	unsigned int foundPak = 0, foundTA = 0;
 
@@ -3471,7 +3470,7 @@ static void FS_CheckPak0( void )
 			continue;
 
 		curpack = path->pack;
-		pakBasename = curpack->pakBasename;
+		const char* pakBasename = curpack->pakBasename;
 
 		if(!Q_stricmpn( curpack->pakGamename, "demoq3", MAX_OSPATH )
 				&& !Q_stricmpn( pakBasename, "pak0", MAX_OSPATH ))
@@ -3862,12 +3861,13 @@ separated checksums will be checked for files, with the
 exception of .cfg and .dat files.
 =====================
 */
-void FS_PureServerSetLoadedPaks( const char *pakSums, const char *pakNames ) {
-	int		i, c, d;
+void FS_PureServerSetLoadedPaks( const char *pakSums, const char *pakNames )
+{
+	int	i;
 
 	Cmd_TokenizeString( pakSums );
 
-	c = Cmd_Argc();
+	int c = Cmd_Argc();
 	if ( c > MAX_SEARCH_PATHS ) {
 		c = MAX_SEARCH_PATHS;
 	}
@@ -3902,7 +3902,7 @@ void FS_PureServerSetLoadedPaks( const char *pakSums, const char *pakNames ) {
 	if ( pakNames && *pakNames ) {
 		Cmd_TokenizeString( pakNames );
 
-		d = Cmd_Argc();
+		int d = Cmd_Argc();
 		if ( d > MAX_SEARCH_PATHS ) {
 			d = MAX_SEARCH_PATHS;
 		}
