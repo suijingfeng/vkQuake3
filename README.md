@@ -78,6 +78,11 @@ make -j4
 
 you can also download the binary compiled on win10 from https://github.com/suijingfeng/vkQuake3/releases.
 
+Q: How to enable vulkan support from the pulldown console ??;)
+```
+\cl_renerer vulkan
+\vid_restart
+```
 The following variables may be set, either on the command line or in
 Makefile.local:
 
