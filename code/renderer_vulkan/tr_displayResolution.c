@@ -66,7 +66,7 @@ void R_DisplayResolutionList_f( void )
 }
 
 
-void R_GetModeInfo(unsigned int *width, unsigned int *height, float *windowAspect, int mode)
+void R_GetModeInfo(unsigned int* width, unsigned int* height, float* windowAspect, int mode)
 {
 	const vidmode_t	*vm;
 
