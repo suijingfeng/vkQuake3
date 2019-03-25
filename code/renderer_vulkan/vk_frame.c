@@ -52,9 +52,6 @@
 //
 //
 
-// TODO: move glConfig retated stuff to glConfig.c,
-extern glconfig_t	glConfig;
-
 VkSemaphore sema_imageAvailable;
 VkSemaphore sema_renderFinished;
 VkFence fence_renderFinished;
@@ -121,7 +118,6 @@ void vk_create_sync_primitives(void)
 
     VK_CHECK(qvkCreateFence(vk.device, &fence_desc, NULL, &fence_renderFinished));
 }
-
 
 
 void vk_destroy_sync_primitives(void)
