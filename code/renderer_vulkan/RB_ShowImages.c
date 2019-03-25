@@ -10,6 +10,9 @@ This is used to test for texture thrashing.
 Also called by RE_EndRegistration
 ===============
 */
+// TODO: move glConfig retated stuff to glConfig.c,
+extern glconfig_t	glConfig;
+
 
 void RB_ShowImages(void)
 {

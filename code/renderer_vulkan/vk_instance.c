@@ -12,6 +12,9 @@
 #include "vk_shaders.h"
 #include "vk_depth_attachment.h"
 
+// TODO: move glConfig retated stuff to glConfig.c,
+extern glconfig_t	glConfig;
+
 struct Vk_Instance vk;
 
 //
@@ -464,7 +467,6 @@ static void vk_selectSurfaceFormat(void)
 
     //=========================== depth =====================================
     qvkGetPhysicalDeviceFormatProperties(vk.physical_device, VK_FORMAT_D24_UNORM_S8_UINT, &props);
-	//glConfig.stencilBits = 8;	
     if ( props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT )
     {
         ri.Printf(PRINT_ALL, " VK_FORMAT_D24_UNORM_S8_UINT optimal Tiling feature supported.\n");
@@ -957,7 +959,7 @@ void vk_initialize(void)
     // This function is responsible for initializing a valid Vulkan subsystem.
 
     vk_createWindow();
-        
+
     vk_getProcAddress(); 
  
 
@@ -982,7 +984,7 @@ void vk_initialize(void)
     vk_createDepthAttachment();
 
 
-    vk_createFrameBuffers();
+    vk_createFrameBuffers(glConfig.vidWidth, glConfig.vidHeight);
 
 	// Pipeline layout.
 	// You can use uniform values in shaders, which are globals similar to
@@ -1009,8 +1011,15 @@ void vk_initialize(void)
 
     // print info
     vulkanInfo_f();
+
+    vk.isInitialized = VK_TRUE;
 }
 
+
+VkBool32 isVKinitialied(void)
+{
+    return vk.isInitialized;
+}
 
 void vk_shutdown(void)
 {
@@ -1057,6 +1066,8 @@ void vk_shutdown(void)
 	memset(&vk, 0, sizeof(vk));
 
 	vk_clearProcAddress();
+
+    vk.isInitialized = VK_FALSE;
 }
 
 

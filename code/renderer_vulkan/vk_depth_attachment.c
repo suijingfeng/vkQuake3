@@ -4,6 +4,9 @@
 #include "vk_image.h"
 #include "vk_cmd.h"
 
+// TODO: move glConfig retated stuff to glConfig.c,
+extern glconfig_t	glConfig;
+
 
 void vk_createDepthAttachment(void)
 {

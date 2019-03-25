@@ -29,8 +29,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "vk_shade_geometry.h"
 #include "vk_instance.h"
 #include "vk_image.h"
-#include "../renderercommon/matrix_multiplication.h"
-#include "../renderercommon/ref_import.h"
+#include "matrix_multiplication.h"
+#include "ref_import.h"
 
 #include "R_DEBUG.h"
 

@@ -52,7 +52,8 @@
 //
 //
 
-
+// TODO: move glConfig retated stuff to glConfig.c,
+extern glconfig_t	glConfig;
 
 VkSemaphore sema_imageAvailable;
 VkSemaphore sema_renderFinished;
@@ -254,7 +255,7 @@ static void vk_createRenderPass(VkDevice device)
 
 
 
-void vk_createFrameBuffers(void) 
+void vk_createFrameBuffers(uint32_t w, uint32_t h) 
 {
     ri.Printf(PRINT_ALL, " Create RenderPass:  vk.render_pass \n");
 	//
@@ -375,8 +376,8 @@ void vk_createFrameBuffers(void)
         // of which will be used as the corresponding attachment
         // in a render pass instance.
         desc.pAttachments = attachments;
-        desc.width = glConfig.vidWidth;
-        desc.height = glConfig.vidHeight;
+        desc.width = w;
+        desc.height = h;
         desc.layers = 1;
 
         VK_CHECK(qvkCreateFramebuffer(vk.device, &desc, NULL, &vk.framebuffers[i]));
@@ -536,11 +537,13 @@ void vk_begin_frame(void)
 	renderPass_beginInfo.pNext = NULL;
 	renderPass_beginInfo.renderPass = vk.render_pass;
 	renderPass_beginInfo.framebuffer = vk.framebuffers[vk.idx_swapchain_image];
-	renderPass_beginInfo.renderArea.offset.x = 0;
-    renderPass_beginInfo.renderArea.offset.y = 0;
 
-	renderPass_beginInfo.renderArea.extent.width = glConfig.vidWidth;
-    renderPass_beginInfo.renderArea.extent.height = glConfig.vidHeight;
+//    renderPass_beginInfo.renderArea.offset.x = 0;
+//    renderPass_beginInfo.renderArea.offset.y = 0;
+//	renderPass_beginInfo.renderArea.extent.width = glConfig.vidWidth;
+//    renderPass_beginInfo.renderArea.extent.height = glConfig.vidHeight;
+
+    renderPass_beginInfo.renderArea = get_scissor_rect();
 
     renderPass_beginInfo.clearValueCount = 2;
 	renderPass_beginInfo.pClearValues = clear_values;

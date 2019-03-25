@@ -28,12 +28,51 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../qcommon/qfiles.h"
 #include "../qcommon/qcommon.h"
 #include "../renderercommon/tr_public.h"
-#include "tr_common.h"
+
 #include "tr_image.h"
 
 #include "VKimpl.h"
 
 
+void R_glConfigOut(glconfig_t* pOut);
+
+////////////////////////////////////////
+
+void VectorPerp( const vec3_t src, vec3_t dst );
+float MakeTwoPerpVectors(const float forward[3], float right[3], float up[3]);
+// any change in the LIGHTMAP_* defines here MUST be reflected in
+// R_FindShader() in tr_bsp.c
+#define LIGHTMAP_2D         -4	// shader is for 2D rendering
+#define LIGHTMAP_BY_VERTEX  -3	// pre-lit triangle models
+#define LIGHTMAP_WHITEIMAGE -2
+#define LIGHTMAP_NONE       -1
+
+char* R_ParseExt(char** data_p, qboolean allowLineBreaks);
+int R_Compress( char *data_p );
+int R_GetCurrentParseLine( void );
+void R_BeginParseSession(const char* name);
+void stripExtension(const char *in, char *out, int destsize);
+
+
+static inline void VectorNorm( float v[3] )
+{
+	float length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+
+    if(length != 0)
+    {
+        /* writing it this way allows gcc to recognize that rsqrt can be used */
+        length = 1.0f / sqrtf (length);
+        v[0] *= length;
+        v[1] *= length;
+        v[2] *= length;
+    }
+}
+
+static inline float VectorLen( const float v[3] )
+{
+	return sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+}
+//////////////////////////////////////
 
 
 // 12 bits

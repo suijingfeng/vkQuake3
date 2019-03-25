@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_globals.h"
 #include "tr_fog.h"
 #include "tr_backend.h"
-#include "../renderercommon/ref_import.h"
+#include "ref_import.h"
 
 #define	WAVEVALUE( table, base, amplitude, phase, freq )  ((base) + table[ (int)( ( ( (phase) + tess.shaderTime * (freq) ) * FUNCTABLE_SIZE ) ) & FUNCTABLE_MASK ] * (amplitude))
 

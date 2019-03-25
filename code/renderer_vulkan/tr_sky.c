@@ -27,8 +27,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "vk_pipelines.h"
 #include "vk_image.h"
 #include "tr_cvar.h"
-#include "../renderercommon/matrix_multiplication.h"
-#include "../renderercommon/ref_import.h"
+#include "matrix_multiplication.h"
+#include "ref_import.h"
 #include "tr_backend.h"
 #define SKY_SUBDIVISIONS		8
 #define HALF_SKY_SUBDIVISIONS	(SKY_SUBDIVISIONS/2)

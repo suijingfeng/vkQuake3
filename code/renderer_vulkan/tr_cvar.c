@@ -1,6 +1,6 @@
 
 #include "tr_cvar.h"
-#include "../renderercommon/ref_import.h"
+#include "ref_import.h"
 
 cvar_t	*r_railWidth;
 cvar_t	*r_railCoreWidth;

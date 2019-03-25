@@ -3,8 +3,7 @@
 
 
 #include "VKimpl.h"
-//extern refimport_t ri;
-#include "../renderercommon/ref_import.h" 
+#include "ref_import.h" 
 
 
 
@@ -118,6 +117,9 @@ void vk_initialize(void);
 // Shutdown vulkan subsystem by releasing resources acquired by Vk_Instance.
 void vk_shutdown(void);
 
+VkBool32 isVKinitialied(void);
+
+
 void vulkanInfo_f( void );
 // Initializes VK_Instance structure.
 void vk_getProcAddress(void);
@@ -199,6 +201,9 @@ struct Vk_Instance {
 	VkPipelineLayout pipeline_layout;
 
     VkBool32 isBlitSupported;
+
+    VkBool32 isInitialized;
+
 #ifndef NDEBUG
     VkDebugReportCallbackEXT h_debugCB;
 #endif

@@ -1,5 +1,5 @@
 #include "tr_globals.h"
-#include "../renderercommon/ref_import.h"
+#include "ref_import.h"
 #include "vk_shade_geometry.h"
 #include "vk_instance.h"
 #include "vk_image.h"

@@ -1,7 +1,7 @@
 #include "tr_local.h"
 #include "tr_model.h"
 #include "R_LerpTag.h"
-#include "../renderercommon/ref_import.h"
+#include "ref_import.h"
 
 static md3Tag_t *R_GetTag( md3Header_t *mod, int frame, const char *tagName ) {
 	md3Tag_t		*tag;

@@ -4,7 +4,7 @@
 #include "tr_cvar.h"
 #include "vk_image.h"
 #include "vk_pipelines.h"
-#include "../renderercommon/matrix_multiplication.h"
+#include "matrix_multiplication.h"
 #include "tr_backend.h"
 
 #include "R_PortalPlane.h"
@@ -51,6 +51,8 @@ struct ShadingData_t
 
 struct ShadingData_t shadingDat;
 
+// TODO: move glConfig retated stuff to glConfig.c,
+extern glconfig_t	glConfig;
 
 
 VkBuffer vk_getIndexBuffer(void)
@@ -137,7 +139,7 @@ static VkViewport get_viewport(enum Vk_Depth_Range depth_range)
 }
 
 
-static VkRect2D get_scissor_rect(void)
+VkRect2D get_scissor_rect(void)
 {
 	VkRect2D r;
 	if (backEnd.projection2D)

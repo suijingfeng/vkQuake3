@@ -60,12 +60,7 @@ union f16_u {
 };
 
 
-// any change in the LIGHTMAP_* defines here MUST be reflected in
-// R_FindShader() in tr_bsp.c
-#define LIGHTMAP_2D         -4	// shader is for 2D rendering
-#define LIGHTMAP_BY_VERTEX  -3	// pre-lit triangle models
-#define LIGHTMAP_WHITEIMAGE -2
-#define LIGHTMAP_NONE       -1
+
 
 
 
@@ -100,20 +95,20 @@ void RotateAroundUnitVector(float* res, const float* k, const float* p, const fl
 void FastNormalize1f(float v[3]);
 char *getExtension( const char *name );
 char *SkipPath(char *pathname);
-void stripExtension(const char *in, char *out, int destsize);
 
-char* R_ParseExt(char** data_p, qboolean allowLineBreaks);
-int R_Compress( char *data_p );
-int R_GetCurrentParseLine( void );
-void R_BeginParseSession(const char* name);
+
+
+
+
+
 
 void SetPlaneSignbits( struct cplane_s *out );
 int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
 void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs );
 
 
-void VectorPerp( const vec3_t src, vec3_t dst );
-float MakeTwoPerpVectors(const float forward[3], float right[3], float up[3]);
+
+
 
 
 void ClearBounds( vec3_t mins, vec3_t maxs );
@@ -136,20 +131,7 @@ qboolean SkipBracedSection (char **program, int depth);
 #define ByteToFloat(a)          ((float)(a) * 1.0f/255.0f)
 #define FloatToByte(a)          (byte)((a) * 255.0f)
 
-static inline void VectorNorm( float v[3] )
-{
-	float length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
 
-    if(length != 0)
-    {
-        /* writing it this way allows gcc to recognize that rsqrt can be used */
-        length = 1.0f / sqrtf (length);
-        v[0] *= length;
-        v[1] *= length;
-        v[2] *= length;
-    }
-
-}
 
 static inline void VectorNorm2(const float v[3], float out[3])
 {
@@ -169,10 +151,7 @@ static inline void VectorNorm2(const float v[3], float out[3])
 }
 
 
-static inline float VectorLen( const float v[3] )
-{
-	return sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-}
+
 
 qboolean SpheresIntersect(float origin1[3], float radius1, float origin2[3], float radius2);
 void BoundingSphereOfSpheres(float origin1[3], float radius1, float origin2[3], float radius2, float origin3[3], float *radius3);

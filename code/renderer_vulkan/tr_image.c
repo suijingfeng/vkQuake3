@@ -30,7 +30,7 @@ SKINS
 
 #include "tr_local.h"
 #include "tr_globals.h"
-#include "../renderercommon/ref_import.h"
+#include "ref_import.h"
 
 
 

@@ -1,8 +1,7 @@
 #include "tr_cvar.h"
 #include "tr_globals.h"
-
 #include "vk_image.h"
-#include "../renderercommon/ref_import.h"
+#include "ref_import.h"
 
 #include "R_ImageProcess.h"
 
@@ -615,7 +614,7 @@ void fsWriteFile( const char *qpath, const void *buffer, int size )
 static void imsave(char *fileName, unsigned char* buffer2, unsigned int width, unsigned int height)
 {
 
-    const unsigned int cnPixels = glConfig.vidWidth * glConfig.vidHeight;
+    const unsigned int cnPixels = width * height;
 
 	unsigned char* buffer = (unsigned char*) malloc( cnPixels * 3 + 18);
 

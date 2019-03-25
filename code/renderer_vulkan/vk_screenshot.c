@@ -5,10 +5,8 @@
 #include "vk_screenshot.h"
 
 #include "R_ImageProcess.h"
-
-#include "../renderercommon/ref_import.h"
-
 #include "R_ImageJPG.h"
+#include "ref_import.h"
 
 /* 
 ============================================================================== 
@@ -26,11 +24,6 @@ we use statics to store a count and start writing the first screenshot/screensho
 (with FS_FileExists / FS_FOpenFileWrite calls)
 FIXME: the statics don't get a reinit between fs_game changes
 
-============================================================================== 
-*/
-
-
-/*
 
 Images created with tiling equal to VK_IMAGE_TILING_LINEAR have further restrictions on their
 limits and capabilities compared to images created with tiling equal to VK_IMAGE_TILING_OPTIMAL.
@@ -44,7 +37,12 @@ meetall of the constraints:
 * usage only includes VK_IMAGE_USAGE_TRANSFER_SRC_BIT and/or VK_IMAGE_USAGE_TRANSFER_DST_BIT
 Implementations may support additional limits and capabilities beyond those listed above.
 
+============================================================================== 
+
 */
+
+// TODO: move glConfig retated stuff to glConfig.c,
+extern glconfig_t	glConfig;
 
 
 static void imgFlipY(unsigned char * pBuf, const uint32_t w, const uint32_t h)

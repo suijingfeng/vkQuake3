@@ -1,7 +1,7 @@
 #include "VKimpl.h"
 #include "vk_image_sampler.h"
 #include "vk_instance.h"
-#include "../renderercommon/ref_import.h"
+#include "ref_import.h"
 
 
 //static cvar_t* r_textureMode;

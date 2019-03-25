@@ -30,8 +30,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tr_cvar.h"
 
-#include "tr_globals.h" // glConfig
-
 #include "icon_oa.h"
 
 
@@ -44,6 +42,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     #include <SDL2/SDL_vulkan.h>
 #endif
 
+
+// TODO: move glConfig retated stuff to glConfig.c,
+extern glconfig_t	glConfig;
 
 static SDL_Window* window_sdl = NULL;
 

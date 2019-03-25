@@ -2,7 +2,7 @@
 #define REF_IMPORT_H_
 
 #include "../qcommon/q_shared.h"
-#include "tr_public.h"
+#include "../renderercommon/tr_public.h"
 
 extern	refimport_t		ri;
 

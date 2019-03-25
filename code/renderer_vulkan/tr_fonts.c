@@ -68,8 +68,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // uncheck the exclude from build check box in the FreeType2 area of the Renderer project. 
 
 
-#include "../renderercommon/tr_common.h"
-#include "../renderercommon/ref_import.h"
+#include "tr_local.h"
+#include "ref_import.h"
+#include "tr_cvar.h"
 
 #ifdef BUILD_FREETYPE
 #include <ft2build.h>

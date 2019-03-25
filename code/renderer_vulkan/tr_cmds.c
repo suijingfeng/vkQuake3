@@ -24,10 +24,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_backend.h"
 
 #include "tr_cvar.h"
-#include "../renderercommon/ref_import.h"
+#include "ref_import.h"
 
 #include "vk_instance.h"
-//#include "vk_clear_attachments.h"
 #include "vk_frame.h"
 #include "vk_screenshot.h"
 #include "vk_shade_geometry.h"

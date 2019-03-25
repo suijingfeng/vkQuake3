@@ -244,9 +244,6 @@ void RB_ShadowFinish( void )
 	if ( r_shadows->integer != 2 ) {
 		return;
 	}
-	if ( glConfig.stencilBits < 4 ) {
-		return;
-	}
 
 	updateCurDescriptor( tr.whiteImage->descriptor_set, 0);
 

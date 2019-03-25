@@ -3,7 +3,7 @@
 
 #include "vk_image.h"
 #include "tr_cvar.h"
-#include "../renderercommon/ref_import.h"
+#include "ref_import.h"
 
 #include "R_PrintMat.h"
 

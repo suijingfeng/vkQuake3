@@ -1,6 +1,6 @@
 #include "tr_local.h"
 #include "tr_displayResolution.h"
-#include "../renderercommon/ref_import.h"
+#include "ref_import.h"
 
 cvar_t* r_mode;
 

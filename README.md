@@ -78,11 +78,42 @@ make -j4
 
 you can also download the binary compiled on win10 from https://github.com/suijingfeng/vkQuake3/releases.
 
-Q: How to enable vulkan support from the pulldown console ??;)
+Q: How to enable vulkan support from the pulldown console ?
+
 ```
 \cl_renerer vulkan
 \vid_restart
 ```
+
+Q: How to check that Vulkan backend is really active ? 
+```sh
+\vkinfo
+```
+Type \vkinfo in the console reports information about active rendering backend.
+It will report something like the following:
+
+```
+Active 3D API: Vulkan
+Vk api version: 1.0.65
+Vk driver version: 1637679104
+Vk vendor id: 0x10DE (NVIDIA)
+Vk device id: 0x1B80
+Vk device type: DISCRETE_GPU
+Vk device name: GeForce GTX 1080
+
+Total Device Extension Supported:
+
+...
+
+Vk instance extensions:
+
+...
+
+Image chuck memory(device local) used: 8 M 
+
+```
+
+
 The following variables may be set, either on the command line or in
 Makefile.local:
 

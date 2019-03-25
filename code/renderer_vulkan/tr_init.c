@@ -131,7 +131,7 @@ void R_Init( void )
     R_InitScene();
 
     // VULKAN
-	if ( glConfig.vidWidth == 0 )
+	if ( !isVKinitialied() )
 	{
 		vk_initialize();
 	}
@@ -209,7 +209,7 @@ void RE_BeginRegistration(glconfig_t *glconfigOut)
 {
 	R_Init();
 
-	*glconfigOut = glConfig;
+    R_glConfigOut(glconfigOut);
 
 	tr.viewCluster = -1; // force markleafs to regenerate
 
