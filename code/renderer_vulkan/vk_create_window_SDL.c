@@ -367,9 +367,11 @@ void vk_createWindow(void)
 
 success:
 
+#ifdef USE_ICON
 	SDL_SetWindowIcon( window_sdl, icon );
 
     SDL_FreeSurface( icon );
+#endif
 
 
 	ri.Printf(PRINT_ALL,  "MODE: %s, %d x %d, refresh rate: %dhz\n",
