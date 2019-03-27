@@ -63,7 +63,7 @@ VkFence fence_renderFinished;
    and rendering commands.
 
 
-   The presentation engine is an abstraction for the platform¡¯s compositor
+   The presentation engine is an abstraction for the platformÂ¡Â¯s compositor
    or display engine. The presentation engine controls the order in which
    presentable images are acquired for use by the application.
 
@@ -525,7 +525,7 @@ void vk_begin_frame(void)
 	// Begin render pass.
 	VkClearValue clear_values[2];
 	/// ignore clear_values[0] which corresponds to color attachment
-	clear_values[1].depthStencil.depth = 1.0;
+	clear_values[0].depthStencil.depth = 1.0;
 	clear_values[1].depthStencil.stencil = 0;
 
 	VkRenderPassBeginInfo renderPass_beginInfo;
