@@ -526,18 +526,13 @@ void vk_begin_frame(void)
 	VkClearValue clear_values[2];
 	/// ignore clear_values[0] which corresponds to color attachment
 	clear_values[0].depthStencil.depth = 1.0;
-	clear_values[1].depthStencil.stencil = 0;
+	clear_values[0].depthStencil.stencil = 0;
 
 	VkRenderPassBeginInfo renderPass_beginInfo;
 	renderPass_beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPass_beginInfo.pNext = NULL;
 	renderPass_beginInfo.renderPass = vk.render_pass;
 	renderPass_beginInfo.framebuffer = vk.framebuffers[vk.idx_swapchain_image];
-
-//    renderPass_beginInfo.renderArea.offset.x = 0;
-//    renderPass_beginInfo.renderArea.offset.y = 0;
-//	renderPass_beginInfo.renderArea.extent.width = glConfig.vidWidth;
-//    renderPass_beginInfo.renderArea.extent.height = glConfig.vidHeight;
 
     renderPass_beginInfo.renderArea = get_scissor_rect();
 

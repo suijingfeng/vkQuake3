@@ -136,12 +136,7 @@ void R_Init( void )
     // VULKAN
 	if ( !isVKinitialied() )
 	{
-        int width;
-        int height;
-
-        R_GetWinResolution(&width, &height);
-
-		vk_initialize(width, height);
+		vk_initialize();
         
         // print info
         vulkanInfo_f();

@@ -1,20 +1,17 @@
 #include "tr_local.h"
-
 #include "vk_instance.h"
 #include "vk_image.h"
 #include "vk_cmd.h"
-
-// TODO: move glConfig retated stuff to glConfig.c,
-extern glconfig_t	glConfig;
+#include "vk_depth_attachment.h"
 
 
-void vk_createDepthAttachment(void)
+void vk_createDepthAttachment(int Width, int Height)
 {
     // A depth attachment is based on an image, just like the color attachment
     // The difference is that the swap chain will not automatically create
     // depth image for us. We need only s single depth image, because only
     // one draw operation is running at once.
-    ri.Printf(PRINT_ALL, " Create depth image: vk.depth_image. \n");
+    ri.Printf(PRINT_ALL, " Create depth image: vk.depth_image, %d x %d. \n", Width, Height);
     {
         VkImageCreateInfo desc;
         desc.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -22,8 +19,8 @@ void vk_createDepthAttachment(void)
         desc.flags = 0;
         desc.imageType = VK_IMAGE_TYPE_2D;
         desc.format = vk.fmt_DepthStencil;
-        desc.extent.width = glConfig.vidWidth;
-        desc.extent.height = glConfig.vidHeight;
+        desc.extent.width = Width;
+        desc.extent.height = Height;
         desc.extent.depth = 1;
         desc.mipLevels = 1;
         desc.arrayLayers = 1;

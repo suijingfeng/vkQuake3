@@ -7,7 +7,7 @@
 #include "R_ImageProcess.h"
 #include "R_ImageJPG.h"
 #include "ref_import.h"
-
+#include "glConfig.h"
 /* 
 ============================================================================== 
  
@@ -41,10 +41,6 @@ Implementations may support additional limits and capabilities beyond those list
 
 */
 
-// TODO: move glConfig retated stuff to glConfig.c,
-extern glconfig_t	glConfig;
-
-
 static void imgFlipY(unsigned char * pBuf, const uint32_t w, const uint32_t h)
 {
     const uint32_t a_row = w * 4;
@@ -70,14 +66,14 @@ static void imgFlipY(unsigned char * pBuf, const uint32_t w, const uint32_t h)
 
 
 // Just reading the pixels for the GPU MEM, don't care about swizzling
-static void vk_read_pixels(unsigned char* pBuf)
+static void vk_read_pixels(unsigned char* pBuf, uint32_t W, uint32_t H)
 {
 
 	qvkDeviceWaitIdle(vk.device);
 
 	// Create image in host visible memory to serve as a destination for framebuffer pixels.
   
-    const uint32_t sizeFB = glConfig.vidWidth * glConfig.vidHeight * 4;
+    const uint32_t sizeFB = W * H * 4;
     
 
 	VkBuffer buffer;
@@ -111,8 +107,8 @@ static void vk_read_pixels(unsigned char* pBuf)
     VkBufferImageCopy image_copy;
     {
         image_copy.bufferOffset = 0;
-        image_copy.bufferRowLength = glConfig.vidWidth;
-        image_copy.bufferImageHeight = glConfig.vidHeight;
+        image_copy.bufferRowLength = W;
+        image_copy.bufferImageHeight = H;
 
         image_copy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         image_copy.imageSubresource.layerCount = 1;
@@ -121,8 +117,8 @@ static void vk_read_pixels(unsigned char* pBuf)
         image_copy.imageOffset.x = 0;
         image_copy.imageOffset.y = 0;
         image_copy.imageOffset.z = 0;
-        image_copy.imageExtent.width = glConfig.vidWidth;
-        image_copy.imageExtent.height = glConfig.vidHeight;
+        image_copy.imageExtent.width = W;
+        image_copy.imageExtent.height = H;
         image_copy.imageExtent.depth = 1;
     }
 
@@ -228,7 +224,7 @@ void RB_TakeScreenshot( int width, int height, char *fileName, VkBool32 isJpeg)
         //RE_SaveJPG(fileName, 90, width, height, buffer + offset, padlen);
         unsigned char* const pImg = (unsigned char*) malloc ( cnPixels * 4);
 
-        vk_read_pixels(pImg);
+        vk_read_pixels(pImg, width, height);
        
         // but why this is need ? why the readed image got fliped about Y ???
         imgFlipY(pImg, width, height);
@@ -266,7 +262,7 @@ void RB_TakeScreenshot( int width, int height, char *fileName, VkBool32 isJpeg)
         unsigned char* const buffer_ptr = pBuffer + 18;
         unsigned char* const pImg = pBuffer + imgSize;
         
-        vk_read_pixels(pImg);
+        vk_read_pixels(pImg, width, height);
 
         // but why this is need ? why the readed image got fliped about Y ???
         imgFlipY(pImg, width, height);
@@ -343,7 +339,7 @@ levelshots are specialized 128*128 thumbnails for the
 menu system, sampled down from full screen distorted images
 ====================
 */
-static void R_LevelShot( void )
+static void R_LevelShot( int W, int H )
 {
 	char checkname[MAX_OSPATH];
 	unsigned char* buffer;
@@ -357,7 +353,7 @@ static void R_LevelShot( void )
     int i = 0;
 	sprintf( checkname, "levelshots/%s.tga", tr.world->baseName );
 
-	source = (unsigned char*) ri.Hunk_AllocateTempMemory( glConfig.vidWidth * glConfig.vidHeight * 3 );
+	source = (unsigned char*) ri.Hunk_AllocateTempMemory( W * H * 3 );
 
 	buffer = (unsigned char*) ri.Hunk_AllocateTempMemory( 128 * 128*3 + 18);
 	memset (buffer, 0, 18);
@@ -367,12 +363,12 @@ static void R_LevelShot( void )
 	buffer[16] = 24;	// pixel size
 
     {
-        unsigned char* buffer2 = (unsigned char*) malloc (glConfig.vidWidth*glConfig.vidHeight*4);
-        vk_read_pixels(buffer2);
+        unsigned char* buffer2 = (unsigned char*) malloc (W * H * 4);
+        vk_read_pixels(buffer2, W, H);
 
         unsigned char* buffer_ptr = source;
         unsigned char* buffer2_ptr = buffer2;
-        for (i = 0; i < glConfig.vidWidth * glConfig.vidHeight; i++)
+        for (i = 0; i < W * H; i++)
         {
             buffer_ptr[0] = buffer2_ptr[0];
             buffer_ptr[1] = buffer2_ptr[1];
@@ -384,14 +380,14 @@ static void R_LevelShot( void )
     }
 
 	// resample from source
-	xScale = glConfig.vidWidth / 512.0f;
-	yScale = glConfig.vidHeight / 384.0f;
+	xScale = W / 512.0f;
+	yScale = H / 384.0f;
 	for ( y = 0 ; y < 128 ; y++ ) {
 		for ( x = 0 ; x < 128 ; x++ ) {
 			r = g = b = 0;
 			for ( yy = 0 ; yy < 3 ; yy++ ) {
 				for ( xx = 0 ; xx < 4 ; xx++ ) {
-					src = source + 3 * ( glConfig.vidWidth * (int)( (y*3+yy)*yScale ) + (int)( (x*4+xx)*xScale ) );
+					src = source + 3 * ( W * (int)( (y*3+yy)*yScale ) + (int)( (x*4+xx)*xScale ) );
 					r += src[0];
 					g += src[1];
 					b += src[2];
@@ -430,9 +426,15 @@ void R_ScreenShot_f (void)
 	static	int	lastNumber = -1;
 	qboolean	silent;
 
+    int W;
+    int H;
+
+    R_GetWinResolution(&W, &H);
+
+
 	if ( !strcmp( ri.Cmd_Argv(1), "levelshot" ) )
     {
-		R_LevelShot();
+		R_LevelShot(W, H);
 		return;
 	}
 
@@ -489,7 +491,7 @@ void R_ScreenShot_f (void)
 		lastNumber++;
 	}
 
-	R_TakeScreenshot( 0, 0, glConfig.vidWidth, glConfig.vidHeight, checkname, qfalse );
+	R_TakeScreenshot( 0, 0, W, H, checkname, qfalse );
 
 	if ( !silent ) {
 		ri.Printf (PRINT_ALL, "Wrote %s\n", checkname);
@@ -503,8 +505,13 @@ void R_ScreenShotJPEG_f(void)
 	static	int	lastNumber = -1;
 	qboolean	silent;
 
+    int W;
+    int H;
+
+    R_GetWinResolution(&W, &H);
+
 	if ( !strcmp( ri.Cmd_Argv(1), "levelshot" ) ) {
-		R_LevelShot();
+		R_LevelShot(W, H);
 		return;
 	}
 
@@ -551,7 +558,7 @@ void R_ScreenShotJPEG_f(void)
 		lastNumber++;
 	}
 
-	R_TakeScreenshot( 0, 0, glConfig.vidWidth, glConfig.vidHeight, checkname, qtrue );
+	R_TakeScreenshot( 0, 0, W, H, checkname, qtrue );
 
 	if ( !silent ) {
 		ri.Printf (PRINT_ALL, "Wrote %s\n", checkname);
@@ -579,7 +586,7 @@ void RB_TakeVideoFrameCmd( const videoFrameCommand_t * const cmd )
 		
     unsigned char* const pImg = (unsigned char*) malloc ( cmd->width * cmd->height * 4);
     
-    vk_read_pixels(pImg);
+    vk_read_pixels(pImg, cmd->width, cmd->height);
 
     imgFlipY(pImg, cmd->width, cmd->height);
 

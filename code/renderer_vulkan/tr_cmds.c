@@ -438,8 +438,6 @@ void RB_StretchPic( const stretchPicCommand_t * const cmd )
 
 
 
-
-
 static void R_PerformanceCounters( void )
 {
     

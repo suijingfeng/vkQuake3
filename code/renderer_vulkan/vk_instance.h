@@ -110,7 +110,7 @@ extern PFN_vkQueuePresentKHR							qvkQueuePresentKHR;
 
 
 // After calling this function we get fully functional vulkan subsystem.
-void vk_initialize(uint32_t width, uint32_t height);
+void vk_initialize(void);
 
 // Shutdown vulkan subsystem by releasing resources acquired by Vk_Instance.
 void vk_shutdown(void);

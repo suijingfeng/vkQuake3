@@ -11,7 +11,7 @@
 #include "vk_frame.h"
 #include "vk_shaders.h"
 #include "vk_depth_attachment.h"
-
+#include "glConfig.h"
 
 struct Vk_Instance vk;
 
@@ -949,7 +949,7 @@ static void vk_create_command_buffer(VkCommandPool pool, VkCommandBuffer* pBuf)
 }
 
 
-void vk_initialize(uint32_t width, uint32_t height)
+void vk_initialize(void)
 {
     // This function is responsible for initializing a valid Vulkan subsystem.
 
@@ -975,8 +975,14 @@ void vk_initialize(uint32_t width, uint32_t height)
     ri.Printf(PRINT_ALL, " Create command buffer: vk.command_buffer \n");
     vk_create_command_buffer(vk.command_pool, &vk.command_buffer);
 
+
+    int width;
+    int height;
+
+    R_GetWinResolution(&width, &height);
+
     // Depth attachment image.
-    vk_createDepthAttachment();
+    vk_createDepthAttachment(width, height);
 
 
     vk_createFrameBuffers(width, height);

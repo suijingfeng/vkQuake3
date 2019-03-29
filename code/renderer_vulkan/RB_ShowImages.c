@@ -2,6 +2,8 @@
 #include "vk_shade_geometry.h"
 #include "tr_globals.h"
 #include "vk_pipelines.h"
+#include "glConfig.h"
+
 /*
 ===============
 Draw all the images to the screen, on top of whatever was there.
@@ -11,7 +13,6 @@ Also called by RE_EndRegistration
 ===============
 */
 // TODO: move glConfig retated stuff to glConfig.c,
-extern glconfig_t	glConfig;
 
 
 void RB_ShowImages(void)
@@ -21,14 +22,19 @@ void RB_ShowImages(void)
 
 	const float black[4] = {0, 0, 0, 1};
 	vk_clearColorAttachments(black);
-    
+   
+    int width;
+    int height;
+
+    R_GetWinResolution(&width, &height);
+
     uint32_t i;
 	for (i = 0 ; i < tr.numImages ; i++)
     {
 		image_t* image = tr.images[i];
 
-		float w = glConfig.vidWidth / 20;
-		float h = glConfig.vidHeight / 15;
+		float w = width / 20;
+		float h = height / 15;
 		float x = i % 20 * w;
 		float y = i / 20 * h;
 
