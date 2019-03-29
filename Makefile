@@ -1823,7 +1823,6 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/tr_fog.o \
   $(B)/renderer_vulkan/tr_world.o \
   $(B)/renderer_vulkan/tr_common.o \
-  $(B)/renderer_vulkan/tr_displayResolution.o \
   $(B)/renderer_vulkan/vk_instance.o \
   $(B)/renderer_vulkan/vk_cmd.o \
   $(B)/renderer_vulkan/vk_image.o \

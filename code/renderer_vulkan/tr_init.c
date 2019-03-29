@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tr_local.h"
 #include "tr_globals.h"
-#include "tr_displayResolution.h"
 #include "tr_model.h"
 #include "tr_cvar.h"
 #include "vk_instance.h"
@@ -36,7 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "R_StretchRaw.h"
 #include "tr_fog.h"
 #include "tr_backend.h"
-
+#include "glConfig.h"
 refimport_t	ri;
 
 

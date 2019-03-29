@@ -146,7 +146,7 @@ void RE_StretchPic ( float x, float y, float w, float h,
 }
 
 
-void RE_BeginFrame( void )
+void RE_BeginFrame( stereoFrame_t stereoFrame )
 {
 
 	if ( !tr.registered ) {

@@ -34,8 +34,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "VKimpl.h"
 
 
-void R_glConfigOut(glconfig_t* pOut);
-
 ////////////////////////////////////////
 
 void VectorPerp( const vec3_t src, vec3_t dst );
@@ -1129,7 +1127,7 @@ SCENE GENERATION
 
 void	RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty);
 
-void	RE_BeginFrame( void );
+void	RE_BeginFrame( stereoFrame_t stereoFrame );
 void	RE_BeginRegistration( glconfig_t *glconfig );
 void	RE_LoadWorldMap( const char *mapname );
 void	RE_SetWorldVisData( const byte *vis );

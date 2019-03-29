@@ -26,11 +26,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "VKimpl.h"
 #include "vk_instance.h"
-#include "tr_displayResolution.h"
 
 #include "tr_cvar.h"
-
 #include "icon_oa.h"
+#include "glConfig.h"
 
 
 #ifdef _WIN32
@@ -43,30 +42,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 
-// TODO: move glConfig retated stuff to glConfig.c,
-extern glconfig_t	glConfig;
-
 static SDL_Window* window_sdl = NULL;
 
 
 // TODO: multi display support
 static cvar_t* r_displayIndex;
-
-
-/*
-SDL_WINDOW_FULLSCREEN, for "real" fullscreen with a videomode change; 
-SDL_WINDOW_FULLSCREEN_DESKTOP for "fake" fullscreen that takes the size of the desktop.
-
-static VkBool32 isWindowFullscreen (void)
-{
-	return (SDL_GetWindowFlags(window_sdl) & SDL_WINDOW_FULLSCREEN) != 0;
-}
-
-static VkBool32 isDesktopFullscreen (void)
-{
-	return (SDL_GetWindowFlags(window_sdl) & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP;
-}
-*/
 
 
 static void VKimp_DetectAvailableModes(void)
@@ -166,7 +146,6 @@ static int VKimp_SetMode(int mode, qboolean fullscreen)
 	if ( r_allowResize->integer )
 		flags |= SDL_WINDOW_RESIZABLE;
 
-	int x = SDL_WINDOWPOS_UNDEFINED, y = SDL_WINDOWPOS_UNDEFINED;
 
 	ri.Printf(PRINT_ALL,  "...VKimp_SetMode()...\n");
 
@@ -190,61 +169,41 @@ static int VKimp_SetMode(int mode, qboolean fullscreen)
 	{
     	//mode = 0: use the first display mode SDL return;
         ri.Printf(PRINT_ALL,"SDL_GetDisplayMode failed: %s\n", SDL_GetError());
+        mode = 3;
+        desktopMode.w = 640;
+        desktopMode.h = 480;
+        desktopMode.refresh_rate = 60;
+        fullscreen = 0;
 	}
 
-
-	glConfig.displayFrequency = desktopMode.refresh_rate;
-
-
-	if (mode == -2)
-	{
-        // use desktop video resolution
-        glConfig.vidWidth = desktopMode.w;
-        glConfig.vidHeight = desktopMode.h;
-        glConfig.windowAspect = (float)desktopMode.w / (float)desktopMode.h;
-        glConfig.displayFrequency = desktopMode.refresh_rate;
+    if(fullscreen)
+    {
+        // prevent crush the OS
+        r_mode->integer = mode = -2;
+        		
+        flags |= SDL_WINDOW_FULLSCREEN;
+		flags |= SDL_WINDOW_BORDERLESS;
     }
-	else
-	{
-        R_GetModeInfo( &glConfig.vidWidth, &glConfig.vidHeight, 
-                        &glConfig.windowAspect, mode );
-    }
+
+    R_SetWinMode( mode, desktopMode.w, desktopMode.h, desktopMode.refresh_rate );
     
-    ri.Printf(PRINT_ALL,"Display mode: %d\n", mode);
 
 
-	// Center window
-	if(!fullscreen)
+    if( window_sdl != NULL )
 	{
-		x = ( desktopMode.w / 2 ) - ( glConfig.vidWidth / 2 );
-		y = ( desktopMode.h / 2 ) - ( glConfig.vidHeight / 2 );
-	}
-
-
-	if( window_sdl != NULL )
-	{
-		SDL_GetWindowPosition( window_sdl, &x, &y );
-		ri.Printf(PRINT_ALL,  "Existing window at %dx%d before being destroyed\n", x, y );
+		// SDL_GetWindowPosition( window_sdl, &x, &y );
 		SDL_DestroyWindow( window_sdl );
 		window_sdl = NULL;
+        ri.Printf(PRINT_ALL, "Existing window being destroyed\n");
 	}
 
+    int width = 640;
+    int height = 480;
 
+    R_GetWinResolution(&width, &height);
 
-	if( fullscreen )
-	{
-		flags |= SDL_WINDOW_FULLSCREEN;
-		flags |= SDL_WINDOW_BORDERLESS;
-		glConfig.isFullscreen = qtrue;
-	}
-	else
-	{
-		glConfig.isFullscreen = qfalse;
-	}
-
-
-	window_sdl = SDL_CreateWindow( CLIENT_WINDOW_TITLE, x, y,
-						glConfig.vidWidth, glConfig.vidHeight, flags );
+	window_sdl = SDL_CreateWindow( CLIENT_WINDOW_TITLE, SDL_WINDOWPOS_CENTERED,
+            SDL_WINDOWPOS_CENTERED, width, height, flags );
 
 
 	if( window_sdl )
@@ -252,11 +211,8 @@ static int VKimp_SetMode(int mode, qboolean fullscreen)
         VKimp_DetectAvailableModes();
         return 0;
     }
-    else
-	{
-		ri.Printf(PRINT_ALL, "Couldn't get a visual\n" );
-	}
 
+	ri.Printf(PRINT_WARNING, " Couldn't create a window\n" );
     return -1;
 }
 
@@ -269,11 +225,8 @@ void vk_createWindow(void)
 {
 	ri.Printf(PRINT_ALL, "...Creating window (using SDL2)...\n");
 
-
 	r_displayIndex = ri.Cvar_Get( "r_displayIndex", "0", CVAR_ARCHIVE | CVAR_LATCH );
 
-
-#ifdef USE_ICON
 
     SDL_Surface* icon = SDL_CreateRGBSurfaceFrom(
 			(void *)CLIENT_WINDOW_ICON.pixel_data,
@@ -293,27 +246,8 @@ void vk_createWindow(void)
         ri.Printf(PRINT_ALL, " SDL_CreateRGBSurface Failed. \n" );
     }
 
-#endif
 
-
-    // These values force the UI to disable driver selection
-	glConfig.driverType = GLDRV_ICD;
-	glConfig.hardwareType = GLHW_GENERIC;
-
-    // Only using SDL_SetWindowBrightness to determine if hardware gamma is supported
-    glConfig.deviceSupportsGamma = qtrue;
-
-    glConfig.textureEnvAddAvailable = 0; // not used
-    glConfig.textureCompression = TC_NONE; // not used
-	// init command buffers and SMP
-	glConfig.stereoEnabled = 0;
-	glConfig.smpActive = qfalse; // not used
-
-    // hardcode it
-    glConfig.colorBits = 32;
-    glConfig.depthBits = 24;
-    glConfig.stencilBits = 8;
-
+    R_glConfigInit();
 
 
 	if(ri.Cvar_VariableIntegerValue( "com_abnormalExit" ) )
@@ -371,11 +305,6 @@ success:
 
     SDL_FreeSurface( icon );
 
-
-	ri.Printf(PRINT_ALL,  "MODE: %s, %d x %d, refresh rate: %dhz\n",
-        ((r_fullscreen->integer == 1) ? "fullscreen" : "windowed"), 
-        glConfig.vidWidth, glConfig.vidHeight, glConfig.displayFrequency);
-    
 	// This depends on SDL_INIT_VIDEO, hence having it here
 	ri.IN_Init(window_sdl);
 }
@@ -401,7 +330,7 @@ void vk_destroyWindow( void )
 {
 	ri.Printf(PRINT_ALL, " Destroy Window Subsystem.\n");
 	
-    memset(&glConfig, 0, sizeof(glConfig));
+    R_glConfigClear();
 
 	ri.IN_Shutdown();
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
