@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "vk_screenshot.h"
 #include "vk_shade_geometry.h"
 #include "R_DEBUG.h"
-
+#include "RB_ShowImages.h"
 #include "R_PrintMat.h"
 
 static renderCommandList_t	BE_Commands;
@@ -303,18 +303,6 @@ static void RB_RenderDrawSurfList( drawSurf_t* drawSurfs, int numDrawSurfs )
 				R_RotateForEntity( backEnd.currentEntity, &backEnd.viewParms, &backEnd.or );
 
 
-                if(r_debugModels->integer)
-                {
-                    ri.Printf( PRINT_ALL, "\n backEnd.currentEntity->e.reType: %d\n", backEnd.currentEntity->e.reType);
-
-                    ri.Printf( PRINT_ALL, " entityNum: %d, oldEntityNum: %d\n", entityNum, oldEntityNum);
-
-                    printMat1x3f("backEnd.or Origin", backEnd.or.origin);
-                    printMat1x3f("backEnd.or viewOrigin", backEnd.or.viewOrigin);
-                    printMat4x4f("backEnd.or modelMatrix", backEnd.or.modelMatrix);
-                }
-
-
 				// set up the dynamic lighting if needed
 				if ( backEnd.currentEntity->needDlights ) {
 					R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.or );
@@ -334,13 +322,6 @@ static void RB_RenderDrawSurfList( drawSurf_t* drawSurfs, int numDrawSurfs )
 				tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
 				R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.or );
 
-                if(r_debugModels->integer)
-                {
-                    ri.Printf( PRINT_ALL, "\n backEnd.currentEntity->e.reType: %d\n", backEnd.currentEntity->e.reType);
-                    printMat1x3f("backEnd.viewParms.world Origin", backEnd.or.origin);
-                    printMat1x3f("backEnd.viewParms.world viewOrigin", backEnd.or.viewOrigin);
-                    printMat4x4f("backEnd.viewParms.world modelMatrix", backEnd.or.modelMatrix);
-                }
 			}
 
 
@@ -415,28 +396,9 @@ void RB_StretchPic( const stretchPicCommand_t * const cmd )
     tess.indexes[ numIndexes + 5 ] = n1;
 	
 
-/*
-    tess.vertexColors[ n0 ][ 0 ] = sf_Color2D[0];
-    tess.vertexColors[ n0 ][ 1 ] = sf_Color2D[1];
-    tess.vertexColors[ n0 ][ 2 ] = sf_Color2D[2];
-    tess.vertexColors[ n0 ][ 3 ] = sf_Color2D[3];
-
-    tess.vertexColors[ n1 ][ 0 ] = sf_Color2D[0];
-    tess.vertexColors[ n1 ][ 1 ] = sf_Color2D[1];
-    tess.vertexColors[ n1 ][ 2 ] = sf_Color2D[2];
-    tess.vertexColors[ n1 ][ 3 ] = sf_Color2D[3];
-
-    tess.vertexColors[ n2 ][ 0 ] = sf_Color2D[0];
-    tess.vertexColors[ n2 ][ 1 ] = sf_Color2D[1];
-    tess.vertexColors[ n2 ][ 2 ] = sf_Color2D[2];
-    tess.vertexColors[ n2 ][ 3 ] = sf_Color2D[3];
-
-    tess.vertexColors[ n3 ][ 0 ] = sf_Color2D[0];
-    tess.vertexColors[ n3 ][ 1 ] = sf_Color2D[1];
-    tess.vertexColors[ n3 ][ 2 ] = sf_Color2D[2];
-    tess.vertexColors[ n3 ][ 3 ] = sf_Color2D[3];
-*/
-
+    // TODO: verify does coding this way run faster in release mode ?
+    // coding this way do harm to debug version because of
+    // introduce additional 4 function call.
     memcpy(tess.vertexColors[ n0 ], backEnd.Color2D, 4);
     memcpy(tess.vertexColors[ n1 ], backEnd.Color2D, 4);
     memcpy(tess.vertexColors[ n2 ], backEnd.Color2D, 4);

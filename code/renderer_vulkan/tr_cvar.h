@@ -91,8 +91,6 @@ extern	cvar_t	*r_ambientScale;
 extern	cvar_t	*r_directedScale;
 extern	cvar_t	*r_debugLight;
 
-extern cvar_t* r_debugModels; 
-
 void R_Register( void );
 
 
