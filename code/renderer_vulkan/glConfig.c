@@ -4,11 +4,13 @@
 
 #include "../renderercommon/tr_types.h"
 
-
+#include "VKimpl.h"
+#include "vk_instance.h"
+#include "vk_image.h"
 // outside of this file shouldn't modify glConfig
 // I want keep it locally, as it belong to OpenGL, not VulKan
 // have to use this keep backward Compatibility
-glconfig_t glConfig;
+static glconfig_t glConfig;
 
 
 static cvar_t* r_customwidth;
@@ -109,12 +111,17 @@ void R_SetWinMode(int mode, unsigned int width, unsigned int height, unsigned in
         mode, glConfig.vidWidth, glConfig.vidHeight, glConfig.displayFrequency);
 }
 
-void R_GetWinResolution(int* const w, int* const h)
+void R_GetWinResolution(int* w, int* h)
 {
     *w = glConfig.vidWidth;
     *h = glConfig.vidHeight;
 }
 
+void R_GetWinResolutionF(float* w, float* h)
+{
+    *w = glConfig.vidWidth;
+    *h = glConfig.vidHeight;
+}
 
 void R_InitDisplayResolution( void )
 {
@@ -123,6 +130,17 @@ void R_InitDisplayResolution( void )
     r_customwidth = ri.Cvar_Get( "r_customwidth", "960", CVAR_ARCHIVE | CVAR_LATCH );
     r_customheight = ri.Cvar_Get( "r_customheight", "540", CVAR_ARCHIVE | CVAR_LATCH );
     r_customaspect = ri.Cvar_Get( "r_customaspect", "1.78", CVAR_ARCHIVE | CVAR_LATCH );
+}
+
+void R_glConfigClear(void)
+{
+    memset(&glConfig, 0, sizeof(glConfig));
+}
+
+
+void R_glConfigOut(glconfig_t* pOut)
+{
+	*pOut = glConfig;
 }
 
 
@@ -149,12 +167,181 @@ void R_glConfigInit(void)
     glConfig.stencilBits = 8;
 }
 
-void R_glConfigClear(void)
+// ==================================================
+// ==================================================
+
+static void printDeviceExtensions(void)
 {
-    memset(&glConfig, 0, sizeof(glConfig));
+    uint32_t nDevExts = 0;
+
+    // To query the extensions available to a given physical device
+    VK_CHECK( qvkEnumerateDeviceExtensionProperties( vk.physical_device, NULL, &nDevExts, NULL) );
+
+    assert(nDevExts > 0);
+
+    VkExtensionProperties* pDevExt = 
+        (VkExtensionProperties *) malloc(sizeof(VkExtensionProperties) * nDevExts);
+
+    qvkEnumerateDeviceExtensionProperties(
+            vk.physical_device, NULL, &nDevExts, pDevExt);
+
+
+    ri.Printf(PRINT_ALL, "--------- Total %d Device Extension Supported ---------\n", nDevExts);
+    uint32_t i;
+    for (i=0; i<nDevExts; ++i)
+    {
+        ri.Printf(PRINT_ALL, " %s \n", pDevExt[i].extensionName);
+    }
+    ri.Printf(PRINT_ALL, "--------- ----------------------------------- ---------\n");
+
+    free(pDevExt);
 }
 
-void R_glConfigOut(glconfig_t* pOut)
+
+static void printInstanceExtensions(int setting)
 {
-	*pOut = glConfig;
+    uint32_t i = 0;
+
+	uint32_t nInsExt = 0;
+    // To retrieve a list of supported extensions before creating an instance
+	VK_CHECK( qvkEnumerateInstanceExtensionProperties( NULL, &nInsExt, NULL) );
+
+    assert(nInsExt > 0);
+
+    VkExtensionProperties* pInsExt = (VkExtensionProperties *) malloc(sizeof(VkExtensionProperties) * nInsExt);
+    
+    VK_CHECK(qvkEnumerateInstanceExtensionProperties( NULL, &nInsExt, pInsExt));
+
+    ri.Printf(PRINT_ALL, "\n");
+
+    ri.Printf(PRINT_ALL, "----- Total %d Instance Extension Supported -----\n", nInsExt);
+    for (i = 0; i < nInsExt; ++i)
+    {            
+        ri.Printf(PRINT_ALL, "%s\n", pInsExt[i].extensionName );
+    }
+    ri.Printf(PRINT_ALL, "----- ------------------------------------- -----\n\n");
+   
+    // =================================================================
+
+    // we enabled all the instance extenstion, dose this reasonable???
+    // so we copy it to glConfig.ext str, 
+    // split it with create instance function so that made it clear and clean
+    if( setting )
+    {
+        uint32_t indicator = 0;
+
+        for (i = 0; i < nInsExt; ++i)
+        {    
+            uint32_t len = strlen(pInsExt[i].extensionName);
+            memcpy(glConfig.extensions_string + indicator, 
+                    pInsExt[i].extensionName, len);
+            indicator += len;
+            glConfig.extensions_string[indicator++] = ' ';
+        }
+
+        free(pInsExt);
+    }
+    // ==================================================================
+/*    
+    uint32_t nDevExts = 0;
+
+    // To query the extensions available to a given physical device
+    VK_CHECK( qvkEnumerateDeviceExtensionProperties( vk.physical_device, NULL, &nDevExts, NULL) );
+
+    assert(nDevExts > 0);
+
+    VkExtensionProperties* pDevExt = 
+        (VkExtensionProperties *) malloc(sizeof(VkExtensionProperties) * nDevExts);
+
+    qvkEnumerateDeviceExtensionProperties(
+            vk.physical_device, NULL, &nDevExts, pDevExt);
+
+
+    ri.Printf(PRINT_ALL, "---- Total %d Device Extension Supported ----\n", nDevExts);
+    uint32_t i;
+    for (i=0; i<nDevExts; ++i)
+    {
+        ri.Printf(PRINT_ALL, " %s \n", pDevExt[i].extensionName);
+    }
+    ri.Printf(PRINT_ALL, "---- ----------------------------------- ----\n\n");
+
+// There much more device extentions, beyound UI driver info can display
+// and we only use VK_KHR_swapchain for now, so won't copy that,
+// just print it out.
+    
+    for (i = 0; i < nDevExts; ++i)
+    {    
+        uint32_t len = strlen(pDevExt[i].extensionName);
+        memcpy(glConfig.extensions_string + indicator, pDevExt[i].extensionName, len);
+        indicator += len;
+        glConfig.extensions_string[indicator++] = ' ';
+    }
+    free(pDevExt);
+*/
+
 }
+
+
+void vulkanInfo_f( void ) 
+{
+    ri.Printf( PRINT_ALL, "\nActive 3D API: Vulkan\n" );
+
+    // To query general properties of physical devices once enumerated
+    VkPhysicalDeviceProperties props;
+    qvkGetPhysicalDeviceProperties(vk.physical_device, &props);
+
+    uint32_t major = VK_VERSION_MAJOR(props.apiVersion);
+    uint32_t minor = VK_VERSION_MINOR(props.apiVersion);
+    uint32_t patch = VK_VERSION_PATCH(props.apiVersion);
+
+    const char* device_type;
+    if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+        device_type = "INTEGRATED_GPU";
+    else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+        device_type = "DISCRETE_GPU";
+    else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU)
+        device_type = "VIRTUAL_GPU";
+    else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU)
+        device_type = "CPU";
+    else
+        device_type = "Unknown";
+
+    const char* vendor_name = "unknown";
+    if (props.vendorID == 0x1002) {
+        vendor_name = "Advanced Micro Devices, Inc.";
+    } else if (props.vendorID == 0x10DE) {
+        vendor_name = "NVIDIA";
+    } else if (props.vendorID == 0x8086) {
+        vendor_name = "Intel Corporation";
+    }
+
+    ri.Printf(PRINT_ALL, "Vk api version: %d.%d.%d\n", major, minor, patch);
+    ri.Printf(PRINT_ALL, "Vk driver version: %d\n", props.driverVersion);
+    ri.Printf(PRINT_ALL, "Vk vendor id: 0x%X (%s)\n", props.vendorID, vendor_name);
+    ri.Printf(PRINT_ALL, "Vk device id: 0x%X\n", props.deviceID);
+    ri.Printf(PRINT_ALL, "Vk device type: %s\n", device_type);
+    ri.Printf(PRINT_ALL, "Vk device name: %s\n", props.deviceName);
+
+    // 
+    char tmpBuf[128] = {0};
+    snprintf(tmpBuf, 128, " Vk api version: %d.%d.%d ", major, minor, patch);
+    strncpy( glConfig.version_string, tmpBuf, sizeof( glConfig.version_string ) );
+	strncpy( glConfig.vendor_string, vendor_name, sizeof( glConfig.vendor_string ) );
+	
+    strncpy( glConfig.renderer_string, props.deviceName, sizeof( glConfig.renderer_string ) );
+    if (*glConfig.renderer_string && 
+            glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] == '\n')
+         glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] = 0;  
+    
+	
+    //
+	// Info that for UI display
+	//
+    printInstanceExtensions(1);
+
+    printDeviceExtensions();
+
+    gpuMemUsageInfo_f();
+}
+
+

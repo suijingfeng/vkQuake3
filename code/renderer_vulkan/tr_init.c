@@ -36,9 +36,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_fog.h"
 #include "tr_backend.h"
 #include "glConfig.h"
+
+
 refimport_t	ri;
-
-
 
 /*
 =============
@@ -130,10 +130,21 @@ void R_Init( void )
 
     R_InitScene();
 
+
+    R_glConfigInit();
+
     // VULKAN
 	if ( !isVKinitialied() )
 	{
-		vk_initialize();
+        int width;
+        int height;
+
+        R_GetWinResolution(&width, &height);
+
+		vk_initialize(width, height);
+        
+        // print info
+        vulkanInfo_f();
 	}
 
 

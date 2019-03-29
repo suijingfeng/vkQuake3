@@ -12,8 +12,6 @@
 #include "vk_shaders.h"
 #include "vk_depth_attachment.h"
 
-// TODO: move glConfig retated stuff to glConfig.c,
-extern glconfig_t	glConfig;
 
 struct Vk_Instance vk;
 
@@ -225,22 +223,18 @@ static void vk_createInstance(void)
     ri.Printf(PRINT_ALL, "--- Total %d instance extensions. --- \n", nInsExt);
 
     VkExtensionProperties *pInsExt = (VkExtensionProperties *) malloc(sizeof(VkExtensionProperties) * nInsExt);
+    
     const char** ppInstanceExt = malloc( sizeof(char *) * (nInsExt) );
 
     VK_CHECK(qvkEnumerateInstanceExtensionProperties( NULL, &nInsExt, pInsExt));
 
     uint32_t i = 0;
 
-    uint32_t indicator = 0;
+    // TODO: CHECK OUT
+    // All of the instance wxtention enabled, Does this reasonable ?
 
     for (i = 0; i < nInsExt; i++)
     {    
-        ri.Printf(PRINT_ALL, "%s\n", pInsExt[i].extensionName );
-        unsigned int len = strlen(pInsExt[i].extensionName);
-        memcpy(glConfig.extensions_string + indicator, pInsExt[i].extensionName, len);
-        indicator += len;
-        glConfig.extensions_string[indicator++] = ' ';
-
         ppInstanceExt[i] = pInsExt[i].extensionName;
     }
     
@@ -279,10 +273,11 @@ static void vk_createInstance(void)
     {
         ri.Error(ERR_FATAL, "%d, returned by qvkCreateInstance.\n", e);
     }
-    
+   
+    free(ppInstanceExt);
+
     free(pInsExt);
 
-    free(ppInstanceExt);
 }
 
 
@@ -954,7 +949,7 @@ static void vk_create_command_buffer(VkCommandPool pool, VkCommandBuffer* pBuf)
 }
 
 
-void vk_initialize(void)
+void vk_initialize(uint32_t width, uint32_t height)
 {
     // This function is responsible for initializing a valid Vulkan subsystem.
 
@@ -984,7 +979,7 @@ void vk_initialize(void)
     vk_createDepthAttachment();
 
 
-    vk_createFrameBuffers(glConfig.vidWidth, glConfig.vidHeight);
+    vk_createFrameBuffers(width, height);
 
 	// Pipeline layout.
 	// You can use uniform values in shaders, which are globals similar to
@@ -1008,9 +1003,6 @@ void vk_initialize(void)
 	// Standard pipelines.
 	//
     create_standard_pipelines();
-
-    // print info
-    vulkanInfo_f();
 
     vk.isInitialized = VK_TRUE;
 }
@@ -1068,97 +1060,6 @@ void vk_shutdown(void)
 	vk_clearProcAddress();
 
     vk.isInitialized = VK_FALSE;
-}
-
-
-void vulkanInfo_f( void ) 
-{
-
-	// VULKAN
-
-    ri.Printf( PRINT_ALL, "\nActive 3D API: Vulkan\n" );
-
-    // To query general properties of physical devices once enumerated
-    VkPhysicalDeviceProperties props;
-    qvkGetPhysicalDeviceProperties(vk.physical_device, &props);
-
-    uint32_t major = VK_VERSION_MAJOR(props.apiVersion);
-    uint32_t minor = VK_VERSION_MINOR(props.apiVersion);
-    uint32_t patch = VK_VERSION_PATCH(props.apiVersion);
-
-    const char* device_type;
-    if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
-        device_type = "INTEGRATED_GPU";
-    else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-        device_type = "DISCRETE_GPU";
-    else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU)
-        device_type = "VIRTUAL_GPU";
-    else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU)
-        device_type = "CPU";
-    else
-        device_type = "Unknown";
-
-    const char* vendor_name = "unknown";
-    if (props.vendorID == 0x1002) {
-        vendor_name = "Advanced Micro Devices, Inc.";
-    } else if (props.vendorID == 0x10DE) {
-        vendor_name = "NVIDIA";
-    } else if (props.vendorID == 0x8086) {
-        vendor_name = "Intel Corporation";
-    }
-
-    ri.Printf(PRINT_ALL, "Vk api version: %d.%d.%d\n", major, minor, patch);
-    ri.Printf(PRINT_ALL, "Vk driver version: %d\n", props.driverVersion);
-    ri.Printf(PRINT_ALL, "Vk vendor id: 0x%X (%s)\n", props.vendorID, vendor_name);
-    ri.Printf(PRINT_ALL, "Vk device id: 0x%X\n", props.deviceID);
-    ri.Printf(PRINT_ALL, "Vk device type: %s\n", device_type);
-    ri.Printf(PRINT_ALL, "Vk device name: %s\n", props.deviceName);
-
-//    ri.Printf(PRINT_ALL, "\n The maximum number of sampler objects,  
-//    as created by vkCreateSampler, which can simultaneously exist on a device is: %d\n", 
-//        props.limits.maxSamplerAllocationCount);
-//	 4000
-
-    // Look for device extensions
-    {
-        uint32_t nDevExts = 0;
-
-        // To query the extensions available to a given physical device
-        VK_CHECK( qvkEnumerateDeviceExtensionProperties( vk.physical_device, NULL, &nDevExts, NULL) );
-
-        VkExtensionProperties* pDeviceExt = 
-            (VkExtensionProperties *) malloc(sizeof(VkExtensionProperties) * nDevExts);
-
-        qvkEnumerateDeviceExtensionProperties(
-                vk.physical_device, NULL, &nDevExts, pDeviceExt);
-
-
-        ri.Printf(PRINT_ALL, "---------- Total Device Extension Supported ---------- \n");
-        uint32_t i;
-        for (i=0; i<nDevExts; i++)
-        {
-            ri.Printf(PRINT_ALL, " %s \n", pDeviceExt[i].extensionName);
-        }
-        ri.Printf(PRINT_ALL, "---------- -------------------------------- ---------- \n");
-    }
-
-    ri.Printf(PRINT_ALL, "Vk instance extensions: \n%s\n\n", glConfig.extensions_string);
-
-
-	//
-	// Info that for UI display
-	//
-	strncpy( glConfig.vendor_string, vendor_name, sizeof( glConfig.vendor_string ) );
-	strncpy( glConfig.renderer_string, props.deviceName, sizeof( glConfig.renderer_string ) );
-    if (*glConfig.renderer_string && glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] == '\n')
-         glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] = 0;     
-	char tmpBuf[128] = {0};
-
-    snprintf(tmpBuf, 128, " Vk api version: %d.%d.%d ", major, minor, patch);
-	
-    strncpy( glConfig.version_string, tmpBuf, sizeof( glConfig.version_string ) );
-
-    gpuMemUsageInfo_f();
 }
 
 

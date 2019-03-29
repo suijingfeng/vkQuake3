@@ -247,9 +247,6 @@ void vk_createWindow(void)
     }
 
 
-    R_glConfigInit();
-
-
 	if(ri.Cvar_VariableIntegerValue( "com_abnormalExit" ) )
 	{
 		ri.Cvar_Set( "r_fullscreen", "0" );

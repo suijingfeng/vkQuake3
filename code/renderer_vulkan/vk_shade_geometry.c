@@ -6,7 +6,7 @@
 #include "vk_pipelines.h"
 #include "matrix_multiplication.h"
 #include "tr_backend.h"
-
+#include "glConfig.h"
 #include "R_PortalPlane.h"
 
 #define VERTEX_CHUNK_SIZE   (768 * 1024)
@@ -51,9 +51,6 @@ struct ShadingData_t
 
 struct ShadingData_t shadingDat;
 
-// TODO: move glConfig retated stuff to glConfig.c,
-extern glconfig_t	glConfig;
-
 
 VkBuffer vk_getIndexBuffer(void)
 {
@@ -64,17 +61,6 @@ VkBuffer vk_getIndexBuffer(void)
 static float s_modelview_matrix[16] QALIGN(16);
 
 
-/*
-static float modelview_bak[16] QALIGN(16);
-void PushModelView(void)
-{
-    memcpy(modelview_bak, s_modelview_matrix, 64);
-}
-void PopModelView(void)
-{
-    memcpy(s_modelview_matrix, modelview_bak, 64);
-}
-*/
 
 void set_modelview_matrix(const float mv[16])
 {
@@ -88,128 +74,114 @@ const float * getptr_modelview_matrix()
 }
 
 
-
-static VkViewport get_viewport(enum Vk_Depth_Range depth_range)
+// TODO   : figure out the principle
+static void vk_setViewportScissor(VkBool32 is2D, enum Vk_Depth_Range dR,
+        VkViewport* const vp, VkRect2D* const pRect)
 {
-	VkViewport viewport;
+    int width, height;
+    R_GetWinResolution(&width, &height);
 
-	if (backEnd.projection2D)
+	if (is2D)
 	{
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = glConfig.vidWidth;
-		viewport.height = glConfig.vidHeight;
+
+        pRect->offset.x = vp->x = 0;
+        pRect->offset.y = vp->y = 0;
+        
+        pRect->extent.width = vp->width = width;
+		pRect->extent.height = vp->height = height;
 	}
 	else
 	{
-		viewport.x = backEnd.viewParms.viewportX;
-		viewport.y = backEnd.viewParms.viewportY;
-		viewport.width = backEnd.viewParms.viewportWidth;
-		viewport.height = backEnd.viewParms.viewportHeight;
+		int X = backEnd.viewParms.viewportX;
+		int Y = backEnd.viewParms.viewportY;
+		int W = backEnd.viewParms.viewportWidth;
+		int H = backEnd.viewParms.viewportHeight;
+
+        //pRect->offset.x = backEnd.viewParms.viewportX;
+        //pRect->offset.y = backEnd.viewParms.viewportY;
+        //pRect->extent.width = backEnd.viewParms.viewportWidth;
+		//pRect->extent.height = backEnd.viewParms.viewportHeight;
+
+        if ( X < 0)
+		    X = 0;
+        if (Y < 0)
+		    Y = 0;
+        if (X + W > width)
+		    W = width - X;
+	    if (Y + H > height)
+		    H = height - Y;
+
+        pRect->offset.x = vp->x = X;
+		pRect->offset.y = vp->y = Y;
+		pRect->extent.width = vp->width = W;
+		pRect->extent.height = vp->height = H;
 	}
 
-    switch(depth_range)
+    switch(dR)
     {
         case DEPTH_RANGE_NORMAL:
         {
-        	viewport.minDepth = 0.0f;
-		    viewport.maxDepth = 1.0f;
+        	vp->minDepth = 0.0f;
+		    vp->maxDepth = 1.0f;
         }break;
 
         case DEPTH_RANGE_ZERO:
         {
-		    viewport.minDepth = 0.0f;
-		    viewport.maxDepth = 0.0f;
+		    vp->minDepth = 0.0f;
+		    vp->maxDepth = 0.0f;
 	    }break;
         
         case DEPTH_RANGE_ONE:
         {
-		    viewport.minDepth = 1.0f;
-		    viewport.maxDepth = 1.0f;
+		    vp->minDepth = 1.0f;
+		    vp->maxDepth = 1.0f;
 	    }break;
 
         case DEPTH_RANGE_WEAPON:
         {
-            viewport.minDepth = 0.0f;
-		    viewport.maxDepth = 0.3f;
+            vp->minDepth = 0.0f;
+		    vp->maxDepth = 0.3f;
         }break;
     }
-	
-    return viewport;
 }
 
 
 VkRect2D get_scissor_rect(void)
 {
+
 	VkRect2D r;
-	if (backEnd.projection2D)
+	
+    int width, height;
+    R_GetWinResolution(&width, &height);
+    
+    if (backEnd.projection2D)
 	{
 		r.offset.x = 0.0f;
 		r.offset.y = 0.0f;
-		r.extent.width = glConfig.vidWidth;
-		r.extent.height = glConfig.vidHeight;
+		r.extent.width = width;
+		r.extent.height = height;
 	}
 	else
 	{
 		r.offset.x = backEnd.viewParms.viewportX;
-		//r.offset.y = glConfig.vidHeight - (backEnd.viewParms.viewportY + backEnd.viewParms.viewportHeight);
-        if (r.offset.x < 0)
-		    r.offset.x = 0;
-
         r.offset.y = backEnd.viewParms.viewportY;
-        
-        if (r.offset.y < 0)
-		    r.offset.y = 0;
         r.extent.width = backEnd.viewParms.viewportWidth;
 		r.extent.height = backEnd.viewParms.viewportHeight;
 
-        if (r.offset.x + r.extent.width > glConfig.vidWidth)
-		    r.extent.width = glConfig.vidWidth - r.offset.x;
-	    if (r.offset.y + r.extent.height > glConfig.vidHeight)
-		    r.extent.height = glConfig.vidHeight - r.offset.y;
+        if (r.offset.x < 0)
+		    r.offset.x = 0;
+        if (r.offset.y < 0)
+		    r.offset.y = 0;
+        if (r.offset.x + r.extent.width > width)
+		    r.extent.width = width - r.offset.x;
+	    if (r.offset.y + r.extent.height > height)
+		    r.extent.height = height - r.offset.y;
 
         // ri.Printf(PRINT_ALL, "(%d, %d, %d, %d)\n", r.offset.x, r.offset.y, r.extent.width, r.extent.height);
     }
 
 	return r;
 }
-
-/*
-_o : means original code, leave it here as documents
-TODO   : figure out the principle
-static VkRect2D get_viewport_rect_o(void)
-{
-	VkRect2D r;
-	if (backEnd.projection2D)
-	{
-		r.offset.x = 0.0f;
-		r.offset.y = 0.0f;
-		r.extent.width = glConfig.vidWidth;
-		r.extent.height = glConfig.vidHeight;
-	}
-	else
-	{
-		r.offset.x = backEnd.viewParms.viewportX;
-		r.offset.y = glConfig.vidHeight - (backEnd.viewParms.viewportY + backEnd.viewParms.viewportHeight);
-		r.extent.width = backEnd.viewParms.viewportWidth;
-		r.extent.height = backEnd.viewParms.viewportHeight;
-	}
-	return r;
-}
-static VkRect2D get_scissor_rect_o(void)
-{
-	VkRect2D r = get_viewport_rect_o();
-	if (r.offset.x < 0)
-		r.offset.x = 0;
-	if (r.offset.y < 0)
-		r.offset.y = 0;
-	if (r.offset.x + r.extent.width > glConfig.vidWidth)
-		r.extent.width = glConfig.vidWidth - r.offset.x;
-	if (r.offset.y + r.extent.height > glConfig.vidHeight)
-		r.extent.height = glConfig.vidHeight - r.offset.y;
-	return r;
-}
-*/
 
 
 // Vulkan memory is broken up into two categories, host memory and device memory.
@@ -349,7 +321,7 @@ void updateCurDescriptor( VkDescriptorSet curDesSet, uint32_t tmu)
 
 
 
-void vk_shade_geometry(VkPipeline pipeline, VkBool32 multitexture, enum Vk_Depth_Range depth_range, VkBool32 indexed)
+void vk_shade_geometry(VkPipeline pipeline, VkBool32 multitexture, enum Vk_Depth_Range depRg, VkBool32 indexed)
 {
 	// configure vertex data stream
 	VkBuffer bufs[3] = { shadingDat.vertex_buffer, shadingDat.vertex_buffer, shadingDat.vertex_buffer };
@@ -395,11 +367,15 @@ void vk_shade_geometry(VkPipeline pipeline, VkBool32 multitexture, enum Vk_Depth
 	qvkCmdBindPipeline(vk.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 	// configure pipeline's dynamic state
-	VkRect2D scissor_rect = get_scissor_rect();
-	qvkCmdSetScissor(vk.command_buffer, 0, 1, &scissor_rect);
 
-	VkViewport viewport = get_viewport(depth_range);
-	qvkCmdSetViewport(vk.command_buffer, 0, 1, &viewport);
+    VkViewport viewport;
+    VkRect2D scissor; // = get_scissor_rect();
+
+    vk_setViewportScissor(backEnd.projection2D, depRg, &viewport, &scissor);
+
+    qvkCmdSetScissor(vk.command_buffer, 0, 1, &scissor);
+    qvkCmdSetViewport(vk.command_buffer, 0, 1, &viewport);
+
 
 	if (tess.shader->polygonOffset) {
 		qvkCmdSetDepthBias(vk.command_buffer, r_offsetUnits->value, 0.0f, r_offsetFactor->value);
@@ -470,14 +446,29 @@ void updateMVP(VkBool32 isPortal, VkBool32 is2D, const float mvMat4x4[16])
 		float mvp[16] QALIGN(16); // mvp transform + eye transform + clipping plane in eye space
         
         if (is2D)
-        {
-            float mvp0 = 2.0f / glConfig.vidWidth;
-            float mvp5 = 2.0f / glConfig.vidHeight;
+        {            
+            float width, height;
+            R_GetWinResolutionF(&width, &height);
 
-            mvp[0]  =  mvp0; mvp[1]  =  0.0f; mvp[2]  = 0.0f; mvp[3]  = 0.0f;
-            mvp[4]  =  0.0f; mvp[5]  =  mvp5; mvp[6]  = 0.0f; mvp[7]  = 0.0f;
-            mvp[8]  =  0.0f; mvp[9]  =  0.0f; mvp[10] = 1.0f; mvp[11] = 0.0f;
-            mvp[12] = -1.0f; mvp[13] =  -1.0f; mvp[14] = 0.0f; mvp[15] = 1.0f;
+            mvp[0] = 2.0f / width; 
+            mvp[1] = 0.0f; 
+            mvp[2] = 0.0f;
+            mvp[3] = 0.0f;
+
+            mvp[4] = 0.0f; 
+            mvp[5] = 2.0f / height; 
+            mvp[6] = 0.0f;
+            mvp[7] = 0.0f;
+
+            mvp[8] = 0.0f; 
+            mvp[9] = 0.0f; 
+            mvp[10] = 1.0f; 
+            mvp[11] = 0.0f;
+            
+            mvp[12] = -1.0f; 
+            mvp[13] = -1.0f; 
+            mvp[14] = 0.0f;
+            mvp[15] = 1.0f;
         }
         else
         {
