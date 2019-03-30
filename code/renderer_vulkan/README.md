@@ -103,6 +103,46 @@ but not works on some machine. it is buggy and embarrasing when program abnormal
 * pipelineList: list the pipeline we have created;
 * gpuMem: image memmory allocated on GPU;
 * printOR: print the value of backend.or;
+* displayResoList: list of the display resolution you monitor supported
+For example:
+```
+$ \displayResoList 
+
+Mode  0: 320x240
+Mode  1: 400x300
+Mode  2: 512x384
+Mode  3: 640x480 (480p)
+Mode  4: 800x600
+Mode  5: 960x720
+Mode  6: 1024x768
+Mode  7: 1152x864
+Mode  8: 1280x1024
+Mode  9: 1600x1200
+Mode 10: 2048x1536
+Mode 11: 856x480
+Mode 12: 1280x720 (720p)
+Mode 13: 1280x768
+Mode 14: 1280x800
+Mode 15: 1280x960
+Mode 16: 1360x768
+Mode 17: 1366x768
+Mode 18: 1360x1024
+Mode 19: 1400x1050
+Mode 20: 1400x900
+Mode 21: 1600x900
+Mode 22: 1680x1050
+Mode 23: 1920x1080 (1080p)
+Mode 24: 1920x1200
+Mode 25: 1920x1440
+Mode 26: 2560x1080
+Mode 27: 2560x1600
+Mode 28: 3840x2160 (4K)
+
+$ \r_mode 12
+$ \vid_restart
+```
+
+
 
 ### TODO:
 * get cpu, gpu, memory usage

@@ -168,6 +168,7 @@ VkRect2D get_scissor_rect(void)
         r.extent.width = backEnd.viewParms.viewportWidth;
 		r.extent.height = backEnd.viewParms.viewportHeight;
 
+        // for draw model in setu manus       
         if (r.offset.x < 0)
 		    r.offset.x = 0;
         if (r.offset.y < 0)
@@ -177,7 +178,8 @@ VkRect2D get_scissor_rect(void)
 	    if (r.offset.y + r.extent.height > height)
 		    r.extent.height = height - r.offset.y;
 
-        // ri.Printf(PRINT_ALL, "(%d, %d, %d, %d)\n", r.offset.x, r.offset.y, r.extent.width, r.extent.height);
+        // ri.Printf(PRINT_ALL, "(%d, %d, %d, %d)\n",
+        // r.offset.x, r.offset.y, r.extent.width, r.extent.height);
     }
 
 	return r;
@@ -555,6 +557,7 @@ void vk_clearDepthStencilAttachments(void)
     if(shadingDat.s_depth_attachment_dirty)
     {
         VkClearAttachment attachments;
+        memset(&attachments, 0, sizeof(VkClearAttachment));
 
         attachments.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
         attachments.clearValue.depthStencil.depth = 1.0f;
@@ -563,7 +566,6 @@ void vk_clearDepthStencilAttachments(void)
             attachments.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
             attachments.clearValue.depthStencil.stencil = 0;
         }
-
 
         VkClearRect clear_rect;
         clear_rect.rect = get_scissor_rect();
@@ -583,15 +585,27 @@ void vk_clearColorAttachments(const float* color)
 
     // ri.Printf(PRINT_ALL, "vk_clearColorAttachments\n");
 
-    VkClearAttachment attachments;
-	uint32_t attachment_count = 1;
+    VkClearAttachment attachments[1];
+    memset(attachments, 0, sizeof(VkClearAttachment));
+    
+    // aspectMask is a mask selecting the color, depth and/or stencil aspects
+    // of the attachment to be cleared. aspectMask can include 
+    // VK_IMAGE_ASPECT_COLOR_BIT for color attachments,
+    // VK_IMAGE_ASPECT_DEPTH_BIT for depth/stencil attachments with a depth
+    // component, and VK_IMAGE_ASPECT_STENCIL_BIT for depth/stencil attachments
+    // with a stencil component. If the subpass¡¯s depth/stencil attachment
+    // is VK_ATTACHMENT_UNUSED, then the clear has no effect.
 
-    attachments.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    attachments.colorAttachment = 0;
-    attachments.clearValue.color.float32[0] = color[0];
-    attachments.clearValue.color.float32[1] = color[1];
-    attachments.clearValue.color.float32[2] = color[2];
-    attachments.clearValue.color.float32[3] = color[3];
+    attachments[0].aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    // colorAttachment is only meaningful if VK_IMAGE_ASPECT_COLOR_BIT
+    // is set in aspectMask, in which case it is an index to 
+    // the pColorAttachments array in the VkSubpassDescription structure
+    // of the current subpass which selects the color attachment to clear.
+    attachments[0].colorAttachment = 0;
+    attachments[0].clearValue.color.float32[0] = color[0];
+    attachments[0].clearValue.color.float32[1] = color[1];
+    attachments[0].clearValue.color.float32[2] = color[2];
+    attachments[0].clearValue.color.float32[3] = color[3];
 
 /* 
 	VkClearRect clear_rect[2];
@@ -614,13 +628,12 @@ void vk_clearColorAttachments(const float* color)
     rect_count = 2;
 */
 
-    VkClearRect clear_rect;
-	clear_rect.rect = get_scissor_rect();
-	clear_rect.baseArrayLayer = 0;
-	clear_rect.layerCount = 1;
-    uint32_t rect_count = 1;
+    VkClearRect clear_rect[1];
+	clear_rect[0].rect = get_scissor_rect();
+	clear_rect[0].baseArrayLayer = 0;
+	clear_rect[0].layerCount = 1;
 
-	qvkCmdClearAttachments(vk.command_buffer, attachment_count, &attachments, rect_count, &clear_rect);
+	qvkCmdClearAttachments(vk.command_buffer, 1, attachments, 1, clear_rect);
 
 }
 

@@ -525,8 +525,8 @@ void vk_begin_frame(void)
 	// Begin render pass.
 	VkClearValue clear_values[2];
 	/// ignore clear_values[0] which corresponds to color attachment
-	clear_values[0].depthStencil.depth = 1.0;
-	clear_values[0].depthStencil.stencil = 0;
+	clear_values[1].depthStencil.depth = 1.0;
+	clear_values[1].depthStencil.stencil = 0;
 
 	VkRenderPassBeginInfo renderPass_beginInfo;
 	renderPass_beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
