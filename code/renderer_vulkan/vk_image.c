@@ -1008,22 +1008,27 @@ void R_InitImages( void )
 
 static void R_DestroySingleImage( image_t* pImg )
 {
-
-   	ri.Printf(PRINT_ALL, " Destroy Image: %s \n", pImg->imgName); 
-    if(pImg->descriptor_set != VK_NULL_HANDLE)
-    {   
-        //To free allocated descriptor sets
-        qvkFreeDescriptorSets(vk.device, vk.descriptor_pool, 1, &pImg->descriptor_set);
-        pImg->descriptor_set = VK_NULL_HANDLE;
-    }
-
-    if (pImg->handle != VK_NULL_HANDLE)
+    if(pImg != NULL)
     {
-        qvkDestroyImageView(vk.device, pImg->view, NULL);
-        qvkDestroyImage(vk.device, pImg->handle, NULL);
-        pImg->handle = VK_NULL_HANDLE;
-    }
+        ri.Printf(PRINT_ALL, " Destroy Image: %s \n", pImg->imgName); 
+        if(pImg->descriptor_set != VK_NULL_HANDLE)
+        {   
+            //To free allocated descriptor sets
+            qvkFreeDescriptorSets(vk.device, vk.descriptor_pool, 1, &pImg->descriptor_set);
+            pImg->descriptor_set = VK_NULL_HANDLE;
+        }
 
+        if (pImg->handle != VK_NULL_HANDLE)
+        {
+            qvkDestroyImageView(vk.device, pImg->view, NULL);
+            qvkDestroyImage(vk.device, pImg->handle, NULL);
+            pImg->handle = VK_NULL_HANDLE;
+        }
+    }
+    else
+    {
+        ri.Printf(PRINT_WARNING, " Destroy NULL Image! \n"); 
+    }
 }
 
 

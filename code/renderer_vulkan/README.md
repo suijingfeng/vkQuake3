@@ -87,3 +87,5 @@ initialization functions, resource management functions and rendering setup func
 * gpuMem: image memmory allocated on GPU;
 * printOR: print the value of backend.or;
 
+### TODO:
+* get cpu, gpu, memory usage
