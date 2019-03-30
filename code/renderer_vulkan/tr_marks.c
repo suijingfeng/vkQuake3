@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tr_local.h"
 #include "tr_globals.h"
+#include "matrix_multiplication.h"
+
 
 #define MAX_VERTS_ON_POLY		64
 

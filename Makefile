@@ -1852,6 +1852,7 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/tr_backend.o \
   $(B)/renderer_vulkan/tr_Cull.o \
   $(B)/renderer_vulkan/glConfig.o \
+  $(B)/renderer_vulkan/R_Parser.o \
   $(B)/renderer_vulkan/R_PortalPlane.o \
   $(B)/renderer_vulkan/R_PrintMat.o
 #  $(B)/renderer_vulkan/R_LoadImage.o \

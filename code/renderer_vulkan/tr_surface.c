@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_cvar.h"
 #include "tr_backend.h"
 #include "ref_import.h"
+#include "matrix_multiplication.h"
 /*
 
   THIS ENTIRE FILE IS BACK END

@@ -7,9 +7,11 @@
 
 #include <xmmintrin.h>
 #include <stdio.h>
+#include "ref_import.h"
 
 #include "matrix_multiplication.h"
 
+#define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0F )
 
 static const float s_Identity3x3[3][3] = {
     { 1.0f, 0.0f, 0.0f },
@@ -255,7 +257,160 @@ void TransformModelToClip( const float src[3], const float* pMatModel, const flo
 
 
 
+void VectorCross( const float v1[3], const float v2[3], float cross[3] )
+{
+	cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
+	cross[1] = v1[2]*v2[0] - v1[0]*v2[2];
+	cross[2] = v1[0]*v2[1] - v1[1]*v2[0];
+}
 
+
+// fast vector normalize routine that does not check to make sure
+// that length != 0, nor does it return length, uses rsqrt approximation
+void FastNormalize1f(float v[3])
+{
+	// writing it this way allows gcc to recognize that rsqrt can be used
+    float invLen = 1.0f / sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+
+ 	v[0] = v[0] * invLen;
+	v[1] = v[1] * invLen;
+	v[2] = v[2] * invLen;
+}
+
+void FastNormalize2f( const float* v, float* out)
+{
+	// writing it this way allows gcc to recognize that rsqrt can be used
+    float invLen = 1.0f / sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+
+ 	out[0] = v[0] * invLen;
+	out[1] = v[1] * invLen;
+	out[2] = v[2] * invLen;
+}
+
+// use Rodrigue's rotation formula
+// dir are not assumed to be unit vector
+void PointRotateAroundVector(float* res, const float* vec, const float* p, const float degrees)
+{
+    float rad = DEG2RAD( degrees );
+    float cos_th = cos( rad );
+    float sin_th = sin( rad );
+    float k[3];
+
+	// writing it this way allows gcc to recognize that rsqrt can be used
+    float invLen = 1.0f / sqrtf(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+ 	k[0] = vec[0] * invLen;
+	k[1] = vec[1] * invLen;
+	k[2] = vec[2] * invLen;
+
+    float d = (1 - cos_th) * (p[0] * k[0] + p[1] * k[1] + p[2] * k[2]);
+
+	res[0] = sin_th * (k[1]*p[2] - k[2]*p[1]);
+	res[1] = sin_th * (k[2]*p[0] - k[0]*p[2]);
+	res[2] = sin_th * (k[0]*p[1] - k[1]*p[0]);
+
+    res[0] += cos_th * p[0] + d * k[0]; 
+    res[1] += cos_th * p[1] + d * k[1]; 
+    res[2] += cos_th * p[2] + d * k[2]; 
+}
+
+// vector k are assumed to be unit
+void RotateAroundUnitVector(float* res, const float* k, const float* p, const float degrees)
+{
+    float rad = DEG2RAD( degrees );
+    float cos_th = cos( rad );
+    float sin_th = sin( rad );
+ 
+    float d = (1 - cos_th) * (p[0] * k[0] + p[1] * k[1] + p[2] * k[2]);
+
+	res[0] = sin_th * (k[1]*p[2] - k[2]*p[1]);
+	res[1] = sin_th * (k[2]*p[0] - k[0]*p[2]);
+	res[2] = sin_th * (k[0]*p[1] - k[1]*p[0]);
+
+    res[0] += cos_th * p[0] + d * k[0]; 
+    res[1] += cos_th * p[1] + d * k[1]; 
+    res[2] += cos_th * p[2] + d * k[2]; 
+}
+
+
+// note: vector forward are NOT assumed to be nornalized,
+// unit: nornalized of forward,
+// dst: unit vector which perpendicular of forward(src) 
+void VectorPerp( const float src[3], float dst[3] )
+{
+    float unit[3];
+    
+    float sqlen = src[0]*src[0] + src[1]*src[1] + src[2]*src[2];
+    if(0 == sqlen)
+    {
+        ri.Printf( PRINT_WARNING, "MakePerpVectors: zero vertor input!\n");
+        return;
+    }
+
+  	dst[1] = -src[0];
+	dst[2] = src[1];
+	dst[0] = src[2];
+	// this rotate and negate try to make a vector not colinear with the original
+    // actually can not guarantee, for example
+    // forward = (1/sqrt(3), 1/sqrt(3), -1/sqrt(3)),
+    // then right = (-1/sqrt(3), -1/sqrt(3), 1/sqrt(3))
+
+
+    float invLen = 1.0f / sqrtf(sqlen);
+    unit[0] = src[0] * invLen;
+    unit[1] = src[1] * invLen;
+    unit[2] = src[2] * invLen;
+
+    
+    float d = DotProduct(unit, dst);
+	dst[0] -= d*unit[0];
+	dst[1] -= d*unit[1];
+	dst[2] -= d*unit[2];
+
+    // normalize the result
+    invLen = 1.0f / sqrtf(dst[0]*dst[0] + dst[1]*dst[1] + dst[2]*dst[2]);
+
+    dst[0] *= invLen;
+    dst[1] *= invLen;
+    dst[2] *= invLen;
+}
+
+// Given a normalized forward vector, create two other perpendicular vectors
+// note: vector forward are NOT assumed to be nornalized,
+// after this funtion is called , forward are nornalized.
+// right, up: perpendicular of forward 
+float MakeTwoPerpVectors(const float forward[3], float right[3], float up[3])
+{
+
+    float sqLen = forward[0]*forward[0]+forward[1]*forward[1]+forward[2]*forward[2];
+    if(sqLen)
+    {
+        float nf[3] = {0, 0, 1};
+        float invLen = 1.0f / sqrtf(sqLen);
+        nf[0] = forward[0] * invLen;
+        nf[1] = forward[1] * invLen;
+        nf[2] = forward[2] * invLen;
+
+        float adjlen = DotProduct(nf, right);
+
+        // this rotate and negate guarantees a vector
+        // not colinear with the original
+        right[0] = forward[2] - adjlen * nf[0];
+        right[1] = -forward[0] - adjlen * nf[1];
+        right[2] = forward[1] - adjlen * nf[2];
+
+
+        invLen = 1.0f/sqrtf(right[0]*right[0]+right[1]*right[1]+right[2]*right[2]);
+        right[0] *= invLen;
+        right[1] *= invLen;
+        right[2] *= invLen;
+
+        // get the up vector with the right hand rules 
+        VectorCross(right, nf, up);
+
+        return (sqLen * invLen);
+    }
+    return 0;
+}
 
 
 // ===============================================
