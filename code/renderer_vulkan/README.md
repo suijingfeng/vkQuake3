@@ -81,6 +81,23 @@ initialization functions, resource management functions and rendering setup func
 
 * vk\_read\_pixels : takes a screenshot.
 
+
+### about turn the intensity/gamma of the drawing wondow
+
+* use r\_gamma in the pulldown window, which nonlinearly correct the image before the uploading to GPU.
+`\r_gamma 1.5` then `vid_restart`
+
+* you can also use r\_intensity which turn the intensity linearly.
+```
+# 1.5 ~ 2.0 give acceptable result
+$ \r_intensity 1.8
+$ \vid_restart
+```
+
+* but why, because original gamma setting program turn the light by setting entire destop window.
+which works on newer computer on the market 
+but not works on some machine. it is buggy and embarrasing when program abnormal quit or stall.
+
 ### new cmd
 
 * pipelineList: list the pipeline we have created;

@@ -67,7 +67,7 @@ To build 64-bit binaries, follow these instructions:
 ```sh
 pacman -S mingw-w64-x86_64-gcc make git
 ```
-4. Grab latest openarena source code from github and compile. Note that in msys2, your drives are linked as folders in the root directory: C:\ is /c/, D:\ is /d/, and so on.
+4. Grab latest source code from github and compile. Note that in msys2, your drives are linked as folders in the root directory: C:\ is /c/, D:\ is /d/, and so on.
 
 ```sh
 git clone https://github.com/suijingfeng/vkQuake3.git
@@ -77,6 +77,10 @@ make -j4
 5. Find the executables and dlls in build/release-mingw64-x86\_64 . 
 
 you can also download the binary compiled on win10 from https://github.com/suijingfeng/vkQuake3/releases.
+
+You can also try the openarena game https://github.com/suijingfeng/vkOpenArena 
+which is essier to find human players play with, its railgun is more aggresive. :)
+
 
 Q: How to enable vulkan support from the pulldown console ?
 
