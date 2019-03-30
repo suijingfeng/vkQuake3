@@ -43,10 +43,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define LIGHTMAP_WHITEIMAGE -2
 #define LIGHTMAP_NONE       -1
 
-// void stripExtension(const char *in, char *out, int destsize);
-
-
-
 //////////////////////////////////////
 
 

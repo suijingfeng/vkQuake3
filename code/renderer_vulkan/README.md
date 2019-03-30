@@ -80,3 +80,10 @@ initialization functions, resource management functions and rendering setup func
 * vk\_begin\_frame/vk\_end\_frame : frame setup.
 
 * vk\_read\_pixels : takes a screenshot.
+
+### new cmd
+
+* pipelineList: list the pipeline we have created;
+* gpuMem: image memmory allocated on GPU;
+* printOR: print the value of backend.or;
+
