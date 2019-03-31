@@ -2883,8 +2883,8 @@ $(B)/renderer_vulkan/%.o: $(SDLDIR)/%.c
 $(B)/renderer_vulkan/%.o: $(JPDIR)/%.c
 	$(DO_REF_CC)
 
-$(B)/renderer_vulkan/%.o: $(RCOMMONDIR)/%.c
-	$(DO_REF_CC)
+#$(B)/renderer_vulkan/%.o: $(RCOMMONDIR)/%.c
+#	$(DO_REF_CC)
 
 $(B)/renderer_vulkan/%.o: $(RVULKANDIR)/%.c
 	$(DO_REF_CC)
