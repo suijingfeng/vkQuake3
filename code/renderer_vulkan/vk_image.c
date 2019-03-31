@@ -9,6 +9,8 @@
 #include "tr_fog.h"
 
 
+
+
 #define IMAGE_CHUNK_SIZE        (8 * 1024 * 1024)
 
 
@@ -733,7 +735,13 @@ image_t* R_FindImageFile(const char *name, VkBool32 mipmap, VkBool32 allowPicmip
     //
     uint32_t width = 0, height = 0;
     unsigned char* pic = NULL;
-    R_LoadImage2( name, &pic, &width, &height );
+    
+    if(r_loadImgAPI->integer)
+        R_LoadImage2( name, &pic, &width, &height );
+    else
+        R_LoadImage( name, &pic, &width, &height );
+    
+
     if (pic == NULL)
     {
         ri.Printf( PRINT_WARNING, "R_FindImageFile: Fail loading %s the from disk\n", name);

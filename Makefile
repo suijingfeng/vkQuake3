@@ -1840,9 +1840,7 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/single_texture_frag.o \
   $(B)/renderer_vulkan/single_texture_vert.o \
   \
-  $(B)/renderer_vulkan/R_LoadImage2.o \
   $(B)/renderer_vulkan/R_StretchRaw.o \
-  $(B)/renderer_vulkan/R_ImageJPG.o \
   $(B)/renderer_vulkan/R_DebugGraphics.o \
   $(B)/renderer_vulkan/RB_ShowImages.o \
   $(B)/renderer_vulkan/RB_DrawNormals.o \
@@ -1853,13 +1851,15 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/glConfig.o \
   $(B)/renderer_vulkan/R_Parser.o \
   $(B)/renderer_vulkan/R_PortalPlane.o \
-  $(B)/renderer_vulkan/R_PrintMat.o
-#  $(B)/renderer_vulkan/R_LoadImage.o \
-  $(B)/renderer_vulkan/tr_image_png.o \
-  $(B)/renderer_vulkan/tr_image_jpg.o \
-  $(B)/renderer_vulkan/tr_image_bmp.o \
-  $(B)/renderer_vulkan/tr_image_tga.o \
-  $(B)/renderer_vulkan/tr_image_pcx.o \
+  $(B)/renderer_vulkan/R_PrintMat.o \
+  \
+  $(B)/renderer_vulkan/R_LoadImage2.o \
+  $(B)/renderer_vulkan/R_LoadImage.o \
+  $(B)/renderer_vulkan/R_ImageJPG.o \
+  $(B)/renderer_vulkan/R_ImageTGA.o \
+  $(B)/renderer_vulkan/R_ImagePNG.o \
+  $(B)/renderer_vulkan/R_ImageBMP.o \
+  $(B)/renderer_vulkan/R_ImagePCX.o
 
 ifeq ($(BUILD_WITH_XCB), 1)
   Q3VKOBJ += $(B)/renderer_vulkan/vk_create_window_XCB.o
