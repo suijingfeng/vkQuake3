@@ -5,18 +5,19 @@
 
 /*
 ================
+DrawNormals
 Draws vertex normals for debugging
 ================
 */
-void RB_DrawNormals (shaderCommands_t *input)
+void RB_DrawNormals (shaderCommands_t* pTess, int numVertexes )
 {
 	// VULKAN
-
+    // int numVertexes = tess.numVertexes;
     vec4_t xyz[SHADER_MAX_VERTEXES];
-    memcpy(xyz, tess.xyz, tess.numVertexes * sizeof(vec4_t));
-    memset(tess.svars.colors, tr.identityLightByte, SHADER_MAX_VERTEXES * sizeof(color4ub_t));
+    memcpy(xyz, pTess->xyz, numVertexes * sizeof(vec4_t));
+   
+    memset(pTess->svars.colors, tr.identityLightByte, SHADER_MAX_VERTEXES * sizeof(color4ub_t));
 
-    int numVertexes = tess.numVertexes;
     int i = 0;
     while (i < numVertexes)
     {
@@ -27,16 +28,20 @@ void RB_DrawNormals (shaderCommands_t *input)
         int k;
         for (k = 0; k < count; k++)
         {
-            VectorCopy(xyz[i + k], tess.xyz[2*k]);
-            VectorMA(xyz[i + k], 2, input->normal[i + k], tess.xyz[2*k + 1]);
+            VectorCopy(xyz[i + k], pTess->xyz[2*k]);
+            VectorMA(xyz[i + k], 2, pTess->normal[i + k], pTess->xyz[2*k + 1]);
         }
-        tess.numVertexes = 2 * count;
-        tess.numIndexes = 0;
+        pTess->numVertexes = 2 * count;
+        pTess->numIndexes = 0;
 
-        uploadShadingData();
+        //uploadShadingData();
+        
+        vk_UploadXYZI(pTess->xyz, pTess->numVertexes, NULL, 0);
+        
         updateMVP(backEnd.viewParms.isPortal, backEnd.projection2D, getptr_modelview_matrix());
-        vk_shade_geometry(g_stdPipelines.normals_debug_pipeline, VK_FALSE, DEPTH_RANGE_ZERO, VK_TRUE);
+        vk_shade_geometry(g_stdPipelines.normals_debug_pipeline, VK_FALSE, DEPTH_RANGE_ZERO, VK_FALSE);
 
         i += count;
     }
 }
+

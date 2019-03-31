@@ -516,6 +516,69 @@ void uploadShadingData(void)
 	}
 }
 
+// =========================================================
+// Vertex fetching is controlled via configurable state, 
+// as a logically distinct graphics pipeline stage.
+//  
+//  Vertex Attributes
+//
+//  Vertex shaders can define input variables, which receive vertex attribute data
+//  transferred from one or more VkBuffer(s) by drawing commands. Vertex shader 
+//  input variables are bound to buffers via an indirect binding where the vertex 
+//  shader associates a vertex input attribute number with each variable, vertex 
+//  input attributes are associated to vertex input bindings on a per-pipeline basis, 
+//  and vertex input bindings are associated with specific buffers on a per-draw basis
+//  via the vkCmdBindVertexBuffers command. 
+//
+//  Vertex input attribute and vertex input binding descriptions also
+//  contain format information controlling how data is extracted from
+//  buffer memory and converted to the format expected by the vertex shader.
+//
+//  There are VkPhysicalDeviceLimits::maxVertexInputAttributes number of vertex
+//  input attributes and VkPhysicalDeviceLimits::maxVertexInputBindings number of
+//  vertex input bindings (each referred to by zero-based indices), where there 
+//  are at least as many vertex input attributes as there are vertex input bindings.
+//  Applications can store multiple vertex input attributes interleaved in a single 
+//  buffer, and use a single vertex input binding to access those attributes.
+//
+//  In GLSL, vertex shaders associate input variables with a vertex input attribute
+//  number using the location layout qualifier. The component layout qualifier
+//  associates components of a vertex shader input variable with components of
+//  a vertex input attribute.
+
+void vk_UploadXYZI(float (*pXYZ)[4], uint32_t nVertex, uint32_t* pIdx, uint32_t nIndex)
+{
+	// xyz stream
+	{
+        const VkDeviceSize xyz_offset = XYZ_OFFSET + shadingDat.xyz_elements * sizeof(vec4_t);
+		
+        unsigned char* vDst = shadingDat.vertex_buffer_ptr + xyz_offset;
+
+        // 4 float in the array, with each 4 bytes.
+		memcpy(vDst, pXYZ, nVertex * 16);
+
+		qvkCmdBindVertexBuffers(vk.command_buffer, 0, 1, &shadingDat.vertex_buffer, &xyz_offset);
+		
+        shadingDat.xyz_elements += tess.numVertexes;
+
+        assert (shadingDat.xyz_elements * sizeof(vec4_t) < XYZ_SIZE);
+	}
+
+	// indexes stream
+    if(nIndex != 0)
+	{
+		const uint32_t indexes_size = nIndex * sizeof(uint32_t);        
+
+		unsigned char* iDst = shadingDat.index_buffer_ptr + shadingDat.index_buffer_offset;
+		memcpy(iDst, pIdx, indexes_size);
+
+		qvkCmdBindIndexBuffer(vk.command_buffer, shadingDat.index_buffer, shadingDat.index_buffer_offset, VK_INDEX_TYPE_UINT32);
+		
+        shadingDat.index_buffer_offset += indexes_size;
+
+        assert (shadingDat.index_buffer_offset < INDEX_BUFFER_SIZE);
+	}
+}
 
 
 void vk_resetGeometryBuffer(void)

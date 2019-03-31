@@ -1,7 +1,7 @@
 #ifndef R_IMAGE_PROCESS_H_
 #define R_IMAHE_PROCESS_H_
 
-void GetScaledDimension(const unsigned int width, const unsigned int height, unsigned int * const outW, unsigned int * const outH, const VkBool32 isPicMip);
+void GetScaledDimension(const unsigned int width, const unsigned int height, unsigned int * const outW, unsigned int * const outH, int isPicMip);
 
 void R_SetColorMappings( void );
 void R_LightScaleTexture (unsigned char* dst, unsigned char* in, unsigned int nBytes);

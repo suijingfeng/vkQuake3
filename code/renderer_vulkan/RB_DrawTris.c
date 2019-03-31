@@ -14,7 +14,7 @@ void RB_DrawTris (shaderCommands_t *input)
 
 	// VULKAN
 
-    memset(tess.svars.colors, tr.identityLightByte, tess.numVertexes * 4 );
+    memset(tess.svars.colors, 255, tess.numVertexes * 4 );
     VkPipeline pipeline = backEnd.viewParms.isMirror ? g_stdPipelines.tris_mirror_debug_pipeline : g_stdPipelines.tris_debug_pipeline;
     vk_shade_geometry(pipeline, VK_FALSE, DEPTH_RANGE_ZERO, VK_FALSE);
 }

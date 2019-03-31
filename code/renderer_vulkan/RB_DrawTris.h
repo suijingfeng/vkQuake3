@@ -1,8 +1,7 @@
 #ifndef RB_DRAWTRIS_H_
 #define RB_DRAWTRIS_H_
+struct shaderCommands_s;
 
-#include "tr_local.h"
-void RB_DrawTris (shaderCommands_t *input);
-
+void RB_DrawTris (struct shaderCommands_s *input);
 
 #endif

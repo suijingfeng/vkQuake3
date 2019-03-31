@@ -986,6 +986,11 @@ void R_InitImages( void )
     
     vk_createStagingBuffer(IMAGE_CHUNK_SIZE);
 
+	// setup the overbright lighting
+
+	tr.identityLight = 1.0f;
+	tr.identityLightByte = 255 * tr.identityLight;
+
     // build brightness translation tables
     R_SetColorMappings();
 

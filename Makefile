@@ -1784,7 +1784,6 @@ endif
 ######################  VULKAN  ######################
 
 Q3VKOBJ = \
-  $(B)/renderer_vulkan/R_DEBUG.o \
   $(B)/renderer_vulkan/matrix_multiplication.o \
   $(B)/renderer_vulkan/tr_globals.o \
   $(B)/renderer_vulkan/tr_cvar.o \
@@ -1802,7 +1801,6 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/tr_main.o \
   $(B)/renderer_vulkan/tr_marks.o \
   $(B)/renderer_vulkan/tr_mesh.o \
-  $(B)/renderer_vulkan/R_AddAnimSurfaces.o \
   $(B)/renderer_vulkan/tr_model.o \
   $(B)/renderer_vulkan/tr_model_iqm.o \
   $(B)/renderer_vulkan/RE_RegisterModel.o \
@@ -1818,7 +1816,6 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/tr_shadows.o \
   $(B)/renderer_vulkan/tr_sky.o \
   $(B)/renderer_vulkan/tr_surface.o \
-  $(B)/renderer_vulkan/RB_SurfaceAnim.o \
   $(B)/renderer_vulkan/tr_flares.o \
   $(B)/renderer_vulkan/tr_fog.o \
   $(B)/renderer_vulkan/tr_world.o \
@@ -1846,9 +1843,11 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/R_LoadImage2.o \
   $(B)/renderer_vulkan/R_StretchRaw.o \
   $(B)/renderer_vulkan/R_ImageJPG.o \
+  $(B)/renderer_vulkan/R_DebugGraphics.o \
   $(B)/renderer_vulkan/RB_ShowImages.o \
   $(B)/renderer_vulkan/RB_DrawNormals.o \
   $(B)/renderer_vulkan/RB_DrawTris.o \
+  $(B)/renderer_vulkan/RB_SurfaceAnim.o \
   $(B)/renderer_vulkan/tr_backend.o \
   $(B)/renderer_vulkan/tr_Cull.o \
   $(B)/renderer_vulkan/glConfig.o \

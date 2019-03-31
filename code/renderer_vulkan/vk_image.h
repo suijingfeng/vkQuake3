@@ -1,6 +1,7 @@
 #ifndef VK_IMAGE_H_
 #define VK_IMAGE_H_
 
+#include "tr_image.h"
 
 // work around, will be removed in the future
 

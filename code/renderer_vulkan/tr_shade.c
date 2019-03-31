@@ -27,7 +27,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "ref_import.h"
 #include "tr_backend.h"
 #include "tr_cvar.h"
-#include "R_DEBUG.h"
 #include "RB_DrawTris.h"
 #include "RB_DrawNormals.h"
 
@@ -129,7 +128,7 @@ void RB_EndSurface( void )
 	}
 	if ( r_shownormals->integer )
     {
-		RB_DrawNormals (&tess);
+		RB_DrawNormals (&tess, tess.numVertexes);
 	}
 	// clear shader so we can tell we don't have any unclosed surfaces
 	tess.numIndexes = 0;

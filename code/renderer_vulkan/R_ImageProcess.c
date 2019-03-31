@@ -1,9 +1,8 @@
 #include "tr_cvar.h"
-#include "tr_globals.h"
-#include "vk_image.h"
 #include "ref_import.h"
-
+#include "vk_image.h"
 #include "R_ImageProcess.h"
+
 
 static unsigned char s_intensitytable[256];
 static unsigned char s_gammatable[256];
@@ -30,11 +29,6 @@ void R_SetColorMappings( void )
     {
         s_intensitytable[i] = s_gammatable[i] = i;
     }
-	// setup the overbright lighting
-
-	tr.identityLight = 1.0f;
-	tr.identityLightByte = 255 * tr.identityLight;
-
 
 	float g = r_gamma->value;
 
@@ -69,7 +63,6 @@ void R_SetColorMappings( void )
 	}
 
 }
-
 
 
 /*
@@ -111,14 +104,33 @@ void R_LightScaleTexture (unsigned char* dst, unsigned char* in, unsigned int nB
     }
 }
 
-
 //////////////////////////////////////////////////////////////////////
+//
+//      MIP maps
+//
 //////////////////////////////////////////////////////////////////////
 
+// In computer graphics, mipmaps (also MIP maps) or pyramids are pre-calculated,
+// optimized sequences of images, each of which is a progressively lower resolution
+// representation of the same image. The height and width of each image, or level, 
+// in the mipmap is a power of two smaller than the previous level. 
+// Mipmaps do not have to be square. They are intended to increase rendering speed
+// and reduce aliasing artifacts.
+// A high-resolution mipmap image is used for high-density samples, such as for 
+// objects close to the camera. Lower-resolution images are used as the object
+// appears farther away.
+// This is a more efficient way of downfiltering (minifying) a texture than
+// sampling all texels in the original texture that would contribute to a 
+// screen pixel; it is faster to take a constant number of samples from the
+// appropriately downfiltered textures. Mipmaps are widely used in 3D computer games. 
 
-static void imsave(char *fileName, unsigned char* buffer2, unsigned int width, unsigned int height);
+// The letters "MIP" in the name are an acronym of the Latin phrase multum in parvo, 
+// meaning "much in little".Since mipmaps, by definition, are pre-allocated, 
+// additional storage space is required to take advantage of them. 
+// Mipmap textures are used in 3D scenes to decrease the time required to 
+// render a scene. They also improve the scene's realism.
 
-
+// mip-mapping of 1/3 more memory per texture.
 
 /*
 ==================
@@ -241,7 +253,7 @@ void R_MipMap2(const unsigned char* in, uint32_t inWidth, uint32_t inHeight, uns
 	unsigned int outHeight = inHeight >> 1;
     unsigned int nBytes = outWidth * outHeight * 4;
 
-    unsigned char * temp = malloc( nBytes );
+    unsigned char * temp = (unsigned char *)malloc( nBytes );
 
 	const unsigned int inWidthMask = inWidth - 1;
 	const unsigned int inHeightMask = inHeight - 1;
@@ -295,7 +307,6 @@ void R_MipMap2(const unsigned char* in, uint32_t inWidth, uint32_t inHeight, uns
 	free( temp );
 }
 
-
 /*
 ================
 
@@ -307,27 +318,6 @@ is greater than half the original size.
 If a larger shrinking is needed, use the mipmap function before or after.
 ================
 */
-static void DEBUG_resample(const char *name, unsigned char* data, unsigned char* pBuffer,
-       unsigned int width, unsigned int height, unsigned int scaled_width, unsigned int scaled_height)
-{
-    const char *slash = strrchr(name, '/');
-
-    char tmpName[128] = {0};
-    char tmpName2[128] = "resampled_";
-
-    strcpy(tmpName, slash+1);
-    strcat(tmpName2, tmpName);
-
-    imsave(tmpName , data, width, height);            
-    imsave(tmpName2, pBuffer, scaled_width, scaled_height);
-
-    ri.Printf( PRINT_ALL, "tmpName: %s\n", tmpName);
-    ri.Printf( PRINT_ALL, "tmpName2: %s\n",  tmpName2);
-
-    ri.Printf( PRINT_ALL, "DEBUG_resample, inwidth: %d, inheight: %d, outwidth: %d, outheight: %d\n",
-                width, height, scaled_width, scaled_height );
-}
-
 
 void ResampleTexture(unsigned char * pOut, const unsigned int inwidth, const unsigned int inheight,
                                const unsigned char *pIn, const unsigned int outwidth, const unsigned int outheight)
@@ -336,7 +326,6 @@ void ResampleTexture(unsigned char * pOut, const unsigned int inwidth, const uns
 	unsigned int p1[2048], p2[2048];
 
     // printf("inwidth: %d \t outwidth: %d \n", inwidth, outwidth);
-
 
     unsigned int fracstep = (inwidth << 16)/outwidth;
 
@@ -366,7 +355,6 @@ void ResampleTexture(unsigned char * pOut, const unsigned int inwidth, const uns
         //        4 * (unsigned int)((i+0.75)*inheight/outheight)
         //        );
 
-
         for (j=0; j<outwidth; j++)
         {
 			const unsigned char* pix1 = inrow1 + p1[j];
@@ -387,7 +375,7 @@ void ResampleTexture(unsigned char * pOut, const unsigned int inwidth, const uns
 }
 
 
-void GetScaledDimension(const unsigned int width, const unsigned int height, unsigned int * const outW, unsigned int * const outH, const VkBool32 isPicMip)
+void GetScaledDimension(const unsigned int width, const unsigned int height, unsigned int * const outW, unsigned int * const outH, int isPicMip)
 {
     const unsigned int max_texture_size = 2048;
     
@@ -418,146 +406,13 @@ void GetScaledDimension(const unsigned int width, const unsigned int height, uns
     *outH = scaled_height;
 }
 
-/*
-void doMipMaping(const unsigned char* const in_buffer, uint32_t nBs)
-{
-    // In computer graphics, mipmaps (also MIP maps) or pyramids are pre-calculated,
-    // optimized sequences of images, each of which is a progressively lower resolution
-    // representation of the same image. The height and width of each image, or level, 
-    // in the mipmap is a power of two smaller than the previous level. 
-    // Mipmaps do not have to be square. They are intended to increase rendering speed
-    // and reduce aliasing artifacts.
-    // A high-resolution mipmap image is used for high-density samples, such as for 
-    // objects close to the camera. Lower-resolution images are used as the object
-    // appears farther away.
-    // This is a more efficient way of downfiltering (minifying) a texture than
-    // sampling all texels in the original texture that would contribute to a 
-    // screen pixel; it is faster to take a constant number of samples from the
-    // appropriately downfiltered textures. Mipmaps are widely used in 3D computer games. 
-
-    // The letters "MIP" in the name are an acronym of the Latin phrase multum in parvo, 
-    // meaning "much in little".Since mipmaps, by definition, are pre-allocated, 
-    // additional storage space is required to take advantage of them. 
-    // Mipmap textures are used in 3D scenes to decrease the time required to 
-    // render a scene. They also improve the scene's realism.
-
-    // mip-mapping of 1/3 more memory per texture.
-
-
-    uint32_t miplevel = 1;
-
-    //unsigned char* in_buffer = upload_data->buffer;
-    unsigned char* dst_ptr = in_buffer + nBs;
-
-    // Use the normal mip-mapping to go down from [scaled_width, scaled_height] to [1,1] dimensions.
-    while (1)
-    {
-
-        if ( r_simpleMipMaps->integer )
-        {
-            R_MipMap(in_buffer, scaled_width, scaled_height, dst_ptr);
-        }
-        else
-        {
-            R_MipMap2(in_buffer, scaled_width, scaled_height, dst_ptr);
-        }
-
-        //ri.Printf( PRINT_WARNING, "%s, width: %d, height: %d, scaled_width: %d, scaled_height: %d\n",
-        //name, width, height, scaled_width, scaled_height );
-
-
-        scaled_width >>= 1;
-        if (scaled_width < 1)
-            scaled_width = 1;
-
-        scaled_height >>= 1;
-        if (scaled_height < 1)
-            scaled_height = 1;
-
-
-        uint32_t mip_level_size = scaled_width * scaled_height * 4;
-
-        if ( r_colorMipLevels->integer ) {
-            R_BlendOverTexture( in_buffer, scaled_width * scaled_height, mipBlendColors[miplevel] );
-        }
-
-        upload_data->buffer_size += mip_level_size;
-
-        ++miplevel;
-
-        if((scaled_width == 1) && (scaled_height == 1))
-            break;
-        in_buffer = dst_ptr;
-        dst_ptr += mip_level_size; 
-    }
-
-    upload_data->mip_levels = miplevel;
-
-}
-*/
-
-/*
-void generate_image_upload_data(
-        const char *name, 
-        struct Image_Upload_Data* upload_data, 
-        unsigned char* pDat,
-        const unsigned int width, const unsigned int height,
-        VkBool32 mipmap, VkBool32 picmip)
-{
-
-	// convert to exact power of 2 sizes
-	unsigned int scaled_width, scaled_height;
-    GetScaledDimension(width, height, &scaled_width, &scaled_height, picmip);
-
-    const unsigned int nBytes = 4 * scaled_width * scaled_height;
-
-    unsigned char* resampled_buffer = NULL;
-
-	if ( (scaled_width != width) || (scaled_height != height) )
-    {
-        resampled_buffer = (unsigned char*) malloc ( nBytes );
-
-        ResampleTexture (pDat, width, height, resampled_buffer, scaled_width, scaled_height);
-    	
-        if(0)
-            DEBUG_resample(name, pDat, resampled_buffer, width, height, scaled_width, scaled_height);
-        
-        // this is tricky
-        pDat = resampled_buffer;
-	}
-
-    // At this point width == scaled_width and height == scaled_height.
-    // there no need to go down from [width, height] to [scaled_width, scaled_height]
-    unsigned int nBs = 4 * scaled_width * scaled_height;
-    upload_data->buffer = (unsigned char*) malloc( 2 * nBs);
-    upload_data->base_level_width = scaled_width;
-    upload_data->base_level_height = scaled_height;
-    //upload_data->buffer_size = nBs;
-    //upload_data->mip_levels = 1;    
-    memcpy(upload_data->buffer, pDat, nBs);
-
-	if (mipmap)
-    {
-        R_LightScaleTexture(upload_data->buffer, upload_data->buffer, nBs);
-
-        doMipMaping(upload_data->buffer, nBs);
-    }
-
-
-
-    if (resampled_buffer != NULL)
-    {
-        free(resampled_buffer);
-        
-        resampled_buffer = NULL;
-    }
-
-}
-*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // DEBUG HELPER FUNCTIONAS ...
 ///////////////////////////////////////////////////////////////////////////////////////////////
+
+void imsave(char *fileName, unsigned char* buffer2, unsigned int width, unsigned int height);
+void fsWriteFile( const char *qpath, const void *buffer, int size );
 
 
 void fsWriteFile( const char *qpath, const void *buffer, int size )
@@ -610,8 +465,7 @@ void fsWriteFile( const char *qpath, const void *buffer, int size )
 }
 
 
-
-static void imsave(char *fileName, unsigned char* buffer2, unsigned int width, unsigned int height)
+void imsave(char *fileName, unsigned char* buffer2, unsigned int width, unsigned int height)
 {
 
     const unsigned int cnPixels = width * height;
@@ -655,4 +509,26 @@ static void imsave(char *fileName, unsigned char* buffer2, unsigned int width, u
 	free( buffer );
 
     ri.Printf( PRINT_ALL, "imsave: %s\n", fileName );
+}
+
+
+void DEBUG_resample(const char *name, unsigned char* data, unsigned char* pBuffer,
+       unsigned int width, unsigned int height, unsigned int scaled_width, unsigned int scaled_height)
+{
+    const char *slash = strrchr(name, '/');
+
+    char tmpName[128] = {0};
+    char tmpName2[128] = "resampled_";
+
+    strcpy(tmpName, slash+1);
+    strcat(tmpName2, tmpName);
+
+    imsave(tmpName , data, width, height);            
+    imsave(tmpName2, pBuffer, scaled_width, scaled_height);
+
+    ri.Printf( PRINT_ALL, "tmpName: %s\n", tmpName);
+    ri.Printf( PRINT_ALL, "tmpName2: %s\n",  tmpName2);
+
+    ri.Printf( PRINT_ALL, "DEBUG_resample, inwidth: %d, inheight: %d, outwidth: %d, outheight: %d\n",
+                width, height, scaled_width, scaled_height );
 }

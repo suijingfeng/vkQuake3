@@ -6,9 +6,10 @@
  */
 
 #include <xmmintrin.h>
-#include <stdio.h>
-#include "ref_import.h"
+#include <string.h>
+#include <math.h>
 
+#include "ref_import.h"
 #include "matrix_multiplication.h"
 
 #define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0F )
@@ -25,6 +26,43 @@ static const float s_Identity4x4[16] = {
     0.0f, 0.0f, 1.0f, 0.0f,
     0.0f, 0.0f, 0.0f, 1.0f
 };
+
+
+void Mat4Copy( const float in[64], float out[16] )
+{
+    memcpy(out, in, 64);
+}
+
+void Mat3x3Copy( float dst[3][3], const float src[3][3] )
+{
+    memcpy(dst, src, 36);
+}
+
+void VectorLerp( float a[3], float b[3], float lerp, float out[3])
+{
+	out[0] = a[0] + (b[0] - a[0]) * lerp;
+	out[1] = a[1] + (b[1] - a[1]) * lerp;
+	out[2] = a[2] + (b[2] - a[2]) * lerp;
+}
+
+void VectorNorm( float v[3] )
+{
+	float length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+
+    if(length != 0)
+    {
+        /* writing it this way allows gcc to recognize that rsqrt can be used */
+        length = 1.0f / sqrtf (length);
+        v[0] *= length;
+        v[1] *= length;
+        v[2] *= length;
+    }
+}
+
+float VectorLen( const float v[3] )
+{
+	return sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+}
 
 
 void Mat4Identity( float out[16] )
@@ -133,7 +171,7 @@ void Mat4Transform( const float in1[16], const float in2[4], float out[4] )
 
 
 
-// unlucky, not faseter than Mat4Transform
+// unfortunately, this fun seems not faseter than Mat4Transform
 void Mat4x1Transform_SSE( const float A[16], const float x[4], float out[4] )
 {
     //   16 mult, 12 plus
