@@ -488,34 +488,6 @@ void updateMVP(VkBool32 isPortal, VkBool32 is2D, const float mvMat4x4[16])
 }
 
 
-void uploadShadingData(void)
-{
-	// xyz stream
-	{
-        const VkDeviceSize xyz_offset = XYZ_OFFSET + shadingDat.xyz_elements * sizeof(vec4_t);
-		unsigned char* dst = shadingDat.vertex_buffer_ptr + xyz_offset;
-		memcpy(dst, tess.xyz, tess.numVertexes * sizeof(vec4_t));
-
-		qvkCmdBindVertexBuffers(vk.command_buffer, 0, 1, &shadingDat.vertex_buffer, &xyz_offset);
-		shadingDat.xyz_elements += tess.numVertexes;
-
-        assert (shadingDat.xyz_elements * sizeof(vec4_t) < XYZ_SIZE);
-	}
-
-	// indexes stream
-	{
-		const uint32_t indexes_size = tess.numIndexes * sizeof(uint32_t);        
-
-		unsigned char* dst = shadingDat.index_buffer_ptr + shadingDat.index_buffer_offset;
-		memcpy(dst, tess.indexes, indexes_size);
-
-		qvkCmdBindIndexBuffer(vk.command_buffer, shadingDat.index_buffer, shadingDat.index_buffer_offset, VK_INDEX_TYPE_UINT32);
-		shadingDat.index_buffer_offset += indexes_size;
-
-        assert (shadingDat.index_buffer_offset < INDEX_BUFFER_SIZE);
-	}
-}
-
 // =========================================================
 // Vertex fetching is controlled via configurable state, 
 // as a logically distinct graphics pipeline stage.
@@ -1169,12 +1141,11 @@ void RB_StageIteratorGeneric( void )
 	//
 	// VULKAN
    
-    uploadShadingData();
+    vk_UploadXYZI(tess.xyz, tess.numVertexes, tess.indexes, tess.numIndexes);
+
     updateMVP(backEnd.viewParms.isPortal, backEnd.projection2D, 
             getptr_modelview_matrix() );
     
-//    updateMVP(backEnd.viewParms.isPortal, backEnd.projection2D, 
-//            backEnd.or.modelMatrix);
 
     uint32_t stage = 0;
 

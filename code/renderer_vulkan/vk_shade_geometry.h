@@ -15,16 +15,9 @@ const float * getptr_modelview_matrix(void);
 
 void set_modelview_matrix(const float mv[16]);
 
-
-/*
-void PushModelView(void);
-void PopModelView(void);
-*/
-
 void vk_shade_geometry(VkPipeline pipeline, VkBool32 multitexture, enum Vk_Depth_Range depth_range, VkBool32 indexed);
 void vk_UploadXYZI(float (*pXYZ)[4], uint32_t nVertex, uint32_t* pIdx, uint32_t nIndex);
 
-void uploadShadingData(void);
 void updateMVP(VkBool32 isPortal, VkBool32 is2D, const float mvMat4x4[16]);
 void vk_resetGeometryBuffer(void);
 

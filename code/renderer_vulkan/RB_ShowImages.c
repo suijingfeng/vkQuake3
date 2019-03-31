@@ -73,9 +73,6 @@ void RB_ShowImages(const image_t ** const pImg, unsigned int N)
 		memset( tess.svars.colors, 255, tess.numVertexes * 4 );
         
         updateCurDescriptor( pImg[i]->descriptor_set, 0);
-
-        
-        // uploadShadingData();
         
         vk_UploadXYZI(tess.xyz, 4, tess.indexes, 6);
 

@@ -19,4 +19,6 @@ void Mat3x3Identity( float pMat[3][3] );
 void VectorPerp( const vec3_t src, vec3_t dst );
 float MakeTwoPerpVectors(const float forward[3], float right[3], float up[3]);
 
+void Vec3Transform(const float Mat[16], const float v[3], float out[3]);
+
 #endif

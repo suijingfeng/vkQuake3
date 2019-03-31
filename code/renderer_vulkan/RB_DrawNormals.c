@@ -34,8 +34,6 @@ void RB_DrawNormals (shaderCommands_t* pTess, int numVertexes )
         pTess->numVertexes = 2 * count;
         pTess->numIndexes = 0;
 
-        //uploadShadingData();
-        
         vk_UploadXYZI(pTess->xyz, pTess->numVertexes, NULL, 0);
         
         updateMVP(backEnd.viewParms.isPortal, backEnd.projection2D, getptr_modelview_matrix());

@@ -137,8 +137,8 @@ static void vk_renderShadowEdges(VkPipeline vk_pipeline)
 			VectorSet(tess.svars.colors[k], 50, 50, 50);
 			tess.svars.colors[k][3] = 255;
 		}
-
-        uploadShadingData();
+        
+        vk_UploadXYZI(tess.xyz, tess.numVertexes, tess.indexes, tess.numIndexes);
         updateMVP(backEnd.viewParms.isPortal, backEnd.projection2D, getptr_modelview_matrix());
 
         vk_shade_geometry(vk_pipeline, VK_FALSE, DEPTH_RANGE_NORMAL, VK_TRUE);
@@ -279,7 +279,7 @@ void RB_ShadowFinish( void )
         0, 0, 1, 0,
         0, 0, 0, 1};
      
-    uploadShadingData();
+    vk_UploadXYZI(tess.xyz, tess.numVertexes, tess.indexes, tess.numIndexes);
     updateMVP(backEnd.viewParms.isPortal, backEnd.projection2D, tmp);
     vk_shade_geometry(g_stdPipelines.shadow_finish_pipeline, VK_FALSE, DEPTH_RANGE_NORMAL, VK_TRUE);
 

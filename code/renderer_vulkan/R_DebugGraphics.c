@@ -6,10 +6,11 @@
 #include "vk_pipelines.h"
 #include "tr_cvar.h"
 #include "tr_backend.h"
+#include "matrix_multiplication.h"
+
 
 void R_DebugPolygon( int color, int numPoints, float *points )
 {
-
 	if (numPoints < 3 || numPoints >= SHADER_MAX_VERTEXES/2)
 		return;
     int i;
@@ -19,40 +20,20 @@ void R_DebugPolygon( int color, int numPoints, float *points )
     // that belong to back facing polygons. The code assumes that polygons are convex.
 
 	// Backface culling.
-    float pa[3], pb[3];
-//	transform_to_eye_space(&points[0], pa);
+    float pa[3], pb[3], p[3];
+
     
     const float* m = getptr_modelview_matrix();
     
-
-    pa[0] = m[0]*points[0] + m[4]*points[1] + m[8 ]*points[2] + points[12];
-    pa[1] = m[1]*points[0] + m[5]*points[1] + m[9 ]*points[2] + points[13];
-    pa[2] = m[2]*points[0] + m[6]*points[1] + m[10]*points[2] + points[14];
-	
-    
-//   transform_to_eye_space(&points[3], pb);
-    {
-        float *v = &points[3];
-        float *v_eye = pb;
-        v_eye[0] = m[0]*v[0] + m[4]*v[1] + m[8 ]*v[2] + m[12];
-		v_eye[1] = m[1]*v[0] + m[5]*v[1] + m[9 ]*v[2] + m[13];
-		v_eye[2] = m[2]*v[0] + m[6]*v[1] + m[10]*v[2] + m[14];
-    }
-	float p[3];
+    // transform to eye space
+	Vec3Transform(points, m, pa);
+	Vec3Transform(&points[3], m, pb);    
 	VectorSubtract(pb, pa, p);
+
 	float n[3];
 	for (i = 2; i < numPoints; i++)
     {
-		//transform_to_eye_space(&points[3*i], pb);
-        {
-            float *v = &points[3*i];
-            float *v_eye = pb;
-
-            v_eye[0] = m[0]*v[0] + m[4]*v[1] + m[8 ]*v[2] + m[12];
-		    v_eye[1] = m[1]*v[0] + m[5]*v[1] + m[9 ]*v[2] + m[13];
-		    v_eye[2] = m[2]*v[0] + m[6]*v[1] + m[10]*v[2] + m[14];
-        }
-
+		Vec3Transform(&points[3*i], m, pb);
 		float q[3];
 		VectorSubtract(pb, pa, q);
 		CrossProduct(q, p, n);
@@ -82,8 +63,9 @@ void R_DebugPolygon( int color, int numPoints, float *points )
 		tess.indexes[tess.numIndexes + 2] = i + 1;
 		tess.numIndexes += 3;
 	}
+    
+    vk_UploadXYZI(tess.xyz, tess.numVertexes, tess.indexes, tess.numIndexes);
 
-    uploadShadingData();
     updateMVP(backEnd.viewParms.isPortal, backEnd.projection2D, getptr_modelview_matrix());
 
     vk_shade_geometry(g_stdPipelines.surface_debug_pipeline_solid, VK_FALSE, DEPTH_RANGE_NORMAL, VK_TRUE);
@@ -100,7 +82,8 @@ void R_DebugPolygon( int color, int numPoints, float *points )
 	tess.numVertexes = numPoints * 2;
 	tess.numIndexes = 0;
 
-    uploadShadingData();
+    vk_UploadXYZI(tess.xyz, tess.numVertexes, tess.indexes, 0);
+    
     updateMVP(backEnd.viewParms.isPortal, backEnd.projection2D, getptr_modelview_matrix());
     vk_shade_geometry(g_stdPipelines.surface_debug_pipeline_outline, VK_FALSE, DEPTH_RANGE_ZERO, VK_FALSE);
 	

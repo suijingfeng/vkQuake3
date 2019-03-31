@@ -692,7 +692,7 @@ void RB_StageIteratorSky( void )
             }
 
             memset( tess.svars.colors, tr.identityLightByte, tess.numVertexes * 4 );
-
+        {
             float skybox_translate[16] QALIGN(16) = {
                 1, 0, 0, 0,
                 0, 1, 0, 0,
@@ -702,10 +702,9 @@ void RB_StageIteratorSky( void )
 
             float tmp[16] QALIGN(16);
             MatrixMultiply4x4_SSE(skybox_translate, getptr_modelview_matrix(), tmp);
-
-            uploadShadingData();
             updateMVP(backEnd.viewParms.isPortal, backEnd.projection2D, tmp);
-
+        }
+            vk_UploadXYZI(tess.xyz, tess.numVertexes, tess.indexes, tess.numIndexes);
 
             vk_shade_geometry(g_stdPipelines.skybox_pipeline, VK_FALSE, r_showsky->integer ? DEPTH_RANGE_ZERO : DEPTH_RANGE_ONE, VK_TRUE);
 
@@ -720,5 +719,4 @@ void RB_StageIteratorSky( void )
 	RB_StageIteratorGeneric();
 
 	// draw the inner skybox
-
 }
