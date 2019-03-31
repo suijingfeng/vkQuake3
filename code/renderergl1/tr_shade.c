@@ -161,9 +161,7 @@ without compiled vertex arrays.
 ==================
 */
 void R_DrawElements( int numIndexes, const glIndex_t *indexes ) {
-	int		primitives;
-
-	primitives = r_primitives->integer;
+	int		primitives = r_primitives->integer;
 
 	// default is to use triangles if compiled vertex arrays are present
 	if ( primitives == 0 ) {

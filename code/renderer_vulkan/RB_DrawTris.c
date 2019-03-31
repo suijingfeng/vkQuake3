@@ -6,15 +6,16 @@
 /*
 ================
 Draws triangle outlines for debugging
+DrawTris
 ================
 */
-void RB_DrawTris (shaderCommands_t *input)
+void RB_DrawTris (shaderCommands_t * pInput)
 {
 	updateCurDescriptor( tr.whiteImage->descriptor_set, 0);
 
 	// VULKAN
 
-    memset(tess.svars.colors, 255, tess.numVertexes * 4 );
+    memset(pInput->svars.colors, 255, pInput->numVertexes * 4 );
     VkPipeline pipeline = backEnd.viewParms.isMirror ? g_stdPipelines.tris_mirror_debug_pipeline : g_stdPipelines.tris_debug_pipeline;
-    vk_shade_geometry(pipeline, VK_FALSE, DEPTH_RANGE_ZERO, VK_FALSE);
+    vk_shade_geometry(pipeline, VK_FALSE, DEPTH_RANGE_ZERO, VK_TRUE);
 }
