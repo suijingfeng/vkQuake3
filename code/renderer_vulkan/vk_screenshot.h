@@ -25,9 +25,6 @@ typedef struct {
 } videoFrameCommand_t;
 
 void RB_TakeVideoFrameCmd( const videoFrameCommand_t * const cmd );
-
-void RE_TakeVideoFrame( int width, int height, unsigned char *captureBuffer, unsigned char *encodeBuffer, qboolean motionJpeg );
-
 void RB_TakeScreenshot( int width, int height, char *fileName, VkBool32 isJpeg);
 
 #endif

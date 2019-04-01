@@ -164,7 +164,7 @@ shader_t* R_FindShader( const char *name, int lightmapIndex, qboolean mipRawImag
 	}
     
 
-	COM_StripExtension(name, strippedName, sizeof(strippedName));
+	R_StripExtension(name, strippedName, sizeof(strippedName));
 
     int	hash = generateHashValue(strippedName, FILE_HASH_SIZE);
 
@@ -334,7 +334,7 @@ qhandle_t RE_RegisterShaderNoMip( const char *name )
 }
 
 
-qhandle_t RE_RegisterShaderFromImage(const char *name, int lightmapIndex, image_t *image, qboolean mipRawImage)
+qhandle_t R_RegisterShaderFromImage(const char *name, int lightmapIndex, image_t *image, qboolean mipRawImage)
 {
 
 	int hash = generateHashValue(name, FILE_HASH_SIZE);
@@ -585,7 +585,7 @@ way to ask for different implicit lighting modes (vertex, lightmap, etc)
 ====================
 */
 
-void R_RemapShader(const char *shaderName, const char *newShaderName, const char *timeOffset)
+void RE_RemapShader(const char *shaderName, const char *newShaderName, const char *timeOffset)
 {
 
     shader_t* sh2 = tr.defaultShader;
@@ -593,7 +593,7 @@ void R_RemapShader(const char *shaderName, const char *newShaderName, const char
     //R_FindShaderByName( newShaderName );
     {
         char strippedName2[MAX_QPATH];
-	    COM_StripExtension( newShaderName, strippedName2, sizeof(strippedName2) );
+	    R_StripExtension( newShaderName, strippedName2, sizeof(strippedName2) );
 
 	    int hash2 = generateHashValue(strippedName2, FILE_HASH_SIZE);
 
@@ -641,7 +641,7 @@ void R_RemapShader(const char *shaderName, const char *newShaderName, const char
     }
     
     char strippedName[MAX_QPATH];
-	COM_StripExtension(shaderName, strippedName, sizeof(strippedName));
+	R_StripExtension(shaderName, strippedName, sizeof(strippedName));
 	int hash = generateHashValue(strippedName, FILE_HASH_SIZE);
     shader_t* sh = hashTable[hash];
 	// remap all the shaders with the given name

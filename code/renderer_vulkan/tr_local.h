@@ -779,10 +779,6 @@ int R_CullLocalPointAndRadius( vec3_t origin, float radius );
 void R_RotateForEntity( const trRefEntity_t *ent, const viewParms_t *viewParms, orientationr_t *or );
 
 
-
-qboolean	R_GetEntityToken( char *buffer, int size );
-
-
 void R_InitScene(void);
 void R_InitNextFrame(void);
 
@@ -801,9 +797,7 @@ skin_t	*R_GetSkinByHandle( qhandle_t hSkin );
 // tr_shader.c
 //
 // qhandle_t RE_RegisterShaderLightMap( const char *name, int lightmapIndex );
-qhandle_t RE_RegisterShader( const char *name );
-qhandle_t RE_RegisterShaderNoMip( const char *name );
-qhandle_t RE_RegisterShaderFromImage(const char *name, int lightmapIndex, image_t *image, qboolean mipRawImage);
+
 
 shader_t* R_FindShader( const char *name, int lightmapIndex, qboolean mipRawImage );
 shader_t* R_GetShaderByHandle( qhandle_t hShader );
@@ -811,7 +805,6 @@ shader_t* R_GetShaderByHandle( qhandle_t hShader );
 
 void R_InitShaders( void );
 void R_ShaderList_f( void );
-void R_RemapShader(const char *oldShader, const char *newShader, const char *timeOffset);
 void R_ClearShaderHashTable(void);
 void R_SetTheShader( const char *name, int lightmapIndex );
 void R_UpdateShaderHashTable(shader_t* newShader);
@@ -889,7 +882,7 @@ WORLD MAP
 
 void R_AddBrushModelSurfaces( trRefEntity_t *e );
 void R_AddWorldSurfaces( void );
-qboolean R_inPVS( const vec3_t p1, const vec3_t p2 );
+
 
 /*
 ============================================================
@@ -902,7 +895,7 @@ LIGHTS
 void R_DlightBmodel( bmodel_t *bmodel );
 void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent );
 void R_TransformDlights( int count, dlight_t *dl, const orientationr_t * const or );
-int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir );
+
 
 
 /*
@@ -942,16 +935,7 @@ srfGridMesh_t *R_GridInsertColumn( srfGridMesh_t *grid, int column, int row, vec
 srfGridMesh_t *R_GridInsertRow( srfGridMesh_t *grid, int row, int column, vec3_t point, float loderror );
 void R_FreeSurfaceGridMesh( srfGridMesh_t *grid );
 
-/*
-============================================================
 
-MARKERS, POLYGON PROJECTION ON WORLD POLYGONS
-
-============================================================
-*/
-
-int R_MarkFragments( int numPoints, const vec3_t *points, const vec3_t projection,
-				   int maxPoints, vec3_t pointBuffer, int maxFragments, markFragment_t *fragmentBuffer );
 
 
 
@@ -1098,28 +1082,6 @@ SCENE GENERATION
 ============================================================
 */
 
-void	RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty);
-
-void	RE_BeginFrame( stereoFrame_t stereoFrame );
-void	RE_BeginRegistration( glconfig_t *glconfig );
-void	RE_LoadWorldMap( const char *mapname );
-void	RE_SetWorldVisData( const byte *vis );
-
-qhandle_t	RE_RegisterSkin( const char *name );
-void		RE_Shutdown( qboolean destroyWindow );
-
-void RE_ClearScene( void );
-void RE_AddRefEntityToScene( const refEntity_t *ent );
-void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *verts, int num );
-void RE_AddLightToScene( const vec3_t org, float intensity, float r, float g, float b );
-void RE_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, float g, float b );
-void RE_RenderScene( const refdef_t *fd );
-
-void RE_SetColor( const float *rgba );
-void RE_StretchPic ( float x, float y, float w, float h, 
-					  float s1, float t1, float s2, float t2, qhandle_t hShader );
-void RE_EndFrame( int *frontEndMsec, int *backEndMsec );
-void RE_RegisterFont(const char *fontName, int pointSize, fontInfo_t *font);
 
 // font stuff
 void R_InitFreeType(void);

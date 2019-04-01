@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "vk_image.h"
 #include "tr_cvar.h"
 #include "ref_import.h"
-
+#include "R_Parser.h"
 /*
 
 Loads and prepares a map file for scene rendering.
@@ -1710,11 +1710,9 @@ void R_LoadLightGrid( lump_t *l )
 	}
 }
 
-/*
-================
-R_LoadEntities
-================
-*/
+void RE_RemapShader(const char *oldShader, const char *newShader, const char *timeOffset);
+
+
 void R_LoadEntities( lump_t *l )
 {
 
@@ -1738,7 +1736,7 @@ void R_LoadEntities( lump_t *l )
 	strcpy( w->entityString, p );
 	w->entityParsePoint = w->entityString;
 
-	token = COM_ParseExt( &p, qtrue );
+	token = R_ParseExt( &p, qtrue );
 	if (!*token || *token != '{') {
 		return;
 	}
@@ -1746,7 +1744,7 @@ void R_LoadEntities( lump_t *l )
 	// only parse the world spawn
 	while ( 1 ) {	
 		// parse key
-		token = COM_ParseExt( &p, qtrue );
+		token = R_ParseExt( &p, qtrue );
 
 		if ( !*token || *token == '}' ) {
 			break;
@@ -1754,7 +1752,7 @@ void R_LoadEntities( lump_t *l )
 		Q_strncpyz(keyname, token, sizeof(keyname));
 
 		// parse value
-		token = COM_ParseExt( &p, qtrue );
+		token = R_ParseExt( &p, qtrue );
 
 		if ( !*token || *token == '}' ) {
 			break;
@@ -1771,7 +1769,7 @@ void R_LoadEntities( lump_t *l )
 			}
 			*s++ = 0;
 			if (r_vertexLight->integer) {
-				R_RemapShader(value, s, "0");
+				RE_RemapShader(value, s, "0");
 			}
 			continue;
 		}
@@ -1784,7 +1782,7 @@ void R_LoadEntities( lump_t *l )
 				break;
 			}
 			*s++ = 0;
-			R_RemapShader(value, s, "0");
+			RE_RemapShader(value, s, "0");
 			continue;
 		}
 		// check for a different grid size
@@ -1795,15 +1793,10 @@ void R_LoadEntities( lump_t *l )
 	}
 }
 
-/*
-=================
-R_GetEntityToken
-=================
-*/
-qboolean R_GetEntityToken( char *buffer, int size ) {
-	const char	*s;
 
-	s = COM_Parse( &s_worldData.entityParsePoint );
+qboolean RE_GetEntityToken( char *buffer, int size )
+{
+	const char* s = R_ParseExt( &s_worldData.entityParsePoint, qtrue);
 	Q_strncpyz( buffer, s, size );
 	if ( !s_worldData.entityParsePoint || !s[0] ) {
 		s_worldData.entityParsePoint = s_worldData.entityString;
@@ -1855,8 +1848,8 @@ void RE_LoadWorldMap( const char *name )
 	memset( &s_worldData, 0, sizeof( s_worldData ) );
 	Q_strncpyz( s_worldData.name, name, sizeof( s_worldData.name ) );
 
-	Q_strncpyz( s_worldData.baseName, COM_SkipPath( s_worldData.name ), sizeof( s_worldData.name ) );
-	COM_StripExtension( s_worldData.baseName, s_worldData.baseName, sizeof(s_worldData.baseName) );
+	Q_strncpyz( s_worldData.baseName, R_SkipPath( s_worldData.name ), sizeof( s_worldData.name ) );
+	R_StripExtension( s_worldData.baseName, s_worldData.baseName, sizeof(s_worldData.baseName) );
 
 	startMarker = (byte*) ri.Hunk_Alloc(0, h_low);
 

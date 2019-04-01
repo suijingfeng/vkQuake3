@@ -30,30 +30,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "vk_shade_geometry.h"
 #include "vk_pipelines.h"
 #include "vk_image.h"
-#include "R_LerpTag.h"
-#include "R_ModelBounds.h"
 #include "R_StretchRaw.h"
 #include "tr_fog.h"
 #include "tr_backend.h"
 #include "glConfig.h"
-
-
-refimport_t	ri;
-
-/*
-=============
-RE_EndRegistration
-
-Touch all images to make sure they are resident
-=============
-*/
-void RE_EndRegistration( void )
-{
-	if ( tr.registered ) {
-		R_IssueRenderCommands( qfalse );
-	}
-}
-
+#include "ref_import.h"
 
 
 void R_Init( void )
@@ -193,12 +174,10 @@ void RE_Shutdown( qboolean destroyWindow )
 
     vk_resetGeometryBuffer();
 
-    vk_destroyImageRes();
-
 	if ( tr.registered )
     {	
+        vk_destroyImageRes();
         tr.registered = qfalse;
-
 	}
 
     if (destroyWindow)
@@ -206,9 +185,9 @@ void RE_Shutdown( qboolean destroyWindow )
         vk_shutdown();
         vk_destroyWindow();
     }
-    
 }
 
+void RE_ClearScene( void );
 
 void RE_BeginRegistration(glconfig_t *glconfigOut)
 {
@@ -225,68 +204,16 @@ void RE_BeginRegistration(glconfig_t *glconfigOut)
    	ri.Printf(PRINT_ALL, "RE_BeginRegistration finished.\n");
 }
 
-
-
 /*
-@@@@@@@@@@@@@@@@@@@@@
-GetRefAPI
+=============
+RE_EndRegistration
 
-@@@@@@@@@@@@@@@@@@@@@
+Touch all images to make sure they are resident
+=============
 */
-#ifdef USE_RENDERER_DLOPEN
-Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp )
+void RE_EndRegistration( void )
 {
-#else
-refexport_t* GetRefAPI(int apiVersion, refimport_t *rimp)
-{
-#endif
-
-	ri = *rimp;
-
-	if( apiVersion != REF_API_VERSION )
-	{
-		ri.Printf(PRINT_ALL, "Mismatched REF_API_VERSION: expected %i, got %i\n", REF_API_VERSION, apiVersion );
-		return NULL;
+	if ( tr.registered ) {
+		R_IssueRenderCommands( qfalse );
 	}
-
-	static refexport_t re;
-	memset(&re, 0, sizeof(re));
-
-    
-	// the RE_ functions are Renderer Entry points
-	re.Shutdown = RE_Shutdown;
-	re.BeginRegistration = RE_BeginRegistration;
-	re.RegisterModel = RE_RegisterModel;
-	re.RegisterSkin = RE_RegisterSkin;
-	re.RegisterShader = RE_RegisterShader;
-	re.RegisterShaderNoMip = RE_RegisterShaderNoMip;
-	re.LoadWorld = RE_LoadWorldMap;
-	re.SetWorldVisData = RE_SetWorldVisData;
-	re.EndRegistration = RE_EndRegistration;
-	re.ClearScene = RE_ClearScene;
-	re.AddRefEntityToScene = RE_AddRefEntityToScene;
-	re.AddPolyToScene = RE_AddPolyToScene;
-	re.LightForPoint = R_LightForPoint;
-	re.AddLightToScene = RE_AddLightToScene;
-	re.AddAdditiveLightToScene = RE_AddAdditiveLightToScene;
-
-	re.RenderScene = RE_RenderScene;
-	re.SetColor = RE_SetColor;
-	re.DrawStretchPic = RE_StretchPic;
-	re.DrawStretchRaw = RE_StretchRaw;
-	re.UploadCinematic = RE_UploadCinematic;
-    
-	re.BeginFrame = RE_BeginFrame;
-	re.EndFrame = RE_EndFrame;
-	re.MarkFragments = R_MarkFragments;
-	re.LerpTag = R_LerpTag;
-	re.ModelBounds = R_ModelBounds;
-	re.RegisterFont = RE_RegisterFont;
-	re.RemapShader = R_RemapShader;
-	re.GetEntityToken = R_GetEntityToken;
-	re.inPVS = R_inPVS;
-
-	re.TakeVideoFrame = RE_TakeVideoFrame;
-
-	return &re;
 }

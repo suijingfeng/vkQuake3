@@ -1,6 +1,5 @@
 #include "tr_local.h"
 #include "tr_model.h"
-#include "R_LerpTag.h"
 #include "ref_import.h"
 
 static md3Tag_t *R_GetTag( md3Header_t *mod, int frame, const char *tagName ) {
@@ -72,8 +71,6 @@ static void Matrix34Multiply_OnlySetOrigin( float *a, float *b, float *out ) {
 
 
 
-
-
 static void ComputeJointMats( iqmData_t *data, int frame, int oldframe,
 			      float backlerp, float *mat ) {
 	float	*mat1;
@@ -130,7 +127,7 @@ static int R_IQMLerpTag( orientation_t *tag, iqmData_t *data,
 }
 
 
-int R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFrame, 
+int RE_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFrame, 
 					 float frac, const char *tagName )
 {
 

@@ -1,6 +1,12 @@
 #include "ref_import.h"
 #include "tr_globals.h"
 
+
+extern void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty);
+extern void RE_StretchPic ( float x, float y, float w, float h, 
+					  float s1, float t1, float s2, float t2, qhandle_t hShader );
+
+
 /*
 =============
 FIXME: not exactly backend

@@ -376,12 +376,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	ent->lightDir[2] = DotProduct( lightDir, ent->e.axis[2] );
 }
 
-/*
-=================
-R_LightForPoint
-=================
-*/
-int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir )
+int RE_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir )
 {
 	trRefEntity_t ent;
 	

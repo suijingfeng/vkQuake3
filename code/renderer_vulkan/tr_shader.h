@@ -2,7 +2,6 @@
 #define TR_SHADER_H_
 
 
-
 #ifndef GL_MODULATE
 #define GL_MODULATE				0x2100
 #endif

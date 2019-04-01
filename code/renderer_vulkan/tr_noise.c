@@ -31,7 +31,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static float s_noise_table[NOISE_SIZE];
 static int s_noise_perm[NOISE_SIZE];
 
-#define LERP( a, b, w ) ( a * ( 1.0f - w ) + b * w )
+inline static float LerpF(float a, float b, float w )
+{
+    return ( a + (b - a) * w );
+}
 
 static float GetNoiseValue( int x, int y, int z, int t )
 {
@@ -60,7 +63,7 @@ float R_NoiseGet4f( float x, float y, float z, float t )
 	float fx, fy, fz, ft;
 	float front[4];
 	float back[4];
-	float fvalue, bvalue, value[2], finalvalue;
+	float fvalue, bvalue, value[2];
 
 	ix = ( int ) floor( x );
 	fx = x - ix;
@@ -83,13 +86,11 @@ float R_NoiseGet4f( float x, float y, float z, float t )
 		back[2] = GetNoiseValue( ix, iy+1, iz + 1, it + i );
 		back[3] = GetNoiseValue( ix+1, iy+1, iz + 1, it + i );
 
-		fvalue = LERP( LERP( front[0], front[1], fx ), LERP( front[2], front[3], fx ), fy );
-		bvalue = LERP( LERP( back[0], back[1], fx ), LERP( back[2], back[3], fx ), fy );
+		fvalue = LerpF( LerpF( front[0], front[1], fx ), LerpF( front[2], front[3], fx ), fy );
+		bvalue = LerpF( LerpF( back[0], back[1], fx ), LerpF( back[2], back[3], fx ), fy );
 
-		value[i] = LERP( fvalue, bvalue, fz );
+		value[i] = LerpF( fvalue, bvalue, fz );
 	}
 
-	finalvalue = LERP( value[0], value[1], ft );
-
-	return finalvalue;
+	return LerpF( value[0], value[1], ft );
 }

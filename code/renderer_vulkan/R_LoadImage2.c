@@ -726,37 +726,3 @@ static void LoadPCX32 ( const char *filename, unsigned char **pic, uint32_t *wid
 	ri.Free (pic8);
 	ri.Free (palette);
 }
-
-
-
-///////////////////////
-
-// SAVE
-
-//////////////////////
-/*
-#define TJE_IMPLEMENTATION
-#include "tiny_jpeg.h"
-
-static void FS_ImgWrite(void* context, void* data, int size)
-{
-    //FILE* fd = (FILE*)context;
-    //fwrite(data, size, 1, fd);
-    ri.FS_WriteFile("lll.jpeg", data, size);
-}
-
-
-int RE_SaveJPG(char * fileName,
-                         const int quality,
-                         const int width,
-                         const int height,
-                         const int num_components,
-                         const unsigned char* src_data)
-{
-    tje_encode_to_file(fileName, width, height, num_components, src_data);
-
-    ri.Printf(PRINT_ALL, "RE_SaveJPG\n");
-    return tje_encode_with_func(FS_ImgWrite, (void*)fileName, quality, width, height, num_components, src_data);
-}
-
-*/

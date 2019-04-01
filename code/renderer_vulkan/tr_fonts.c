@@ -72,6 +72,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "ref_import.h"
 #include "tr_cvar.h"
 
+
+
 #ifdef BUILD_FREETYPE
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -86,6 +88,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 FT_Library ftLibrary = NULL;  
 #endif
+
+
+qhandle_t R_RegisterShaderFromImage(const char *name, int lightmapIndex, image_t *image, qboolean mipRawImage);
+qhandle_t RE_RegisterShaderNoMip( const char *name );
 
 #define MAX_FONTS 6
 static int registeredFontCount = 0;
@@ -504,7 +510,7 @@ void RE_RegisterFont(const char *fontName, int pointSize, fontInfo_t *font)
 
             ri.Printf(PRINT_WARNING, "RE_RegisterFont: ri.Malloc failure during output image creation.\n");
 
-			h = RE_RegisterShaderFromImage(name, LIGHTMAP_2D, image, qfalse);
+			h = R_RegisterShaderFromImage(name, LIGHTMAP_2D, image, qfalse);
 			for (j = lastStart; j < i; j++) {
 				font->glyphs[j].glyph = h;
 				Q_strncpyz(font->glyphs[j].shaderName, name, sizeof(font->glyphs[j].shaderName));

@@ -1,11 +1,8 @@
 #include "tr_local.h"
-
-#include "R_ModelBounds.h"
-
 #include "tr_model.h"
 
 
-void R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs )
+void RE_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs )
 {
 	model_t* model = R_GetModelByHandle( handle );
 
