@@ -1820,6 +1820,7 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/tr_fog.o \
   $(B)/renderer_vulkan/tr_world.o \
   $(B)/renderer_vulkan/vk_instance.o \
+  $(B)/renderer_vulkan/vk_init.o \
   $(B)/renderer_vulkan/vk_cmd.o \
   $(B)/renderer_vulkan/vk_image.o \
   $(B)/renderer_vulkan/vk_image_sampler2.o \
@@ -1861,14 +1862,9 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/R_ImagePCX.o \
   \
   $(B)/renderer_vulkan/ref_import.o \
-  $(B)/renderer_vulkan/render_export_f.o
-
-
-ifeq ($(BUILD_WITH_XCB), 1)
-  Q3VKOBJ += $(B)/renderer_vulkan/vk_create_window_XCB.o
-else
-  Q3VKOBJ += $(B)/renderer_vulkan/vk_create_window_SDL.o
-endif
+  $(B)/renderer_vulkan/render_export_f.o \
+  \
+  $(B)/renderer_vulkan/vk_create_window_SDL.o
 
 ######################################################
 
@@ -2322,7 +2318,6 @@ $(B)/renderer_vulkan_$(SHLIBNAME): $(Q3VKOBJ) $(JPGOBJ)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3VKOBJ) $(JPGOBJ) \
 		$(THREAD_LIBS) $(RENDERER_LIBS) $(LIBSDLMAIN) $(LIBS)
-# $(XCB_LIBS)
 
 ##############################################################
 

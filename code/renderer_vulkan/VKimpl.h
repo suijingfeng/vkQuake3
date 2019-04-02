@@ -21,7 +21,6 @@ void vk_getInstanceProcAddrImpl(void);
 
 void vk_createSurfaceImpl(void);
 
-void minimizeWindowImpl( void );
-
+void vk_minimizeWindow( void );
 
 #endif

@@ -4,7 +4,8 @@
 #include "tr_local.h"
 #include "tr_model.h"
 
-
+// 12 bits, see QSORT_SHADERNUM_SHIFT
+#define	MAX_SHADERS				16384
 
 /*
 ** trGlobals_t 

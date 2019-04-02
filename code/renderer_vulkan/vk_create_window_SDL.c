@@ -358,7 +358,7 @@ void vk_createSurfaceImpl(void)
 Minimize the game so that user is back at the desktop
 ===============
 */
-void minimizeWindowImpl( void )
+void vk_minimizeWindow( void )
 {
     VkBool32 toggleWorked = 1;
     ri.Printf( PRINT_ALL, " Minimizing Window (SDL). \n");

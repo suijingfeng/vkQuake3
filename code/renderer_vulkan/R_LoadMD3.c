@@ -2,7 +2,7 @@
 #include "tr_local.h"
 #include "tr_model.h"
 #include "ref_import.h"
-
+#include "tr_shader.h"
 #define	LL(x) x=LittleLong(x)
 
 

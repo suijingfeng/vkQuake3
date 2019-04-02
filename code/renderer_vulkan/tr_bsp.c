@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_cvar.h"
 #include "ref_import.h"
 #include "R_Parser.h"
+#include "tr_shader.h"
 /*
 
 Loads and prepares a map file for scene rendering.

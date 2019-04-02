@@ -6,6 +6,8 @@
 #include "R_PrintMat.h"
 #include "R_Parser.h"
 #include "tr_globals.h"
+#include "tr_shader.h"
+
 
 #define MAX_SHADERTEXT_HASH		2048
 static char** shaderTextHashTable[MAX_SHADERTEXT_HASH] ={ 0 };

@@ -25,16 +25,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_globals.h"
 #include "tr_model.h"
 #include "tr_cvar.h"
-#include "vk_instance.h"
+
+#include "vk_init.h"
+
 #include "vk_screenshot.h"
 #include "vk_shade_geometry.h"
 #include "vk_pipelines.h"
 #include "vk_image.h"
-#include "R_StretchRaw.h"
+
 #include "tr_fog.h"
 #include "tr_backend.h"
 #include "glConfig.h"
 #include "ref_import.h"
+
+extern void RE_ClearScene( void );
+
 
 
 void R_Init( void )
@@ -101,7 +106,7 @@ void R_Init( void )
 	ri.Cmd_AddCommand( "skinlist", R_SkinList_f );
 
     ri.Cmd_AddCommand( "vkinfo", vulkanInfo_f );
-    ri.Cmd_AddCommand( "minimize", minimizeWindowImpl );
+    ri.Cmd_AddCommand( "minimize", vk_minimizeWindow );
 
     ri.Cmd_AddCommand( "pipelineList", R_PipelineList_f );
 
@@ -110,7 +115,6 @@ void R_Init( void )
     ri.Cmd_AddCommand( "printOR", R_PrintBackEnd_OR_f );
 
     R_InitScene();
-
 
     R_glConfigInit();
 
@@ -187,7 +191,7 @@ void RE_Shutdown( qboolean destroyWindow )
     }
 }
 
-void RE_ClearScene( void );
+
 
 void RE_BeginRegistration(glconfig_t *glconfigOut)
 {

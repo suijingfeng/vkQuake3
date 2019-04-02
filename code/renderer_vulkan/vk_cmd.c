@@ -60,6 +60,101 @@
 //
 //
 
+void vk_create_command_pool(VkCommandPool* pPool)
+{
+    // Command pools are opaque objects that command buffer memory is allocated from,
+    // and which allow the implementation to amortize the cost of resource creation
+    // across multiple command buffers. Command pools are externally synchronized,
+    // meaning that a command pool must not be used concurrently in multiple threads.
+    // That includes use via recording commands on any command buffers allocated from
+    // the pool, as well as operations that allocate, free, and reset command buffers
+    // or the pool itself.
+
+
+    VkCommandPoolCreateInfo desc;
+    desc.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    desc.pNext = NULL;
+    // VK_COMMAND_POOL_CREATE_TRANSIENT_BIT specifies that command buffers
+    // allocated from the pool will be short-lived, meaning that they will
+    // be reset or freed in a relatively short timeframe. This flag may be
+    // used by the implementation to control memory allocation behavior
+    // within the pool.
+    //
+    // VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT allows any command
+    // buffer allocated from a pool to be individually reset to the initial
+    // state; either by calling vkResetCommandBuffer, or via the implicit 
+    // reset when calling vkBeginCommandBuffer. If this flag is not set on
+    // a pool, then vkResetCommandBuffer must not be called for any command
+    // buffer allocated from that pool.
+    desc.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    desc.queueFamilyIndex = vk.queue_family_index;
+
+    VK_CHECK(qvkCreateCommandPool(vk.device, &desc, NULL, pPool));
+}
+
+
+void vk_create_command_buffer(VkCommandPool pool, VkCommandBuffer* pBuf)
+{
+    // Command buffers are objects used to record commands which can be
+    // subsequently submitted to a device queue for execution. There are
+    // two levels of command buffers:
+    // - primary command buffers, which can execute secondary command buffers,
+    //   and which are submitted to queues.
+    // - secondary command buffers, which can be executed by primary command buffers,
+    //   and which are not directly submitted to queues.
+    //
+    // Recorded commands include commands to bind pipelines and descriptor sets
+    // to the command buffer, commands to modify dynamic state, commands to draw
+    // (for graphics rendering), commands to dispatch (for compute), commands to
+    // execute secondary command buffers (for primary command buffers only), 
+    // commands to copy buffers and images, and other commands.
+    //
+    // Each command buffer manages state independently of other command buffers.
+    // There is no inheritance of state across primary and secondary command 
+    // buffers, or between secondary command buffers. 
+    // 
+    // When a command buffer begins recording, all state in that command buffer is undefined. 
+    // When secondary command buffer(s) are recorded to execute on a primary command buffer,
+    // the secondary command buffer inherits no state from the primary command buffer,
+    // and all state of the primary command buffer is undefined after an execute secondary
+    // command buffer command is recorded. There is one exception to this rule - if the primary
+    // command buffer is inside a render pass instance, then the render pass and subpass state
+    // is not disturbed by executing secondary command buffers. Whenever the state of a command
+    // buffer is undefined, the application must set all relevant state on the command buffer
+    // before any state dependent commands such as draws and dispatches are recorded, otherwise
+    // the behavior of executing that command buffer is undefined.
+    //
+    // Unless otherwise specified, and without explicit synchronization, the various commands
+    // submitted to a queue via command buffers may execute in arbitrary order relative to
+    // each other, and/or concurrently. Also, the memory side-effects of those commands may
+    // not be directly visible to other commands without explicit memory dependencies. 
+    // This is true within a command buffer, and across command buffers submitted to a given
+    // queue. See the synchronization chapter for information on implicit and explicit
+    // synchronization between commands.
+
+
+    VkCommandBufferAllocateInfo alloc_info;
+    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    alloc_info.pNext = NULL;
+    alloc_info.commandPool = pool;
+    // Can be submitted to a queue for execution,
+    // but cannnot be called from other command buffers.
+    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    alloc_info.commandBufferCount = 1;
+    VK_CHECK(qvkAllocateCommandBuffers(vk.device, &alloc_info, pBuf));
+}
+
+void vk_destroy_commands(void)
+{
+    // Command buffers will be automatically freed when their
+    // command pool is destroyed, so it don't need an explicit 
+    // cleanup.
+    ri.Printf( PRINT_ALL, " Free command buffers: vk.command_buffer. \n" );     
+    qvkFreeCommandBuffers(vk.device, vk.command_pool, 1, &vk.command_buffer); 
+    ri.Printf( PRINT_ALL, " Destroy command pool: vk.command_pool. \n" );
+    qvkDestroyCommandPool(vk.device, vk.command_pool, NULL);
+}
+
 void record_image_layout_transition( 
         VkCommandBuffer cmdBuf,
         VkImage image,

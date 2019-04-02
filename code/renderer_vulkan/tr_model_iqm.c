@@ -28,6 +28,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_cvar.h"
 #include "ref_import.h"
 #include "matrix_multiplication.h"
+#include "tr_shader.h"
+#include "tr_light.h"
 
 #define	LL(x) x=LittleLong(x)
 

@@ -11,7 +11,7 @@
 #include "vk_frame.h"
 #include "vk_shaders.h"
 #include "vk_depth_attachment.h"
-#include "glConfig.h"
+
 
 struct Vk_Instance vk;
 
@@ -210,7 +210,8 @@ static void vk_createInstance(void)
     // for new commands, are defined in the Khronos-supplied vulkan_core.h 
     // together with the core API. However, commands defined by extensions may
     // not be available for static linking - in which case function pointers to
-    // these commands should be queried at runtime as described in Command Function Pointers.
+    // these commands should be queried at runtime as described in Command Function
+    // Pointers.
     // Extensions may be provided by layers as well as by a Vulkan implementation.
     //
     // check extensions availability
@@ -229,6 +230,10 @@ static void vk_createInstance(void)
     VK_CHECK(qvkEnumerateInstanceExtensionProperties( NULL, &nInsExt, pInsExt));
 
     uint32_t i = 0;
+
+    // Each platform-specific extension is an instance extension.
+    // The application must enable instance extensions with vkCreateInstance
+    // before using them.
 
     // TODO: CHECK OUT
     // All of the instance wxtention enabled, Does this reasonable ?
@@ -277,7 +282,6 @@ static void vk_createInstance(void)
     free(ppInstanceExt);
 
     free(pInsExt);
-
 }
 
 
@@ -761,6 +765,26 @@ void vk_getProcAddress(void)
 
 void vk_clearProcAddress(void)
 {
+
+    ri.Printf( PRINT_ALL, " Destroy logical device: vk.device. \n" );
+    // Device queues are implicitly cleaned up when the device is destroyed
+    // so we don't need to do anything in clean up
+	qvkDestroyDevice(vk.device, NULL);
+    
+    ri.Printf( PRINT_ALL, " Destroy surface: vk.surface. \n" );
+    // make sure that the surface is destroyed before the instance
+    qvkDestroySurfaceKHR(vk.instance, vk.surface, NULL);
+
+#ifndef NDEBUG
+    ri.Printf( PRINT_ALL, " Destroy callback function: vk.h_debugCB. \n" );
+
+	qvkDestroyDebugReportCallbackEXT(vk.instance, vk.h_debugCB, NULL);
+#endif
+
+    ri.Printf( PRINT_ALL, " Destroy instance: vk.instance. \n" );
+	qvkDestroyInstance(vk.instance, NULL);
+
+// ===========================================================
     ri.Printf( PRINT_ALL, " clear all proc address \n" );
 
 	qvkCreateInstance                           = NULL;
@@ -862,210 +886,6 @@ void vk_clearProcAddress(void)
 	qvkDestroySwapchainKHR						= NULL;
 	qvkGetSwapchainImagesKHR					= NULL;
 	qvkQueuePresentKHR							= NULL;
-}
-
-static void vk_create_command_pool(VkCommandPool* pPool)
-{
-    // Command pools are opaque objects that command buffer memory is allocated from,
-    // and which allow the implementation to amortize the cost of resource creation
-    // across multiple command buffers. Command pools are externally synchronized,
-    // meaning that a command pool must not be used concurrently in multiple threads.
-    // That includes use via recording commands on any command buffers allocated from
-    // the pool, as well as operations that allocate, free, and reset command buffers
-    // or the pool itself.
-
-
-    VkCommandPoolCreateInfo desc;
-    desc.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    desc.pNext = NULL;
-    // VK_COMMAND_POOL_CREATE_TRANSIENT_BIT specifies that command buffers
-    // allocated from the pool will be short-lived, meaning that they will
-    // be reset or freed in a relatively short timeframe. This flag may be
-    // used by the implementation to control memory allocation behavior
-    // within the pool.
-    //
-    // VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT allows any command
-    // buffer allocated from a pool to be individually reset to the initial
-    // state; either by calling vkResetCommandBuffer, or via the implicit 
-    // reset when calling vkBeginCommandBuffer. If this flag is not set on
-    // a pool, then vkResetCommandBuffer must not be called for any command
-    // buffer allocated from that pool.
-    desc.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    desc.queueFamilyIndex = vk.queue_family_index;
-
-    VK_CHECK(qvkCreateCommandPool(vk.device, &desc, NULL, pPool));
-}
-
-
-static void vk_create_command_buffer(VkCommandPool pool, VkCommandBuffer* pBuf)
-{
-    // Command buffers are objects used to record commands which can be
-    // subsequently submitted to a device queue for execution. There are
-    // two levels of command buffers:
-    // - primary command buffers, which can execute secondary command buffers,
-    //   and which are submitted to queues.
-    // - secondary command buffers, which can be executed by primary command buffers,
-    //   and which are not directly submitted to queues.
-    //
-    // Recorded commands include commands to bind pipelines and descriptor sets
-    // to the command buffer, commands to modify dynamic state, commands to draw
-    // (for graphics rendering), commands to dispatch (for compute), commands to
-    // execute secondary command buffers (for primary command buffers only), 
-    // commands to copy buffers and images, and other commands.
-    //
-    // Each command buffer manages state independently of other command buffers.
-    // There is no inheritance of state across primary and secondary command 
-    // buffers, or between secondary command buffers. 
-    // 
-    // When a command buffer begins recording, all state in that command buffer is undefined. 
-    // When secondary command buffer(s) are recorded to execute on a primary command buffer,
-    // the secondary command buffer inherits no state from the primary command buffer,
-    // and all state of the primary command buffer is undefined after an execute secondary
-    // command buffer command is recorded. There is one exception to this rule - if the primary
-    // command buffer is inside a render pass instance, then the render pass and subpass state
-    // is not disturbed by executing secondary command buffers. Whenever the state of a command
-    // buffer is undefined, the application must set all relevant state on the command buffer
-    // before any state dependent commands such as draws and dispatches are recorded, otherwise
-    // the behavior of executing that command buffer is undefined.
-    //
-    // Unless otherwise specified, and without explicit synchronization, the various commands
-    // submitted to a queue via command buffers may execute in arbitrary order relative to
-    // each other, and/or concurrently. Also, the memory side-effects of those commands may
-    // not be directly visible to other commands without explicit memory dependencies. 
-    // This is true within a command buffer, and across command buffers submitted to a given
-    // queue. See the synchronization chapter for information on implicit and explicit
-    // synchronization between commands.
-
-
-    VkCommandBufferAllocateInfo alloc_info;
-    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    alloc_info.pNext = NULL;
-    alloc_info.commandPool = pool;
-    // Can be submitted to a queue for execution,
-    // but cannnot be called from other command buffers.
-    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandBufferCount = 1;
-    VK_CHECK(qvkAllocateCommandBuffers(vk.device, &alloc_info, pBuf));
-}
-
-
-void vk_initialize(void)
-{
-    // This function is responsible for initializing a valid Vulkan subsystem.
-
-    vk_createWindow();
-
-    vk_getProcAddress(); 
- 
-
-	// Swapchain. vk.physical_device required to be init. 
-	vk_createSwapChain(vk.device, vk.surface, vk.surface_format);
-
-	//
-	// Sync primitives.
-	//
-    vk_create_sync_primitives();
-
-	// we have to create a command pool before we can create command buffers
-    // command pools manage the memory that is used to store the buffers and
-    // command buffers are allocated from them.
-    ri.Printf(PRINT_ALL, " Create command pool: vk.command_pool \n");
-    vk_create_command_pool(&vk.command_pool);
-    
-    ri.Printf(PRINT_ALL, " Create command buffer: vk.command_buffer \n");
-    vk_create_command_buffer(vk.command_pool, &vk.command_buffer);
-
-
-    int width;
-    int height;
-
-    R_GetWinResolution(&width, &height);
-
-    // Depth attachment image.
-    vk_createDepthAttachment(width, height);
-
-
-    vk_createFrameBuffers(width, height);
-
-	// Pipeline layout.
-	// You can use uniform values in shaders, which are globals similar to
-    // dynamic state variables that can be changes at the drawing time to
-    // alter the behavior of your shaders without having to recreate them.
-    // They are commonly used to create texture samplers in the fragment 
-    // shader. The uniform values need to be specified during pipeline
-    // creation by creating a VkPipelineLayout object.
-    
-    vk_createPipelineLayout();
-
-	//
-	vk_createVertexBuffer();
-    vk_createIndexBuffer();;
-	//
-	// Shader modules.
-	//
-	vk_loadShaderModules();
-
-	//
-	// Standard pipelines.
-	//
-    create_standard_pipelines();
-
-    vk.isInitialized = VK_TRUE;
-}
-
-
-VkBool32 isVKinitialied(void)
-{
-    return vk.isInitialized;
-}
-
-void vk_shutdown(void)
-{
-    ri.Printf( PRINT_ALL, "vk_shutdown()\n" );
-
-    vk_destroyDepthAttachment();
-
-    vk_destroyFrameBuffers();
-
-    vk_destroy_shading_data();
-
-    vk_destroy_sync_primitives();
-    
-    vk_destroyShaderModules();
-
-//
-    vk_destroyGlobalStagePipeline();
-//
-    // Command buffers will be automatically freed when their
-    // command pool is destroyed, so it don't need an explicit 
-    // cleanup.
-    ri.Printf( PRINT_ALL, " Free command buffers: vk.command_buffer. \n" );     
-    qvkFreeCommandBuffers(vk.device, vk.command_pool, 1, &vk.command_buffer); 
-    ri.Printf( PRINT_ALL, " Destroy command pool: vk.command_pool. \n" );
-    qvkDestroyCommandPool(vk.device, vk.command_pool, NULL);
-
-    ri.Printf( PRINT_ALL, " Destroy logical device: vk.device. \n" );
-	qvkDestroyDevice(vk.device, NULL);
-
-    ri.Printf( PRINT_ALL, " Destroy surface: vk.surface. \n" );
-    // make sure that the surface is destroyed before the instance
-    qvkDestroySurfaceKHR(vk.instance, vk.surface, NULL);
-
-#ifndef NDEBUG
-    ri.Printf( PRINT_ALL, " Destroy callback function: vk.h_debugCB. \n" );
-
-	qvkDestroyDebugReportCallbackEXT(vk.instance, vk.h_debugCB, NULL);
-#endif
-
-    ri.Printf( PRINT_ALL, " Destroy instance: vk.instance. \n" );
-	qvkDestroyInstance(vk.instance, NULL);
-
-    ri.Printf( PRINT_ALL, " clear vk struct: vk \n" );
-	memset(&vk, 0, sizeof(vk));
-
-	vk_clearProcAddress();
-
-    vk.isInitialized = VK_FALSE;
 }
 
 

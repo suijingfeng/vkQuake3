@@ -32,5 +32,4 @@ void R_LoadImage2(const char *name, unsigned char **pic, uint32_t* width, uint32
 void gpuMemUsageInfo_f(void);
 
 
-
 #endif

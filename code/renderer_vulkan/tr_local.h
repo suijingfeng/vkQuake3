@@ -26,40 +26,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qfiles.h"
-#include "../qcommon/qcommon.h"
-#include "../renderercommon/tr_public.h"
+
+#include "../renderercommon/tr_types.h"
 
 #include "tr_image.h"
 
 #include "VKimpl.h"
 
 
-////////////////////////////////////////
-
-// any change in the LIGHTMAP_* defines here MUST be reflected in
-// R_FindShader() in tr_bsp.c
-#define LIGHTMAP_2D         -4	// shader is for 2D rendering
-#define LIGHTMAP_BY_VERTEX  -3	// pre-lit triangle models
-#define LIGHTMAP_WHITEIMAGE -2
-#define LIGHTMAP_NONE       -1
-
-//////////////////////////////////////
-
-
-// 12 bits
-// see QSORT_SHADERNUM_SHIFT
-#define	MAX_SHADERS				16384
-
-// can't be increased without changing bit packing for drawsurfs
-
-typedef struct dlight_s {
-	vec3_t	origin;
-	vec3_t	color;				// range from 0.0 to 1.0, should be color normalized
-	float	radius;
-
-	vec3_t	transformed;		// origin in local coordinate system
-	int		additive;			// texture detail is lost tho when the lightmap is dark
-} dlight_t;
 
 
 // a trRefEntity_t has all the information passed in by
@@ -87,32 +61,7 @@ typedef struct {
 
 //===============================================================================
 
-typedef enum {
-	SS_BAD,
-	SS_PORTAL,			// mirrors, portals, viewscreens
-	SS_ENVIRONMENT,		// sky box
-	SS_OPAQUE,			// opaque
 
-	SS_DECAL,			// scorch marks, etc.
-	SS_SEE_THROUGH,		// ladders, grates, grills that may have small blended edges
-						// in addition to alpha test
-	SS_BANNER,
-
-	SS_FOG,
-
-	SS_UNDERWATER,		// for items that should be drawn in front of the water plane
-
-	SS_BLEND0,			// regular transparency and filters
-	SS_BLEND1,			// generally only used for additive type effects
-	SS_BLEND2,
-	SS_BLEND3,
-
-	SS_BLEND6,
-	SS_STENCIL_SHADOW,
-	SS_ALMOST_NEAREST,	// gun smoke puffs
-
-	SS_NEAREST			// blood blobs
-} shaderSort_t;
 
 
 #define MAX_SHADER_STAGES 8
@@ -887,20 +836,6 @@ void R_AddWorldSurfaces( void );
 /*
 ============================================================
 
-LIGHTS
-
-============================================================
-*/
-
-void R_DlightBmodel( bmodel_t *bmodel );
-void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent );
-void R_TransformDlights( int count, dlight_t *dl, const orientationr_t * const or );
-
-
-
-/*
-============================================================
-
 SHADOWS
 
 ============================================================
@@ -934,9 +869,6 @@ srfGridMesh_t *R_SubdividePatchToGrid( int width, int height,
 srfGridMesh_t *R_GridInsertColumn( srfGridMesh_t *grid, int column, int row, vec3_t point, float loderror );
 srfGridMesh_t *R_GridInsertRow( srfGridMesh_t *grid, int row, int column, vec3_t point, float loderror );
 void R_FreeSurfaceGridMesh( srfGridMesh_t *grid );
-
-
-
 
 
 
@@ -1005,13 +937,6 @@ typedef struct {
 	int		commandId;
 } drawBufferCommand_t;
 
-typedef struct {
-	int		commandId;
-	image_t	*image;
-	int		width;
-	int		height;
-	void	*data;
-} subImageCommand_t;
 
 typedef struct {
 	int		commandId;
@@ -1037,7 +962,6 @@ typedef struct {
 	drawSurf_t *drawSurfs;
 	int		numDrawSurfs;
 } drawSurfsCommand_t;
-
 
 
 typedef enum {
@@ -1070,7 +994,6 @@ void RB_ExecuteRenderCommands( const void *data );
 
 void R_IssueRenderCommands( qboolean runPerformanceCounters );
 void FixRenderCommandList( int newShader );
-
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
 
 

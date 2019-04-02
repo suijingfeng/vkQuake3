@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "vk_shade_geometry.h"
 #include "RB_ShowImages.h"
 #include "R_PrintMat.h"
+#include "tr_light.h"
 
 static renderCommandList_t	BE_Commands;
 

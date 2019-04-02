@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "vk_shade_geometry.h"
 
 #include "ref_import.h"
-
+#include "tr_light.h"
 
 
 static int R_CullModel( md3Header_t *header, trRefEntity_t *ent )
