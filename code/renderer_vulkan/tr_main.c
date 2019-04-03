@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_shader.h"
 
 #include "vk_shade_geometry.h"
-#include "vk_instance.h"
+
 #include "vk_image.h"
 #include "matrix_multiplication.h"
 #include "ref_import.h"
@@ -37,31 +37,84 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "R_DebugGraphics.h"
 
 
+// x: 1x3
+// x^T: 3x1
+// mat: 3x3
+// out: 1*3
+// out = x * mat = (mat^T * x^T)^T 
+static inline void R_LocalVecToWorld (const float in[3], const float mat[3][3], float out[3])
+{
+	out[0] = in[0] * mat[0][0] + in[1] * mat[1][0] + in[2] * mat[2][0];
+	out[1] = in[0] * mat[0][1] + in[1] * mat[1][1] + in[2] * mat[2][1];
+	out[2] = in[0] * mat[0][2] + in[1] * mat[1][2] + in[2] * mat[2][2];
+}
+
+
+/*
 static void R_LocalNormalToWorld (const vec3_t local, const orientationr_t * const pRT, vec3_t world)
 {
 	world[0] = local[0] * pRT->axis[0][0] + local[1] * pRT->axis[1][0] + local[2] * pRT->axis[2][0];
 	world[1] = local[0] * pRT->axis[0][1] + local[1] * pRT->axis[1][1] + local[2] * pRT->axis[2][1];
 	world[2] = local[0] * pRT->axis[0][2] + local[1] * pRT->axis[1][2] + local[2] * pRT->axis[2][2];
 }
+*/
 
-
-static void R_WorldVectorToLocal (const vec3_t world, const float R[3][3], vec3_t local)
+// x: 1x3
+// x^T: 3x1
+// mat: 3x3
+// out: 1*3
+// out = (x * mat^T) = (mat * x^T)^T
+static inline void R_WorldVectorToLocal (const float in[3], const float mat[3][3], float out[3])
 {
-	local[0] = DotProduct(world, R[0]);
-	local[1] = DotProduct(world, R[1]);
-	local[2] = DotProduct(world, R[2]);
+//	out[0] = DotProduct(in, mat[0]);
+//	out[1] = DotProduct(in, mat[1]);
+//	out[2] = DotProduct(in, mat[2]);
+    out[0] = in[0] * mat[0][0] + in[1] * mat[0][1] + in[2] * mat[0][2];
+    out[1] = in[0] * mat[1][0] + in[1] * mat[1][1] + in[2] * mat[1][2];
+    out[2] = in[0] * mat[2][0] + in[1] * mat[2][1] + in[2] * mat[2][2];
 }
 
 
-static void R_WorldPointToLocal (const vec3_t world, const orientationr_t * const pRT, vec3_t local)
+static void R_WorldPointToLocal (const vec3_t world, const orientationr_t * const pRT, float out[3])
 {
-    vec3_t delta;
-
+    float delta[3];
     VectorSubtract( world, pRT->origin, delta );
+    R_WorldVectorToLocal(delta, pRT->axis, out);
+}
 
-	local[0] = DotProduct(delta, pRT->axis[0]);
-	local[1] = DotProduct(delta, pRT->axis[1]);
-	local[2] = DotProduct(delta, pRT->axis[2]);
+/*
+static void R_MirrorVector (vec3_t in, orientation_t *surface, orientation_t *camera, vec3_t out)
+{
+	int		i;
+
+	VectorClear( out );
+	for ( i = 0 ; i < 3 ; i++ )
+    {
+		float d = DotProduct(in, surface->axis[i]);
+		VectorMA( out, d, camera->axis[i], out );
+	}
+}
+*/
+
+static inline void R_MirrorVector (vec3_t in, orientation_t *surface, orientation_t *camera, vec3_t out)
+{
+    vec3_t local;
+    R_WorldVectorToLocal(in, surface->axis, local);
+    R_LocalVecToWorld(local, camera->axis, out);
+}
+
+static void R_MirrorPoint (vec3_t in, orientation_t *surface, orientation_t *camera, vec3_t out)
+{
+    // ri.Printf(PRINT_ALL, "R_MirrorPoint\n");
+	int		i;
+	vec3_t	vectmp;
+	VectorSubtract( in, surface->origin, vectmp );
+    
+	// vec3_t transformed;
+    vec3_t local;
+    R_WorldVectorToLocal(vectmp, surface->axis, local);
+    R_LocalVecToWorld(local, camera->axis, vectmp);
+	VectorAdd( vectmp, camera->origin, out );
 }
 
 
@@ -298,41 +351,20 @@ static void R_SetupFrustum (viewParms_t * const pViewParams)
     uint32_t i = 0;
 	for (i=0; i < 4; i++)
     {
-		// pViewParams->frustum[i].type = PLANE_NON_AXIAL;
-		// pViewParams->frustum[i].dist = DotProduct (pViewParams->or.origin, pViewParams->frustum[i].normal);
-		SetPlaneSignbits( &pViewParams->frustum[i] );
-	}
-}
+		// SetPlaneSignbits( &pViewParams->frustum[i] );
+        // cplane_t* out = &pViewParams->frustum[i];
+        int	bits = 0, j;
 
+        // for fast box on planeside test
 
-static void R_MirrorPoint (vec3_t in, orientation_t *surface, orientation_t *camera, vec3_t out)
-{
-    // ri.Printf(PRINT_ALL, "R_MirrorPoint\n");
-	int		i;
-	vec3_t	local;
-	vec3_t	transformed = { 0, 0, 0 };
+        for (j=0 ; j<3 ; j++)
+        {
+            if (pViewParams->frustum[i].normal[j] < 0) {
+                bits |= 1<<j;
+            }
+        }
 
-	VectorSubtract( in, surface->origin, local );
-
-	for ( i = 0 ; i < 3 ; i++ )
-    {
-		float d = DotProduct(local, surface->axis[i]);
-		VectorMA( transformed, d, camera->axis[i], transformed );
-	}
-
-	VectorAdd( transformed, camera->origin, out );
-}
-
-
-static void R_MirrorVector (vec3_t in, orientation_t *surface, orientation_t *camera, vec3_t out)
-{
-	int		i;
-
-	VectorClear( out );
-	for ( i = 0 ; i < 3 ; i++ )
-    {
-		float d = DotProduct(in, surface->axis[i]);
-		VectorMA( out, d, camera->axis[i], out );
+        pViewParams->frustum[i].signbits = bits;
 	}
 }
 
@@ -410,8 +442,9 @@ static qboolean R_GetPortalOrientations( drawSurf_t *drawSurf, int entityNum,
 
 		// rotate the plane, but keep the non-rotated version for matching
 		// against the portalSurface entities
-		R_LocalNormalToWorld( originalPlane.normal, &tr.or, plane.normal );
-		plane.dist = originalPlane.dist + DotProduct( plane.normal, tr.or.origin );
+		// R_LocalNormalToWorld( originalPlane.normal, &tr.or, plane.normal );
+        R_LocalVecToWorld(originalPlane.normal, tr.or.axis, plane.normal);
+        plane.dist = originalPlane.dist + DotProduct( plane.normal, tr.or.origin );
 
 		// translate the original plane
 		originalPlane.dist = originalPlane.dist + DotProduct( originalPlane.normal, tr.or.origin );
@@ -530,7 +563,8 @@ static qboolean IsMirror( const drawSurf_t *drawSurf, int entityNum )
 
 		// rotate the plane, but keep the non-rotated version for matching
 		// against the portalSurface entities
-		R_LocalNormalToWorld( originalPlane.normal, &tr.or, plane.normal );
+		// R_LocalNormalToWorld( originalPlane.normal, &tr.or, plane.normal );
+        R_LocalVecToWorld(originalPlane.normal, tr.or.axis, plane.normal);
 		plane.dist = originalPlane.dist + DotProduct( plane.normal, tr.or.origin );
 
 		// translate the original plane
