@@ -6,7 +6,6 @@
 /*
 ================
 Draws triangle outlines for debugging
-DrawTris
 ================
 */
 void RB_DrawTris (shaderCommands_t * pInput)

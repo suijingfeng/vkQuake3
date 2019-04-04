@@ -106,7 +106,6 @@ static inline void R_MirrorVector (vec3_t in, orientation_t *surface, orientatio
 static void R_MirrorPoint (vec3_t in, orientation_t *surface, orientation_t *camera, vec3_t out)
 {
     // ri.Printf(PRINT_ALL, "R_MirrorPoint\n");
-	int		i;
 	vec3_t	vectmp;
 	VectorSubtract( in, surface->origin, vectmp );
     

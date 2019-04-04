@@ -9,10 +9,7 @@
 #include "tr_fog.h"
 
 
-
-
 #define IMAGE_CHUNK_SIZE        (8 * 1024 * 1024)
-
 
 
 struct ImageChunk_t{
@@ -670,6 +667,7 @@ image_t* R_CreateImage( const char *name, unsigned char* pic, const uint32_t wid
     VK_CHECK(qvkMapMemory(vk.device, StagImg.devMemMappable, 0, VK_WHOLE_SIZE, 0, &data));
     memcpy(data, upload_buffer, buffer_size);
     qvkUnmapMemory(vk.device, StagImg.devMemMappable);
+    
     free(upload_buffer);
 
     vk_stagBufferToDeviceLocalMem(pImage->handle, regions, pImage->mipLevels);
@@ -779,13 +777,8 @@ void RE_UploadCinematic (int w, int h, int cols, int rows, const unsigned char *
         
         vk_createImageAndBindWithMemory(prtImage);
 
-        //vk_createImageView(prtImage->handle, &prtImage->view);
-        //vk_createDescriptorSet(prtImage->view , vk_find_sampler(0, 0), &prtImage->descriptor_set);
-        // vk_find_sampler(0, 0)
         vk_createImageViewAndDescriptorSet(prtImage);
-        //vk_find_sampler(isMipMap, glWrapClampMode == GL_REPEAT)
 
-        // vk_uploadSingleImage(prtImage->handle, cols, rows, data);
 
         VkBufferImageCopy region;
         region.bufferOffset = 0;
@@ -1078,4 +1071,6 @@ void vk_destroyImageRes(void)
     // were allocated from it, and destroying VkDescriptorPool frees all 
     // VkDescriptorSet objects that were allocated from it.
     VK_CHECK(qvkResetDescriptorPool(vk.device, vk.descriptor_pool, 0));
+
+    memset(hashTable, 0, sizeof(hashTable));
 }

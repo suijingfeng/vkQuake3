@@ -14,7 +14,7 @@ Also called by RE_EndRegistration
 // TODO: move glConfig retated stuff to glConfig.c,
 
 
-void RB_ShowImages(const image_t ** const pImg, unsigned int N)
+void RB_ShowImages(image_t ** const pImg, unsigned int N)
 {
 
     backEnd.projection2D = qtrue;
@@ -38,7 +38,6 @@ void RB_ShowImages(const image_t ** const pImg, unsigned int N)
 	for (i = 0 ; i < N; ++i)
     {
 		//image_t* image = tr.images[i];
-
 		float x = i % 20 * w;
 		float y = i / 20 * h;
 
@@ -69,18 +68,17 @@ void RB_ShowImages(const image_t ** const pImg, unsigned int N)
 		tess.svars.texcoords[0][2][1] = 1;
 		tess.svars.texcoords[0][3][0] = 0;
 		tess.svars.texcoords[0][3][1] = 1;
-	
+
 		memset( tess.svars.colors, 255, tess.numVertexes * 4 );
         
         updateCurDescriptor( pImg[i]->descriptor_set, 0);
-        
+
         vk_UploadXYZI(tess.xyz, 4, tess.indexes, 6);
 
         // updateMVP(backEnd.viewParms.isPortal, backEnd.projection2D, getptr_modelview_matrix());
         updateMVP( 0 , 1, getptr_modelview_matrix());
 
         vk_shade_geometry(g_stdPipelines.images_debug_pipeline, VK_FALSE, DEPTH_RANGE_NORMAL, VK_TRUE);
-
 	}
 	tess.numIndexes = 0;
 	tess.numVertexes = 0;

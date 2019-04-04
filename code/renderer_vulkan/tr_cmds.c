@@ -320,7 +320,6 @@ static void RB_RenderDrawSurfList( drawSurf_t* drawSurfs, int numDrawSurfs )
 				// the world (like water) continue with the wrong frame
 				tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
 				R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.or );
-
 			}
 
 

@@ -329,8 +329,6 @@ void vk_destroyWindow( void )
 {
 	ri.Printf(PRINT_ALL, " Destroy Window Subsystem.\n");
 	
-    R_glConfigClear();
-
 	ri.IN_Shutdown();
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
 

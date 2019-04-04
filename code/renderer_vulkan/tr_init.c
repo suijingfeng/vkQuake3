@@ -159,11 +159,11 @@ void RE_Shutdown( qboolean destroyWindow )
 
     ri.Cmd_RemoveCommand("minimize");
 	
-    ri.Cmd_RemoveCommand("vkinfo");
+	ri.Cmd_RemoveCommand("vkinfo");
     ri.Cmd_RemoveCommand("pipelineList");
     ri.Cmd_RemoveCommand("gpuMem");
     ri.Cmd_RemoveCommand("printOR");
-    
+
 	R_DoneFreeType();
 
     // VULKAN
@@ -180,7 +180,7 @@ void RE_Shutdown( qboolean destroyWindow )
 
 	if ( tr.registered )
     {	
-        vk_destroyImageRes();
+		vk_destroyImageRes();
         tr.registered = qfalse;
 	}
 
@@ -188,16 +188,19 @@ void RE_Shutdown( qboolean destroyWindow )
     {
         vk_shutdown();
         vk_destroyWindow();
+        
+        // It is cleared not for renderer_vulkan,
+        // but fot rendergl1, renderergl2 to create the window
+        R_glConfigClear();
     }
 }
 
 
-
-void RE_BeginRegistration(glconfig_t *glconfigOut)
+void RE_BeginRegistration(glconfig_t * pGlCfg)
 {
 	R_Init();
 
-    R_glConfigOut(glconfigOut);
+    R_GetGlConfig(pGlCfg);
 
 	tr.viewCluster = -1; // force markleafs to regenerate
 

@@ -8,7 +8,7 @@ void R_glConfigClear(void);
 void R_GetWinResolution(int* w, int* h);
 void R_GetWinResolutionF(float* w, float* h);
 
-void R_glConfigOut(glconfig_t* pOut);
+void R_GetGlConfig(glconfig_t * const pOut);
 void R_DisplayResolutionList_f(void);
 void R_InitDisplayResolution( void );
 

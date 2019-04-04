@@ -5,7 +5,6 @@
 
 /*
 ================
-DrawNormals
 Draws vertex normals for debugging
 ================
 */
@@ -42,4 +41,3 @@ void RB_DrawNormals (shaderCommands_t* pTess, int numVertexes )
         i += count;
     }
 }
-

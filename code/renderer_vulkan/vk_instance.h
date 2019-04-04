@@ -126,7 +126,6 @@ const char * cvtResToStr(VkResult result);
 #else
 #define VK_CHECK(function_call)	\
 	function_call;
-
 #endif
 
 

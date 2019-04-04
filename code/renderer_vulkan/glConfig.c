@@ -138,9 +138,10 @@ void R_glConfigClear(void)
 }
 
 
-void R_glConfigOut(glconfig_t* pOut)
+//IN: a pointer to the glConfig struct
+void R_GetGlConfig(glconfig_t * const pCfg)
 {
-	*pOut = glConfig;
+	*pCfg = glConfig;
 }
 
 
@@ -343,5 +344,3 @@ void vulkanInfo_f( void )
 
     gpuMemUsageInfo_f();
 }
-
-
