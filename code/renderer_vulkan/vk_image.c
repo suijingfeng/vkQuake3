@@ -11,12 +11,16 @@
 
 #define IMAGE_CHUNK_SIZE        (64 * 1024 * 1024)
 
-
 struct ImageChunk_t{
     VkDeviceMemory devMem;
     uint32_t memUsed;
 //    uint32_t typeIndex;
 };
+
+
+static struct ImageChunk_t ImgChunks[8];
+static uint32_t chkIndex = 0;
+
 
 
 struct StagingBufferImage
@@ -35,8 +39,7 @@ struct StagingBufferImage
     VkDeviceMemory devMemMappable;
 
     // One large device device local memory allocation, assigned to multiple images
-    struct ImageChunk_t ImgChunks[32];
-    uint32_t chkIndex;
+
 // pointer to mapped staging buffer
 //    unsigned char* pBufMapped;
 };
@@ -47,8 +50,8 @@ struct StagingBufferImage StagImg;
 void gpuMemUsageInfo_f(void)
 {
     // approm	 for debug info
-    ri.Printf(PRINT_ALL, "Image chuck memory(device local) used: %d M \n", 
-            StagImg.chkIndex * (IMAGE_CHUNK_SIZE>>20) );
+    ri.Printf(PRINT_ALL, "Total %d Images, chuck memory(device local) used: %d M \n", 
+            tr.numImages,  chkIndex * (IMAGE_CHUNK_SIZE>>20) );
 }
 
 
@@ -75,9 +78,7 @@ static void vk_createStagingBuffer(uint32_t size)
 
     memset(&StagImg, 0, sizeof(StagImg));
 
-
     ri.Printf(PRINT_ALL, " Create Staging Buffer: %d\n", size);
-
     {
         VkBufferCreateInfo buffer_desc;
         buffer_desc.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -101,7 +102,6 @@ static void vk_createStagingBuffer(uint32_t size)
     }
 
     // To determine the memory requirements for a buffer resource
-
     //  typedef struct VkMemoryRequirements {
     //  VkDeviceSize size;
     //  VkDeviceSize alignment;
@@ -125,7 +125,6 @@ static void vk_createStagingBuffer(uint32_t size)
         ri.Printf(PRINT_ALL, " Stagging buffer alignment: %ld, memoryTypeBits: 0x%x, Type Index: %d. \n",
             memory_requirements.alignment, memory_requirements.memoryTypeBits, alloc_info.memoryTypeIndex);
     }
-
 }
 
 
@@ -136,22 +135,17 @@ static void vk_destroy_staging_buffer(void)
     if (StagImg.buff != VK_NULL_HANDLE)
     {
         qvkDestroyBuffer(vk.device, StagImg.buff, NULL);
+        StagImg.buff = VK_NULL_HANDLE;
     }
     
     if (StagImg.devMemMappable != VK_NULL_HANDLE)
     {
         qvkFreeMemory(vk.device, StagImg.devMemMappable, NULL);
+        StagImg.devMemMappable = VK_NULL_HANDLE;
     }
 
-    uint32_t i; 
-    for (i = 0; i < StagImg.chkIndex; i++)
-    {
-        qvkFreeMemory(vk.device, StagImg.ImgChunks[i].devMem, NULL);
-    }
 
-    memset(&StagImg, 0, sizeof(StagImg));
 }
-
 
 
 static void vk_stagBufferToDeviceLocalMem(VkImage image, VkBufferImageCopy* pRegion, uint32_t num_region)
@@ -204,7 +198,6 @@ static void vk_stagBufferToDeviceLocalMem(VkImage image, VkBufferImageCopy* pReg
             0, VK_IMAGE_LAYOUT_UNDEFINED, VK_ACCESS_TRANSFER_WRITE_BIT,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-
     
     // To copy data from a buffer object to an image object
     
@@ -246,7 +239,6 @@ static void vk_stagBufferToDeviceLocalMem(VkImage image, VkBufferImageCopy* pReg
 
 #define FILE_HASH_SIZE	1024
 static image_t*	hashTable[FILE_HASH_SIZE];
-
 
 static int generateHashValue( const char *fname )
 {
@@ -305,17 +297,17 @@ static void vk_createImageAndBindWithMemory(image_t* pImg)
 
 
     uint32_t i = 0;
-	for (i = 0; i < StagImg.chkIndex; i++)
+	for (i = 0; i < chkIndex; i++)
     {
 		// ensure that memory region has proper alignment
-		VkDeviceSize offset_aligned = (StagImg.ImgChunks[i].memUsed + mask) & (~mask);
+		VkDeviceSize offset_aligned = (ImgChunks[i].memUsed + mask) & (~mask);
         VkDeviceSize end = offset_aligned + memory_requirements.size;
 		if (end <= IMAGE_CHUNK_SIZE)
         {
             VK_CHECK(qvkBindImageMemory(vk.device, pImg->handle, 
-                        StagImg.ImgChunks[i].devMem, offset_aligned));
+                        ImgChunks[i].devMem, offset_aligned));
 
-			StagImg.ImgChunks[i].memUsed = end;
+			ImgChunks[i].memUsed = end;
 			return;
 		}
 	}
@@ -333,9 +325,9 @@ static void vk_createImageAndBindWithMemory(image_t* pImg)
     VK_CHECK(qvkAllocateMemory(vk.device, &alloc_info, NULL, &memory));
     VK_CHECK(qvkBindImageMemory(vk.device, pImg->handle, memory, 0));
 
-    StagImg.ImgChunks[StagImg.chkIndex].devMem = memory;
-    StagImg.ImgChunks[StagImg.chkIndex].memUsed = memory_requirements.size;
-    StagImg.chkIndex++;
+    ImgChunks[chkIndex].devMem = memory;
+    ImgChunks[chkIndex].memUsed = memory_requirements.size;
+    chkIndex++;
 
 
     ri.Printf(PRINT_ALL, " --- Device memory allocation --- \n");
@@ -344,10 +336,9 @@ static void vk_createImageAndBindWithMemory(image_t* pImg)
             memory_requirements.alignment, alloc_info.memoryTypeIndex);
     
     ri.Printf(PRINT_ALL, "Image chuck memory consumed: %d M \n",
-            StagImg.chkIndex * (IMAGE_CHUNK_SIZE >> 20) );
+            chkIndex * (IMAGE_CHUNK_SIZE >> 20) );
 
     ri.Printf(PRINT_ALL, " --- ------------------------ --- \n");
-
 }
 
 
@@ -530,10 +521,9 @@ image_t* R_CreateImage( const char *name, unsigned char* pic, const uint32_t wid
 
     pImage->uploadWidth = scaled_width;
     pImage->uploadHeight = scaled_height;
- 
     
     uint32_t buffer_size = 4 * pImage->uploadWidth * pImage->uploadHeight;
-    unsigned char * const upload_buffer = (unsigned char*) malloc ( 2 * buffer_size);
+    unsigned char * const pUploadBuffer = (unsigned char*) malloc ( 2 * buffer_size);
 
     if ((scaled_width != width) || (scaled_height != height) )
     {
@@ -542,11 +532,11 @@ image_t* R_CreateImage( const char *name, unsigned char* pic, const uint32_t wid
         //        width, height, scaled_width, scaled_height );
         
         //go down from [width, height] to [scaled_width, scaled_height]
-        ResampleTexture (upload_buffer, width, height, pic, scaled_width, scaled_height);
+        ResampleTexture (pUploadBuffer, width, height, pic, scaled_width, scaled_height);
     }
     else
     {
-        memcpy(upload_buffer, pic, buffer_size);
+        memcpy(pUploadBuffer, pic, buffer_size);
     }
 
 
@@ -584,10 +574,10 @@ image_t* R_CreateImage( const char *name, unsigned char* pic, const uint32_t wid
         uint32_t base_width = pImage->uploadWidth;
         uint32_t base_height = pImage->uploadHeight;
 
-        unsigned char* in_ptr = upload_buffer;
+        unsigned char* in_ptr = pUploadBuffer;
         unsigned char* dst_ptr = in_ptr + buffer_size;
 
-        R_LightScaleTexture(upload_buffer, upload_buffer, buffer_size);
+        R_LightScaleTexture(pUploadBuffer, pUploadBuffer, buffer_size);
 
         // Use the normal mip-mapping to go down from [scaled_width, scaled_height] to [1,1] dimensions.
 
@@ -663,10 +653,10 @@ image_t* R_CreateImage( const char *name, unsigned char* pic, const uint32_t wid
 
     void* data;
     VK_CHECK(qvkMapMemory(vk.device, StagImg.devMemMappable, 0, VK_WHOLE_SIZE, 0, &data));
-    memcpy(data, upload_buffer, buffer_size);
+    memcpy(data, pUploadBuffer, buffer_size);
     qvkUnmapMemory(vk.device, StagImg.devMemMappable);
     
-    free(upload_buffer);
+    free(pUploadBuffer);
 
     vk_stagBufferToDeviceLocalMem(pImage->handle, regions, pImage->mipLevels);
 
@@ -1046,7 +1036,17 @@ void vk_destroyImageRes(void)
 
     memset( tr.images, 0, sizeof( tr.images ) );
     tr.numImages = 0;
-    
+
+
+    for (i = 0; i < chkIndex; i++)
+    {
+        qvkFreeMemory(vk.device, ImgChunks[i].devMem, NULL);
+    }
+
+    chkIndex = 0;
+
+    memset(&StagImg, 0, sizeof(StagImg));
+
     vk_destroy_staging_buffer();
     // Destroying a pool object implicitly frees all objects allocated from that pool. 
     // Specifically, destroying VkCommandPool frees all VkCommandBuffer objects that 
