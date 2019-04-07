@@ -203,7 +203,7 @@ static	void R_LoadLightmaps( lump_t *l ) {
 			}
 		}
 		tr.lightmaps[i] = R_CreateImage( va("*lightmap%d",i), image, 
-			LIGHTMAP_SIZE, LIGHTMAP_SIZE, qfalse, qfalse, GL_CLAMP, VK_FALSE);
+			LIGHTMAP_SIZE, LIGHTMAP_SIZE, qfalse, qfalse, GL_CLAMP);
 	}
 
 	if ( r_lightmap->integer == 2 )	{

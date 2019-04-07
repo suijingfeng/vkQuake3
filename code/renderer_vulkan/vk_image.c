@@ -9,7 +9,7 @@
 #include "tr_fog.h"
 
 
-#define IMAGE_CHUNK_SIZE        (8 * 1024 * 1024)
+#define IMAGE_CHUNK_SIZE        (64 * 1024 * 1024)
 
 
 struct ImageChunk_t{
@@ -151,8 +151,6 @@ static void vk_destroy_staging_buffer(void)
 
     memset(&StagImg, 0, sizeof(StagImg));
 }
-
-
 
 
 
@@ -459,14 +457,14 @@ static void vk_createImageViewAndDescriptorSet(image_t* pImage)
 
 
 image_t* R_CreateImage( const char *name, unsigned char* pic, const uint32_t width, const uint32_t height,
-						VkBool32 isMipMap, VkBool32 allowPicmip, int glWrapClampMode, VkBool32 isAlone )
+						VkBool32 isMipMap, VkBool32 allowPicmip, int glWrapClampMode)
 {
     if (strlen(name) >= MAX_QPATH ) {
         ri.Error (ERR_DROP, "CreateImage: \"%s\" is too long\n", name);
     }
 
 
-    ri.Printf( PRINT_ALL, "R_CreateImage: %s\n", name);
+    ri.Printf( PRINT_ALL, " Create Image: %s\n", name);
     
     // Create image_t object.
 
@@ -676,14 +674,10 @@ image_t* R_CreateImage( const char *name, unsigned char* pic, const uint32_t wid
     pImage->next = hashTable[hash];
     hashTable[hash] = pImage;
 
-
-    if(!isAlone)
-    {        
-        tr.images[tr.numImages] = pImage;
-        if ( ++tr.numImages == MAX_DRAWIMAGES )
-        {
-            ri.Error( ERR_DROP, "CreateImage: MAX_DRAWIMAGES hit\n");
-        }
+    tr.images[tr.numImages] = pImage;
+    if ( ++tr.numImages == MAX_DRAWIMAGES )
+    {
+        ri.Error( ERR_DROP, "CreateImage: MAX_DRAWIMAGES hit\n");
     }
 
     return pImage;
@@ -746,7 +740,7 @@ image_t* R_FindImageFile(const char *name, VkBool32 mipmap, VkBool32 allowPicmip
         return NULL;
     }
 
-    image = R_CreateImage( name, pic, width, height, mipmap, allowPicmip, glWrapClampMode, VK_FALSE);
+    image = R_CreateImage( name, pic, width, height, mipmap, allowPicmip, glWrapClampMode);
 
     ri.Free( pic );
     
@@ -870,7 +864,7 @@ static void R_CreateDefaultImage( void )
 			data[x][DEFAULT_SIZE-1][2] =
 			data[x][DEFAULT_SIZE-1][3] = 255;
 	}
-	tr.defaultImage = R_CreateImage("*default", (unsigned char *)data, DEFAULT_SIZE, DEFAULT_SIZE, qtrue, qfalse, GL_REPEAT, VK_TRUE);
+	tr.defaultImage = R_CreateImage("*default", (unsigned char *)data, DEFAULT_SIZE, DEFAULT_SIZE, qtrue, qfalse, GL_REPEAT);
 }
 
 
@@ -880,7 +874,7 @@ static void R_CreateWhiteImage(void)
 	// we use a solid white image instead of disabling texturing
 	unsigned char data[DEFAULT_SIZE][DEFAULT_SIZE][4];
 	memset( data, 255, sizeof( data ) );
-	tr.whiteImage = R_CreateImage("*white", (unsigned char *)data, 8, 8, qfalse, qfalse, GL_REPEAT, VK_TRUE);
+	tr.whiteImage = R_CreateImage("*white", (unsigned char *)data, 8, 8, qfalse, qfalse, GL_REPEAT);
 }
 
 
@@ -899,7 +893,7 @@ static void R_CreateIdentityLightImage(void)
 			data[y][x][3] = 255;
 		}
 	}
-	tr.identityLightImage = R_CreateImage("*identityLight", (unsigned char *)data, 8, 8, qfalse, qfalse, GL_REPEAT, VK_FALSE );
+	tr.identityLightImage = R_CreateImage("*identityLight", (unsigned char *)data, 8, 8, qfalse, qfalse, GL_REPEAT);
 }
 
 
@@ -930,7 +924,7 @@ static void R_CreateDlightImage( void )
 			data[y][x][3] = 255;			
 		}
 	}
-	tr.dlightImage = R_CreateImage("*dlight", (unsigned char *)data, DLIGHT_SIZE, DLIGHT_SIZE, qfalse, qfalse, GL_CLAMP, VK_TRUE );
+	tr.dlightImage = R_CreateImage("*dlight", (unsigned char *)data, DLIGHT_SIZE, DLIGHT_SIZE, qfalse, qfalse, GL_CLAMP);
 }
 
 
@@ -941,7 +935,7 @@ static void R_CreateFogImage( void )
 
 	unsigned int x,y;
 
-	unsigned char* data = (unsigned char*) malloc( FOG_S * FOG_T * 4 );
+	unsigned char* const data = (unsigned char*) malloc( FOG_S * FOG_T * 4 );
 
 	// S is distance, T is depth
 	for (x=0 ; x<FOG_S ; x++)
@@ -960,7 +954,7 @@ static void R_CreateFogImage( void )
 	// standard openGL clamping doesn't really do what we want -- it includes
 	// the border color at the edges.  OpenGL 1.2 has clamp-to-edge, which does
 	// what we want.
-	tr.fogImage = R_CreateImage("*fog", (unsigned char *)data, FOG_S, FOG_T, qfalse, qfalse, GL_CLAMP, VK_TRUE );
+	tr.fogImage = R_CreateImage("*fog", (unsigned char *)data, FOG_S, FOG_T, qfalse, qfalse, GL_CLAMP);
 	
     free( data );
 }
@@ -975,7 +969,7 @@ static void R_CreateScratchImage(void)
     for(x=0;x<32;x++)
     {
         // scratchimage is usually used for cinematic drawing
-        tr.scratchImage[x] = R_CreateImage("*scratch", (unsigned char *)data, DEFAULT_SIZE, DEFAULT_SIZE, qfalse, qtrue, GL_CLAMP, VK_TRUE);
+        tr.scratchImage[x] = R_CreateImage("*scratch", (unsigned char *)data, DEFAULT_SIZE, DEFAULT_SIZE, qfalse, qtrue, GL_CLAMP);
     }
 }
 
@@ -984,8 +978,9 @@ static void R_CreateScratchImage(void)
 void R_InitImages( void )
 {
     memset(hashTable, 0, sizeof(hashTable));
-    
-    vk_createStagingBuffer(IMAGE_CHUNK_SIZE);
+
+
+    vk_createStagingBuffer(8 * 1024 * 1024);
 
 	// setup the overbright lighting
 
@@ -1012,7 +1007,7 @@ void R_InitImages( void )
 }
 
 
-static void R_DestroySingleImage( image_t* pImg )
+static void vk_destroySingleImage( image_t* pImg )
 {
     if(pImg != NULL)
     {
@@ -1042,24 +1037,11 @@ void vk_destroyImageRes(void)
 {
 	vk_free_sampler();
 
-/*
-    R_DestroySingleImage(tr.identityLightImage);
-*/
-    R_DestroySingleImage(tr.defaultImage);
-    R_DestroySingleImage(tr.whiteImage);
-    R_DestroySingleImage(tr.fogImage);
-    R_DestroySingleImage(tr.dlightImage);
-
     uint32_t i = 0;
-    for(i=0; i<32; i++)
-    {
-		// scratchimage is usually used for cinematic drawing
-		R_DestroySingleImage(tr.scratchImage[i]);
-	}
 
 	for (i = 0; i < tr.numImages; i++)
 	{
-        R_DestroySingleImage(tr.images[i]);
+        vk_destroySingleImage(tr.images[i]);
 	}
 
     memset( tr.images, 0, sizeof( tr.images ) );
