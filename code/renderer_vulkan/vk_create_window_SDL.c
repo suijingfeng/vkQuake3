@@ -298,11 +298,9 @@ void vk_createWindow(void)
 
 success:
 
-#ifdef USE_ICON
 	SDL_SetWindowIcon( window_sdl, icon );
 
     SDL_FreeSurface( icon );
-#endif
 
 	// This depends on SDL_INIT_VIDEO, hence having it here
 	ri.IN_Init(window_sdl);
@@ -328,7 +326,7 @@ void vk_getInstanceProcAddrImpl(void)
 void vk_destroyWindow( void )
 {
 	ri.Printf(PRINT_ALL, " Destroy Window Subsystem.\n");
-	
+
 	ri.IN_Shutdown();
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
 

@@ -131,7 +131,7 @@ void stripExtension(const char *in, char *out, int destsize)
 	
     out[destsize-1] = '\0';
 }
-*/
+
 
 
 const char *R_GetExtension( const char *name )
@@ -142,7 +142,7 @@ const char *R_GetExtension( const char *name )
 	else
 		return "";
 }
-
+*/
 
 /*
 char* GetExtension( const char *name )

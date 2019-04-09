@@ -29,7 +29,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "ref_import.h"
 #include "matrix_multiplication.h"
 #include "RB_SurfaceAnim.h"
-
 /*
 
   THIS ENTIRE FILE IS BACK END

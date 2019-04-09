@@ -11,19 +11,10 @@
 
 #define IMAGE_CHUNK_SIZE        (64 * 1024 * 1024)
 
-struct ImageChunk_t{
-    VkDeviceMemory devMem;
-    uint32_t memUsed;
-//    uint32_t typeIndex;
-};
-
-
-static struct ImageChunk_t ImgChunks[8];
-static uint32_t chkIndex = 0;
 
 
 
-struct StagingBufferImage
+struct StagingBuffer_t
 {
     // Vulkan supports two primary resource types: buffers and images. 
     // Resources are views of memory with associated formatting and dimensionality.
@@ -34,24 +25,31 @@ struct StagingBufferImage
     // by binding them to a graphics or compute pipeline via descriptor sets or via
     // certain commands, or by directly specifying them as parameters to certain commands.
     VkBuffer buff;
-
     // Host visible memory used to copy image data to device local memory.
-    VkDeviceMemory devMemMappable;
+    VkDeviceMemory mappableMem;
+};
 
-    // One large device device local memory allocation, assigned to multiple images
-
-// pointer to mapped staging buffer
-//    unsigned char* pBufMapped;
+struct ImageChunk_t {
+    VkDeviceMemory block;
+    uint32_t Used;
+    // uint32_t typeIndex;
 };
 
 
-struct StagingBufferImage StagImg;
+struct deviceLocalMemory_t {
+    // One large device device local memory allocation, assigned to multiple images
+	struct ImageChunk_t Chunks[8];
+	uint32_t Index; // number of chunks used
+};
+
+static struct StagingBuffer_t StagBuf;
+static struct deviceLocalMemory_t devMemImg;
 
 void gpuMemUsageInfo_f(void)
 {
     // approm	 for debug info
-    ri.Printf(PRINT_ALL, "Total %d Images, chuck memory(device local) used: %d M \n", 
-            tr.numImages,  chkIndex * (IMAGE_CHUNK_SIZE>>20) );
+    ri.Printf(PRINT_ALL, "Number of image: %d chuck memory(device local) used: %d M \n", 
+           tr.numImages, devMemImg.Index * (IMAGE_CHUNK_SIZE>>20) );
 }
 
 
@@ -76,9 +74,11 @@ uint32_t find_memory_type(uint32_t memory_type_bits, VkMemoryPropertyFlags prope
 static void vk_createStagingBuffer(uint32_t size)
 {
 
-    memset(&StagImg, 0, sizeof(StagImg));
+    memset(&StagBuf, 0, sizeof(StagBuf));
+
 
     ri.Printf(PRINT_ALL, " Create Staging Buffer: %d\n", size);
+
     {
         VkBufferCreateInfo buffer_desc;
         buffer_desc.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -98,10 +98,11 @@ static void vk_createStagingBuffer(uint32_t size)
         // (ignored if sharingMode is not VK_SHARING_MODE_CONCURRENT).
         buffer_desc.pQueueFamilyIndices = NULL;
 
-        VK_CHECK(qvkCreateBuffer(vk.device, &buffer_desc, NULL, &StagImg.buff));
+        VK_CHECK(qvkCreateBuffer(vk.device, &buffer_desc, NULL, &StagBuf.buff));
     }
 
     // To determine the memory requirements for a buffer resource
+
     //  typedef struct VkMemoryRequirements {
     //  VkDeviceSize size;
     //  VkDeviceSize alignment;
@@ -110,7 +111,7 @@ static void vk_createStagingBuffer(uint32_t size)
 
     {
         VkMemoryRequirements memory_requirements;
-        qvkGetBufferMemoryRequirements(vk.device, StagImg.buff, &memory_requirements);
+        qvkGetBufferMemoryRequirements(vk.device, StagBuf.buff, &memory_requirements);
 
         VkMemoryAllocateInfo alloc_info;
         alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -118,9 +119,9 @@ static void vk_createStagingBuffer(uint32_t size)
         alloc_info.allocationSize = memory_requirements.size;
         alloc_info.memoryTypeIndex = find_memory_type(memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-        VK_CHECK(qvkAllocateMemory(vk.device, &alloc_info, NULL, &StagImg.devMemMappable));
+        VK_CHECK(qvkAllocateMemory(vk.device, &alloc_info, NULL, &StagBuf.mappableMem));
 
-        VK_CHECK(qvkBindBufferMemory(vk.device, StagImg.buff, StagImg.devMemMappable, 0));
+        VK_CHECK(qvkBindBufferMemory(vk.device, StagBuf.buff, StagBuf.mappableMem, 0));
 
         ri.Printf(PRINT_ALL, " Stagging buffer alignment: %ld, memoryTypeBits: 0x%x, Type Index: %d. \n",
             memory_requirements.alignment, memory_requirements.memoryTypeBits, alloc_info.memoryTypeIndex);
@@ -132,19 +133,19 @@ static void vk_destroy_staging_buffer(void)
 {
     ri.Printf(PRINT_ALL, " Destroy staging buffer. \n");
 
-    if (StagImg.buff != VK_NULL_HANDLE)
+    if (StagBuf.buff != VK_NULL_HANDLE)
     {
-        qvkDestroyBuffer(vk.device, StagImg.buff, NULL);
-        StagImg.buff = VK_NULL_HANDLE;
+        qvkDestroyBuffer(vk.device, StagBuf.buff, NULL);
+        StagBuf.buff = VK_NULL_HANDLE;
     }
     
-    if (StagImg.devMemMappable != VK_NULL_HANDLE)
+    if (StagBuf.mappableMem != VK_NULL_HANDLE)
     {
-        qvkFreeMemory(vk.device, StagImg.devMemMappable, NULL);
-        StagImg.devMemMappable = VK_NULL_HANDLE;
+        qvkFreeMemory(vk.device, StagBuf.mappableMem, NULL);
+		StagBuf.mappableMem = VK_NULL_HANDLE;
     }
 
-
+    memset(&StagBuf, 0, sizeof(StagBuf));
 }
 
 
@@ -188,7 +189,7 @@ static void vk_stagBufferToDeviceLocalMem(VkImage image, VkBufferImageCopy* pReg
 	barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.buffer = StagImg.buff;
+	barrier.buffer = StagBuf.buff;
 	barrier.offset = 0;
 	barrier.size = VK_WHOLE_SIZE;
     
@@ -202,13 +203,13 @@ static void vk_stagBufferToDeviceLocalMem(VkImage image, VkBufferImageCopy* pReg
     // To copy data from a buffer object to an image object
     
     // cmd_buf is the command buffer into which the command will be recorded.
-    // StagImg.buff is the source buffer.
+    // StagBuf.buff is the source buffer.
     // image is the destination image.
     // dstImageLayout is the layout of the destination image subresources.
     // curLevel is the number of regions to copy.
     // pRegions is a pointer to an array of VkBufferImageCopy structures
     // specifying the regions to copy.
-    qvkCmdCopyBufferToImage(cmd_buf, StagImg.buff, image,
+    qvkCmdCopyBufferToImage(cmd_buf, StagBuf.buff, image,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, num_region, pRegion);
 
     record_image_layout_transition(cmd_buf, image,
@@ -297,17 +298,17 @@ static void vk_createImageAndBindWithMemory(image_t* pImg)
 
 
     uint32_t i = 0;
-	for (i = 0; i < chkIndex; i++)
+	for (i = 0; i < devMemImg.Index; i++)
     {
 		// ensure that memory region has proper alignment
-		VkDeviceSize offset_aligned = (ImgChunks[i].memUsed + mask) & (~mask);
+		VkDeviceSize offset_aligned = (devMemImg.Chunks[i].Used + mask) & (~mask);
         VkDeviceSize end = offset_aligned + memory_requirements.size;
 		if (end <= IMAGE_CHUNK_SIZE)
         {
             VK_CHECK(qvkBindImageMemory(vk.device, pImg->handle, 
-                        ImgChunks[i].devMem, offset_aligned));
+                        devMemImg.Chunks[i].block, offset_aligned));
 
-			ImgChunks[i].memUsed = end;
+			devMemImg.Chunks[i].Used = end;
 			return;
 		}
 	}
@@ -325,9 +326,9 @@ static void vk_createImageAndBindWithMemory(image_t* pImg)
     VK_CHECK(qvkAllocateMemory(vk.device, &alloc_info, NULL, &memory));
     VK_CHECK(qvkBindImageMemory(vk.device, pImg->handle, memory, 0));
 
-    ImgChunks[chkIndex].devMem = memory;
-    ImgChunks[chkIndex].memUsed = memory_requirements.size;
-    chkIndex++;
+    devMemImg.Chunks[devMemImg.Index].block = memory;
+    devMemImg.Chunks[devMemImg.Index].Used = memory_requirements.size;
+    ++devMemImg.Index;
 
 
     ri.Printf(PRINT_ALL, " --- Device memory allocation --- \n");
@@ -336,7 +337,7 @@ static void vk_createImageAndBindWithMemory(image_t* pImg)
             memory_requirements.alignment, alloc_info.memoryTypeIndex);
     
     ri.Printf(PRINT_ALL, "Image chuck memory consumed: %d M \n",
-            chkIndex * (IMAGE_CHUNK_SIZE >> 20) );
+            devMemImg.Index * (IMAGE_CHUNK_SIZE >> 20) );
 
     ri.Printf(PRINT_ALL, " --- ------------------------ --- \n");
 }
@@ -652,10 +653,10 @@ image_t* R_CreateImage( const char *name, unsigned char* pic, const uint32_t wid
 
 
     void* data;
-    VK_CHECK(qvkMapMemory(vk.device, StagImg.devMemMappable, 0, VK_WHOLE_SIZE, 0, &data));
+    VK_CHECK(qvkMapMemory(vk.device, StagBuf.mappableMem, 0, VK_WHOLE_SIZE, 0, &data));
     memcpy(data, pUploadBuffer, buffer_size);
-    qvkUnmapMemory(vk.device, StagImg.devMemMappable);
-    
+    qvkUnmapMemory(vk.device, StagBuf.mappableMem);
+
     free(pUploadBuffer);
 
     vk_stagBufferToDeviceLocalMem(pImage->handle, regions, pImage->mipLevels);
@@ -782,9 +783,9 @@ void RE_UploadCinematic (int w, int h, int cols, int rows, const unsigned char *
         const uint32_t buffer_size = cols * rows * 4;
 
         void* pDat;
-        VK_CHECK(qvkMapMemory(vk.device, StagImg.devMemMappable, 0, VK_WHOLE_SIZE, 0, &pDat));
+        VK_CHECK(qvkMapMemory(vk.device, StagBuf.mappableMem, 0, VK_WHOLE_SIZE, 0, &pDat));
         memcpy(pDat, data, buffer_size);
-        qvkUnmapMemory(vk.device, StagImg.devMemMappable);
+        qvkUnmapMemory(vk.device, StagBuf.mappableMem);
 
         vk_stagBufferToDeviceLocalMem(tr.scratchImage[client]->handle, &region, 1);
     }
@@ -813,9 +814,9 @@ void RE_UploadCinematic (int w, int h, int cols, int rows, const unsigned char *
         const uint32_t buffer_size = cols * rows * 4;
 
         void* pDat;
-        VK_CHECK(qvkMapMemory(vk.device, StagImg.devMemMappable, 0, VK_WHOLE_SIZE, 0, &pDat));
+        VK_CHECK(qvkMapMemory(vk.device, StagBuf.mappableMem, 0, VK_WHOLE_SIZE, 0, &pDat));
         memcpy(pDat, data, buffer_size);
-        qvkUnmapMemory(vk.device, StagImg.devMemMappable);
+        qvkUnmapMemory(vk.device, StagBuf.mappableMem);
 
         vk_stagBufferToDeviceLocalMem(tr.scratchImage[client]->handle, &region, 1);
     }
@@ -969,7 +970,6 @@ void R_InitImages( void )
 {
     memset(hashTable, 0, sizeof(hashTable));
 
-
     vk_createStagingBuffer(8 * 1024 * 1024);
 
 	// setup the overbright lighting
@@ -999,26 +999,20 @@ void R_InitImages( void )
 
 static void vk_destroySingleImage( image_t* pImg )
 {
-    if(pImg != NULL)
-    {
-        ri.Printf(PRINT_ALL, " Destroy Image: %s \n", pImg->imgName); 
-        if(pImg->descriptor_set != VK_NULL_HANDLE)
-        {   
-            //To free allocated descriptor sets
-            qvkFreeDescriptorSets(vk.device, vk.descriptor_pool, 1, &pImg->descriptor_set);
-            pImg->descriptor_set = VK_NULL_HANDLE;
-        }
 
-        if (pImg->handle != VK_NULL_HANDLE)
-        {
-            qvkDestroyImageView(vk.device, pImg->view, NULL);
-            qvkDestroyImage(vk.device, pImg->handle, NULL);
-            pImg->handle = VK_NULL_HANDLE;
-        }
+   	ri.Printf(PRINT_ALL, " Destroy Image: %s \n", pImg->imgName); 
+    if(pImg->descriptor_set != VK_NULL_HANDLE)
+    {   
+        //To free allocated descriptor sets
+        qvkFreeDescriptorSets(vk.device, vk.descriptor_pool, 1, &pImg->descriptor_set);
+        pImg->descriptor_set = VK_NULL_HANDLE;
     }
-    else
+
+    if (pImg->handle != VK_NULL_HANDLE)
     {
-        ri.Printf(PRINT_WARNING, " Destroy NULL Image! \n"); 
+        qvkDestroyImageView(vk.device, pImg->view, NULL);
+        qvkDestroyImage(vk.device, pImg->handle, NULL);
+        pImg->handle = VK_NULL_HANDLE;
     }
 }
 
@@ -1034,18 +1028,14 @@ void vk_destroyImageRes(void)
         vk_destroySingleImage(tr.images[i]);
 	}
 
-    memset( tr.images, 0, sizeof( tr.images ) );
-    tr.numImages = 0;
-
-
-    for (i = 0; i < chkIndex; i++)
+    for (i = 0; i < devMemImg.Index; i++)
     {
-        qvkFreeMemory(vk.device, ImgChunks[i].devMem, NULL);
+        qvkFreeMemory(vk.device, devMemImg.Chunks[i].block, NULL);
+        devMemImg.Chunks[i].Used = 0;
     }
 
-    chkIndex = 0;
+    devMemImg.Index = 0;
 
-    memset(&StagImg, 0, sizeof(StagImg));
 
     vk_destroy_staging_buffer();
     // Destroying a pool object implicitly frees all objects allocated from that pool. 
@@ -1053,6 +1043,9 @@ void vk_destroyImageRes(void)
     // were allocated from it, and destroying VkDescriptorPool frees all 
     // VkDescriptorSet objects that were allocated from it.
     VK_CHECK(qvkResetDescriptorPool(vk.device, vk.descriptor_pool, 0));
+
+    memset( tr.images, 0, sizeof( tr.images ) );
+    tr.numImages = 0;
 
     memset(hashTable, 0, sizeof(hashTable));
 }

@@ -41,6 +41,7 @@ Implementations may support additional limits and capabilities beyond those list
 
 */
 
+
 static void imgFlipY(unsigned char * pBuf, const uint32_t w, const uint32_t h)
 {
     const uint32_t a_row = w * 4;

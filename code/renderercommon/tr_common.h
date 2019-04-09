@@ -71,8 +71,7 @@ typedef struct image_s {
 #define LIGHTMAP_NONE       -1
 
 extern	refimport_t		ri;
-extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared during ref re-init
-
+extern glconfig_t glConfig;	
 // These variables should live inside glConfig but can't because of
 // compatibility issues to the original ID vms.  If you release a stand-alone
 // game and your mod uses tr_types.h from this build you can safely move them

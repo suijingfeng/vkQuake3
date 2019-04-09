@@ -8,6 +8,6 @@ extern refimport_t ri;
 
 char* R_SkipPath (char *pathname);
 void R_StripExtension( const char *in, char *out, int destsize );
-const char* R_GetExtension( const char *name );
+// const char* R_GetExtension( const char *name );
 
 #endif

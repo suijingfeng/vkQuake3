@@ -1,5 +1,5 @@
-#ifndef RENDER_EXPORT_F_H_
-#define RENDER_EXPORT_F_H_
+#ifndef RENDER_EXPORT_H_
+#define RENDER_EXPORT_H_
 
 #include "../qcommon/q_shared.h"
 #include "../renderercommon/tr_types.h"

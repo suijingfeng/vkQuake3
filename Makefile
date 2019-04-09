@@ -1862,7 +1862,7 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/R_ImagePCX.o \
   \
   $(B)/renderer_vulkan/ref_import.o \
-  $(B)/renderer_vulkan/render_export_f.o \
+  $(B)/renderer_vulkan/render_export.o \
   \
   $(B)/renderer_vulkan/vk_create_window_SDL.o
 
