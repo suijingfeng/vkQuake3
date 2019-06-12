@@ -78,8 +78,7 @@ make -j4
 
 you can also download the binary compiled on win10 from https://github.com/suijingfeng/vkQuake3/releases.
 
-You can also try the openarena game https://github.com/suijingfeng/vkOpenArena 
-which is essier to find human players play with, its railgun is more aggresive. :)
+You can also try the openarena game https://github.com/suijingfeng/vkOpenArena :)
 
 
 Q: How to enable vulkan support from the pulldown console ?
