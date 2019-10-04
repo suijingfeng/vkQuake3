@@ -84,7 +84,7 @@ You can also try the openarena game https://github.com/suijingfeng/vkOpenArena :
 Q: How to enable vulkan support from the pulldown console ?
 
 ```
-\cl_renerer vulkan
+\cl_renderer vulkan
 \vid_restart
 ```
 
