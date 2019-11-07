@@ -33,8 +33,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef DEDICATED
 #ifdef USE_LOCAL_HEADERS
-#	include "SDL.h"
-#	include "SDL_cpuinfo.h"
+#	include "../SDL2/include/SDL.h"
+#	include "../SDL2/include/SDL_cpuinfo.h"
 #else
 #	include <SDL.h>
 #	include <SDL_cpuinfo.h>

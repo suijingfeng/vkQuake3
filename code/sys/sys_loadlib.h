@@ -36,8 +36,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #	endif
 #else
 #	ifdef USE_LOCAL_HEADERS
-#		include "SDL.h"
-#		include "SDL_loadso.h"
+#		include "../SDL2/include/SDL.h"
+#		include "../SDL2/include/SDL_loadso.h"
 #	else
 #		include <SDL.h>
 #		include <SDL_loadso.h>

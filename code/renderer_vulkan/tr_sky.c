@@ -422,7 +422,8 @@ static void FillCloudySkySide( const int mins[2], const int maxs[2] )
 
 static void FillCloudBox(void)
 {
-	for ( int i = 0; i < 5; i++ )
+	int i=0;
+	for ( i = 0; i < 5; ++i )
 	{
 		int sky_mins_subd[2], sky_maxs_subd[2];
 		int s, t;
