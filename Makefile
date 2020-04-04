@@ -497,10 +497,10 @@ ifeq ($(PLATFORM),darwin)
 
   ifeq ($(USE_OPENAL),1)
     ifneq ($(USE_LOCAL_HEADERS),1)
-      CLIENT_CFLAGS += -I/System/Library/Frameworks/OpenAL.framework/Headers
+      CLIENT_CFLAGS += $(OPENAL_CFLAGS)
     endif
     ifneq ($(USE_OPENAL_DLOPEN),1)
-      CLIENT_LIBS += -framework OpenAL
+      CLIENT_LDFLAGS += $(OPENAL_LDFLAGS)
     endif
   endif
 
@@ -532,9 +532,9 @@ ifeq ($(PLATFORM),darwin)
     RENDERER_LIBS += $(LIBSDIR)/macosx/libSDL2-2.0.0.dylib
     CLIENT_EXTRA_FILES += $(LIBSDIR)/macosx/libSDL2-2.0.0.dylib
   else
-    BASE_CFLAGS += -I/Library/Frameworks/SDL2.framework/Headers
-    CLIENT_LIBS += -framework SDL2
-    RENDERER_LIBS += -framework SDL2
+    CLIENT_CFLAGS += $(SDL_CFLAGS)
+    CLIENT_LIBS += $(SDL_LIBS)
+    RENDERER_LIBS += $(SDL_LIBS)
   endif
 
   OPTIMIZE = $(OPTIMIZEVM) -ffast-math

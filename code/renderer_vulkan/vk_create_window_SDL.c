@@ -310,7 +310,10 @@ success:
 void vk_getInstanceProcAddrImpl(void)
 {
 
-	SDL_Vulkan_LoadLibrary(NULL);    
+    int code = SDL_Vulkan_LoadLibrary(NULL);
+    if (code) {
+        ri.Error(ERR_FATAL, "Failed to load Vulkan library (code %d): %s", code, SDL_GetError());
+    }
     // Create the window 
 
     qvkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr) SDL_Vulkan_GetVkGetInstanceProcAddr();
