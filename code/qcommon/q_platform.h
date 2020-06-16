@@ -180,6 +180,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define PATH_SEP '/'
 
+#if defined (__e2k__)
+#define ARCH_STRING "e2k"
+#undef ide2k
+#define ide2k 1
+#endif // __e2k__
+
 #if !defined(ARCH_STRING)
 # error ARCH_STRING should be defined by the Makefile
 #endif
