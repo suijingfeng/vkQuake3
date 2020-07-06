@@ -147,7 +147,7 @@ void R_Init( void )
 void RE_Shutdown( qboolean destroyWindow )
 {	
 
-	ri.Printf( PRINT_ALL, "RE_Shutdown( %i )\n", destroyWindow );
+	ri.Printf( PRINT_ALL, "\nRE_Shutdown( %i )\n", destroyWindow );
     
     ri.Cmd_RemoveCommand("displayResoList");
 

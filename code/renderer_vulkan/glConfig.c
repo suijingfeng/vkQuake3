@@ -107,7 +107,7 @@ void R_SetWinMode(int mode, unsigned int width, unsigned int height, unsigned in
 
     }
     
-	ri.Printf(PRINT_ALL,  "MODE: %d, %d x %d, refresh rate: %dhz\n",
+	ri.Printf(PRINT_ALL,  " MODE: %d, %d x %d, refresh rate: %dhz\n",
         mode, glConfig.vidWidth, glConfig.vidHeight, glConfig.displayFrequency);
 }
 

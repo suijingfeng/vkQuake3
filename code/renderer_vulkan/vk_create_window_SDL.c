@@ -93,7 +93,7 @@ static void VKimp_DetectAvailableModes(void)
 
 		if( !mode.w || !mode.h )
 		{
-			ri.Printf(PRINT_ALL,  "Display supports any resolution\n" );
+			ri.Printf(PRINT_ALL,  " Display supports any resolution\n" );
 			SDL_free( modes );
 			return;
 		}
@@ -124,13 +124,13 @@ static void VKimp_DetectAvailableModes(void)
 		if( strlen( newModeString ) < (int)sizeof( buf ) - strlen( buf ) )
 			Q_strcat( buf, sizeof( buf ), newModeString );
 		else
-			ri.Printf(PRINT_ALL,  "Skipping mode %ux%u, buffer too small\n", modes[ i ].w, modes[ i ].h );
+			ri.Printf(PRINT_ALL,  " Skipping mode %ux%u, buffer too small\n", modes[ i ].w, modes[ i ].h );
 	}
 
 	if( *buf )
 	{
 		buf[ strlen( buf ) - 1 ] = 0;
-		ri.Printf(PRINT_ALL, "Available modes: '%s'\n", buf );
+		ri.Printf(PRINT_ALL, " Available modes: '%s'\n", buf );
 		ri.Cvar_Set( "r_availableModes", buf );
 	}
 	SDL_free( modes );
@@ -147,15 +147,14 @@ static int VKimp_SetMode(int mode, qboolean fullscreen)
 		flags |= SDL_WINDOW_RESIZABLE;
 
 
-	ri.Printf(PRINT_ALL,  "...VKimp_SetMode()...\n");
-
+	ri.Printf(PRINT_ALL,  "\n...VKimp_SetMode()...\n");
 
     SDL_GetNumVideoDisplays();
 
 	int display_mode_count = SDL_GetNumDisplayModes(r_displayIndex->integer);
 	if (display_mode_count < 1)
 	{
-		ri.Printf(PRINT_ALL, "SDL_GetNumDisplayModes failed: %s", SDL_GetError());
+		ri.Printf(PRINT_ALL, " SDL_GetNumDisplayModes failed: %s", SDL_GetError());
 	}
 
 
@@ -163,12 +162,12 @@ static int VKimp_SetMode(int mode, qboolean fullscreen)
 	if( (tmp == 0) && (desktopMode.h > 0) )
     {
     	Uint32 f = desktopMode.format;
-        ri.Printf(PRINT_ALL, "bpp %i\t%s\t%i x %i, refresh_rate: %dHz\n", SDL_BITSPERPIXEL(f), SDL_GetPixelFormatName(f), desktopMode.w, desktopMode.h, desktopMode.refresh_rate);
+        ri.Printf(PRINT_ALL, " bpp %i\t%s\t%i x %i, refresh_rate: %dHz\n", SDL_BITSPERPIXEL(f), SDL_GetPixelFormatName(f), desktopMode.w, desktopMode.h, desktopMode.refresh_rate);
     }
     else if (SDL_GetDisplayMode(r_displayIndex->integer, 0, &desktopMode) != 0)
 	{
     	//mode = 0: use the first display mode SDL return;
-        ri.Printf(PRINT_ALL,"SDL_GetDisplayMode failed: %s\n", SDL_GetError());
+        ri.Printf(PRINT_ALL," SDL_GetDisplayMode failed: %s\n", SDL_GetError());
         mode = 3;
         desktopMode.w = 640;
         desktopMode.h = 480;
@@ -202,8 +201,13 @@ static int VKimp_SetMode(int mode, qboolean fullscreen)
 
     R_GetWinResolution(&width, &height);
 
-	window_sdl = SDL_CreateWindow( CLIENT_WINDOW_TITLE, SDL_WINDOWPOS_CENTERED,
-            SDL_WINDOWPOS_CENTERED, width, height, flags );
+	window_sdl = SDL_CreateWindow( 
+					CLIENT_WINDOW_TITLE, 
+					SDL_WINDOWPOS_CENTERED,
+					SDL_WINDOWPOS_CENTERED, 
+					width, 
+					height, 
+					flags );
 
 
 	if( window_sdl )
@@ -212,7 +216,7 @@ static int VKimp_SetMode(int mode, qboolean fullscreen)
         return 0;
     }
 
-	ri.Printf(PRINT_WARNING, " Couldn't create a window\n" );
+	ri.Printf(PRINT_WARNING, " Couldn't create a window: %s\n", SDL_GetError() );
     return -1;
 }
 
@@ -223,10 +227,15 @@ static int VKimp_SetMode(int mode, qboolean fullscreen)
  */
 void vk_createWindow(void)
 {
-	ri.Printf(PRINT_ALL, "...Creating window (using SDL2)...\n");
+	ri.Printf(PRINT_ALL, "\n...Creating window (using SDL2)...\n");
+
+	// Print SDL2 Version ....
+	SDL_version v;
+	SDL_version *sdl_version = &v;
+	SDL_GetVersion(&v);
+	ri.Printf(PRINT_ALL, " Found SDL version %i.%i.%i\n",sdl_version->major,sdl_version->minor,sdl_version->patch);	
 
 	r_displayIndex = ri.Cvar_Get( "r_displayIndex", "0", CVAR_ARCHIVE | CVAR_LATCH );
-
 
     SDL_Surface* icon = SDL_CreateRGBSurfaceFrom(
 			(void *)CLIENT_WINDOW_ICON.pixel_data,
@@ -246,7 +255,6 @@ void vk_createWindow(void)
         ri.Printf(PRINT_ALL, " SDL_CreateRGBSurface Failed. \n" );
     }
 
-
 	if(ri.Cvar_VariableIntegerValue( "com_abnormalExit" ) )
 	{
 		ri.Cvar_Set( "r_fullscreen", "0" );
@@ -260,7 +268,7 @@ void vk_createWindow(void)
     // otherwise it returns the initialization status of the specified subsystems. 
 	if (0 == SDL_WasInit(SDL_INIT_VIDEO))
 	{
-        ri.Printf(PRINT_ALL, "Video is not initialized before, so initial it.\n");
+        ri.Printf(PRINT_ALL, " Video is not initialized before, so initial it.\n");
         
 		if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		{
@@ -273,7 +281,7 @@ void vk_createWindow(void)
     }
     else
     {
-        ri.Printf(PRINT_ALL, "Video is already initialized.\n");
+        ri.Printf(PRINT_ALL, " Video is already initialized.\n");
     }
 
 	if( 0 == VKimp_SetMode(r_mode->integer, r_fullscreen->integer) )
@@ -282,7 +290,7 @@ void vk_createWindow(void)
 	}
     else
     {
-        ri.Printf(PRINT_ALL, "Setting r_mode=%d, r_fullscreen=%d failed, falling back on r_mode=%d\n",
+        ri.Printf(PRINT_ALL, " Setting r_mode=%d, r_fullscreen=%d failed, falling back on r_mode=%d\n",
                 r_mode->integer, r_fullscreen->integer, 3 );
 
         if( 0 == VKimp_SetMode(3, qfalse) )
@@ -291,7 +299,7 @@ void vk_createWindow(void)
         }
         else
         {
-            ri.Error(ERR_FATAL, "VKimp_Init() - could not load Vulkan subsystem" );
+            ri.Error(ERR_FATAL, "VKimp_Init() - could not load Vulkan subsystem: %s", SDL_GetError());
         }
     }
 
@@ -309,7 +317,7 @@ success:
 
 void vk_getInstanceProcAddrImpl(void)
 {
-
+	ri.Printf(PRINT_ALL, " *** Vulkan Initialization ***\n");
     int code = SDL_Vulkan_LoadLibrary(NULL);
     if (code) {
         ri.Error(ERR_FATAL, "Failed to load Vulkan library (code %d): %s", code, SDL_GetError());
