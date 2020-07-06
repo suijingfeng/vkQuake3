@@ -1,5 +1,3 @@
-In this fork of vkQuake3 - I'm wokring on macOS support ......
-
 ==============================================================================
 
                    ,---------------------------------------.
@@ -15,25 +13,25 @@ The intent of this project is to provide a baseline Quake 3 which may be used
 for further development and baseq3 fun.
 Some of the major features currently implemented are:
 
-  * SDL 2 backend
-  * OpenAL sound API support (multiple speaker support and better sound
-    quality)
-  * Full x86_64 support on Linux
-  * VoIP support, both in-game and external support through Mumble.
-  * MinGW compilation support on Windows and cross compilation support on Linux
-  * AVI video capture of demos
-  * Much improved console autocompletion
-  * Persistent console history
-  * Colorized terminal output
-  * Optional Ogg Vorbis support
-  * Much improved QVM tools
-  * Support for various esoteric operating systems
-  * cl_guid support
-  * HTTP/FTP download redirection (using cURL)
-  * Multiuser support on Windows systems (user specific game data
-    is stored in "%APPDATA%\Quake3")
-  * PNG support
-  * Many, many bug fixes
+* SDL 2 backend
+* OpenAL sound API support (multiple speaker support and better sound
+  quality)
+* Full x86_64 support on Linux
+* VoIP support, both in-game and external support through Mumble.
+* MinGW compilation support on Windows and cross compilation support on Linux
+* AVI video capture of demos
+* Much improved console autocompletion
+* Persistent console history
+* Colorized terminal output
+* Optional Ogg Vorbis support
+* Much improved QVM tools
+* Support for various esoteric operating systems
+* cl_guid support
+* HTTP/FTP download redirection (using cURL)
+* Multiuser support on Windows systems (user specific game data
+  is stored in "%APPDATA%\Quake3")
+* PNG support
+* Many, many bug fixes
 
 The map editor and associated compiling tools are not included. We suggest you
 use a modern copy from http://icculus.org/gtkradiant/.
@@ -66,24 +64,92 @@ $ make -j4
 To build 64-bit binaries, follow these instructions:
 
 1. Install msys2 from https://msys2.github.io/ , following the instructions there.
+
 2. Start "MinGW 64-bit" from the Start Menu, NOTE: NOT MSYS2.
+
 3. Install mingw-w64-x86\_64, make, git and necessary libs.
-```sh
-pacman -S mingw-w64-x86_64-gcc make git
-```
+   
+   ```sh
+   pacman -S mingw-w64-x86_64-gcc make git
+   ```
+
 4. Grab latest source code from github and compile. Note that in msys2, your drives are linked as folders in the root directory: C:\ is /c/, D:\ is /d/, and so on.
 
-```sh
-git clone https://github.com/suijingfeng/vkQuake3.git
-cd vkQuake3
-make -j4
-```
+	```sh
+	git clone https://github.com/suijingfeng/vkQuake3.git
+	cd vkQuake3
+	make -j4
+	```
+
 5. Find the executables and dlls in build/release-mingw64-x86\_64 . 
 
 you can also download the binary compiled on win10 from https://github.com/suijingfeng/vkQuake3/releases.
 
 You can also try the openarena game https://github.com/suijingfeng/vkOpenArena :)
 
+## Building on macOS
+
+Tested with 10.14 Mojave & 10.15 Catalina:
+
+1. Install the Command Line tools
+   
+   ```sh
+   xcode-select --install
+   ```
+
+2. Install Xcode - from the Mac AppStore or [Apple Developer Website](https://developer.apple.com/download/), make sure to run the latest version...
+
+	Check what Xcode is selected
+
+   ```sh
+   xcode-select -p
+   ```
+   
+   if it doesn't correspond to the latest (or want to use)
+   
+   ```sh   
+   sudo xcode-select --switch /PATH-TO/Xcode.app
+   ```
+      
+3. Install the build dependencies with Homebrew
+
+	```sh
+	brew install molten-vk vulkan-headers sdl2 openal-soft
+	```
+
+4. Grab latest source code from github and compile.
+
+	```sh
+	git clone https://github.com/suijingfeng/vkQuake3.git
+	cd vkQuake3
+	```
+
+5. run make with number of processing units available to the current process
+   
+   ```sh
+   make -j $(nproc)
+   ```
+
+6. Find the executables and dynamic libraries in build/release-darwin-x86_64
+
+	```sh
+	cd build/release-darwin-x86_64
+	```
+
+6. Install the *.pak-files into the corresponding directorues, then run
+
+	```sh
+	./ioquake3.x86_64
+	```	
+
+#### Later [2020-07-06]
+* Updated build bash scripts to build the .app
+
+* Be able to download the binary compiled for macos 10.14+ from https://github.com/suijingfeng/vkQuake3/releases.
+
+* Or try the openarena game https://github.com/suijingfeng/vkOpenArena ... Will add macOS support ...
+
+# FAQ
 
 Q: How to enable vulkan support from the pulldown console ?
 
@@ -93,9 +159,11 @@ Q: How to enable vulkan support from the pulldown console ?
 ```
 
 Q: How to check that Vulkan backend is really active ? 
+
 ```sh
 \vkinfo
 ```
+
 Type \vkinfo in the console reports information about active rendering backend.
 It will report something like the following:
 
@@ -117,9 +185,7 @@ Vk instance extensions:
 ...
 
 Image chuck memory(device local) used: 8 M 
-
 ```
-
 
 The following variables may be set, either on the command line or in
 Makefile.local:
@@ -167,7 +233,6 @@ Makefile.local:
 ```
 
 The defaults for these variables differ depending on the target platform.
-
 
 # Console
 
@@ -382,7 +447,6 @@ The defaults for these variables differ depending on the target platform.
   addbot random           - the bot name "random" now selects a random bot
 ```
 
-
 # README for Developers
 
 ## pk3dir
@@ -495,7 +559,6 @@ not prohibit commercial exploitation and all assets (e.g. textures, sounds,
 maps) created by yourself are your property and can be sold like every other
 game you find in stores.
 
-
 ## PNG support
 
 ioquake3 supports the use of PNG (Portable Network Graphic) images as
@@ -526,7 +589,6 @@ redistributable, so in its absence we're forced to require Windows XP.
 However if this header is acquired separately and placed in the qcommon/
 directory, this restriction is lifted.
 
-
 # Contributing
 
 Please send all patches to bugzilla (https://bugzilla.icculus.org), or as a GitHub pull request and
@@ -544,52 +606,49 @@ We need help getting automated installers on all the platforms that ioquake3
 supports. We don't necessarily care about all the installers being identical,
 but we have some general guidelines:
 
-  * Please include the id patch pk3s in your installer, which are available
-    from http://ioquake3.org/patch-data/ subject to agreement to the id
-    EULA. Your installer shall also ask the user to agree to this EULA (which
-    is in the /web/include directory for your convenience) and subsequently
-    refuse to continue the installation of the patch pk3s and pak0.pk3 if they
-    do not.
+* Please include the id patch pk3s in your installer, which are available
+  from http://ioquake3.org/patch-data/ subject to agreement to the id
+  EULA. Your installer shall also ask the user to agree to this EULA (which
+  is in the /web/include directory for your convenience) and subsequently
+  refuse to continue the installation of the patch pk3s and pak0.pk3 if they
+  do not.
 
-  * Please don't require pak0.pk3, since not everyone using the engine
-    plans on playing Quake 3 Arena on it. It's fine to (optionally) assist the
-    user in copying the file or tell them how.
+* Please don't require pak0.pk3, since not everyone using the engine
+  plans on playing Quake 3 Arena on it. It's fine to (optionally) assist the
+  user in copying the file or tell them how.
 
-  * It is fine to just install the binaries without requiring id EULA agreement,
-    providing pak0.pk3 and the patch pk3s are not referred to or included in the
-    installer.
+* It is fine to just install the binaries without requiring id EULA agreement,
+  providing pak0.pk3 and the patch pk3s are not referred to or included in the
+  installer.
 
-  * Please include at least a libSDL2 so/dylib/dll on every platform.
+* Please include at least a libSDL2 so/dylib/dll on every platform.
 
-  * Please include an OpenAL so/dylib/dll, since every platform should be using
-    it by now.
+* Please include an OpenAL so/dylib/dll, since every platform should be using
+  it by now.
 
-  * Please be prepared to alter your installer on the whim of the maintainers.
+* Please be prepared to alter your installer on the whim of the maintainers.
 
-  * Your installer will be mirrored to an "official" directory, thus making it
-    a done deal.
-
+* Your installer will be mirrored to an "official" directory, thus making it
+  a done deal.
 
 # Credits
 
 Maintainers
 
-  * James Canete <use.less01@gmail.com>
-  * Ludwig Nussel <ludwig.nussel@suse.de>
-  * Thilo Schulz <arny@ats.s.bawue.de>
-  * Tim Angus <tim@ngus.net>
-  * Tony J. White <tjw@tjw.org>
-  * Zachary J. Slater <zachary@ioquake.org>
-  * Zack Middleton <zturtleman@gmail.com>
+* James Canete <use.less01@gmail.com>
+* Ludwig Nussel <ludwig.nussel@suse.de>
+* Thilo Schulz <arny@ats.s.bawue.de>
+* Tim Angus <tim@ngus.net>
+* Tony J. White <tjw@tjw.org>
+* Zachary J. Slater <zachary@ioquake.org>
+* Zack Middleton <zturtleman@gmail.com>
 
 Significant contributions from
 
-  * Ryan C. Gordon <icculus@icculus.org>
-  * Andreas Kohn <andreas@syndrom23.de>
-  * Joerg Dietrich <Dietrich_Joerg@t-online.de>
-  * Stuart Dalton <badcdev@gmail.com>
-  * Vincent S. Cojot <vincent at cojot dot name>
-  * optical <alex@rigbo.se>
-  * Aaron Gyes <floam@aaron.gy>
-
-
+* Ryan C. Gordon <icculus@icculus.org>
+* Andreas Kohn <andreas@syndrom23.de>
+* Joerg Dietrich <Dietrich_Joerg@t-online.de>
+* Stuart Dalton <badcdev@gmail.com>
+* Vincent S. Cojot <vincent at cojot dot name>
+* optical <alex@rigbo.se>
+* ###### Aaron Gyes <floam@aaron.gy>
