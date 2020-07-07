@@ -68,7 +68,7 @@ static int hist_current = -1, hist_count = 0;
 #ifndef DEDICATED
 // Don't use "]" as it would be the same as in-game console,
 //   this makes it clear where input came from.
-#define TTY_CONSOLE_PROMPT "tty]"
+#define TTY_CONSOLE_PROMPT "tty] "
 #else
 #define TTY_CONSOLE_PROMPT "]"
 #endif
