@@ -268,15 +268,15 @@ static void vk_createInstance(void)
 		// The requested version of Vulkan is not supported by the driver 
 		// or is otherwise incompatible for implementation-specific reasons.
         ri.Error(ERR_FATAL, 
-            "The requested version of Vulkan is not supported by the driver.\n" );
+            "The requested version of Vulkan is not supported by the driver." );
     }
     else if (e == VK_ERROR_EXTENSION_NOT_PRESENT)
     {
-        ri.Error(ERR_FATAL, "Cannot find a specified extension library.\n");
+        ri.Error(ERR_FATAL, "Cannot find a specified extension library.");
     }
     else 
     {
-        ri.Error(ERR_FATAL, "%d, returned by qvkCreateInstance.\n", e);
+        ri.Error(ERR_FATAL, "%d, returned by qvkCreateInstance.", e);
     }
    
     free(ppInstanceExt);
@@ -430,11 +430,11 @@ static void vk_selectSurfaceFormat(void)
 
     // VK_IMAGE_USAGE_TRANSFER_DST_BIT is required by image clear operations.
 	if ((vk.surface_caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT) == 0)
-		ri.Error(ERR_FATAL, "VK_IMAGE_USAGE_TRANSFER_DST_BIT is not supported by you GPU.\n");
+		ri.Error(ERR_FATAL, "VK_IMAGE_USAGE_TRANSFER_DST_BIT is not supported by you GPU.");
 
 	// VK_IMAGE_USAGE_TRANSFER_SRC_BIT is required in order to take screenshots.
 	if ((vk.surface_caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) == 0)
-		ri.Error(ERR_FATAL, "VK_IMAGE_USAGE_TRANSFER_SRC_BIT is not supported by you GPU.\n");
+		ri.Error(ERR_FATAL, "VK_IMAGE_USAGE_TRANSFER_SRC_BIT is not supported by you GPU.");
 
 
     // To query supported format features which are properties of the physical device
@@ -485,7 +485,7 @@ static void vk_selectSurfaceFormat(void)
             //formats[0] = VK_FORMAT_X8_D24_UNORM_PACK32;
 		    //formats[1] = VK_FORMAT_D32_SFLOAT;
             // never get here.
-	        ri.Error(ERR_FATAL, " Failed to find depth attachment format.\n");
+	        ri.Error(ERR_FATAL, " Failed to find depth attachment format.");
         }
     }
 
