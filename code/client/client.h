@@ -35,7 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif /* USE_CURL */
 
 #ifdef USE_VOIP
-#include <opus.h>
+#include <opus/opus.h>
 #endif
 
 // file full of random crap that gets used to create cl_guid

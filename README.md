@@ -52,7 +52,7 @@ http://discourse.ioquake.org
 ## Building on Ubuntu or Debian Linux ##
 
 ```sh
-$ sudo apt-get install libcurl4-openssl-dev libsdl2-dev libopenal-dev libvulkan-dev libgl1-mesa-dev
+$ sudo apt-get install libcurl4-openssl-dev libsdl2-dev libopenal-dev libvulkan-dev libgl1-mesa-dev libopus-dev libvorbis-dev libopusfile-dev
 $ sudo apt-get install clang gcc make git
 $ git clone https://github.com/suijingfeng/vkQuake3.git
 $ cd vkQuake3

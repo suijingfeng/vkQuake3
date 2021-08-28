@@ -36,9 +36,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     #include "../SDL2/include/SDL.h"
     #include "../SDL2/include/SDL_vulkan.h"
 #else
+
+  #ifdef USE_LOCAL_HEADERS
+    #include "../SDL2/include/SDL.h"
+    #include "../SDL2/include/SDL_vulkan.h"
+  #else
     #include <SDL2/SDL.h>
     #include <SDL2/SDL_syswm.h>
     #include <SDL2/SDL_vulkan.h>
+  #endif
+
 #endif
 
 
@@ -233,11 +240,12 @@ void vk_createWindow(void)
 	SDL_version v;
 	SDL_version *sdl_version = &v;
 	SDL_GetVersion(&v);
-	ri.Printf(PRINT_ALL, " Found SDL version %i.%i.%i\n",sdl_version->major,sdl_version->minor,sdl_version->patch);	
+	ri.Printf(PRINT_ALL, " Found SDL version %i.%i.%i\n",
+		sdl_version->major,sdl_version->minor,sdl_version->patch);
 
 	r_displayIndex = ri.Cvar_Get( "r_displayIndex", "0", CVAR_ARCHIVE | CVAR_LATCH );
 
-    SDL_Surface* icon = SDL_CreateRGBSurfaceFrom(
+	SDL_Surface* icon = SDL_CreateRGBSurfaceFrom(
 			(void *)CLIENT_WINDOW_ICON.pixel_data,
 			CLIENT_WINDOW_ICON.width,
 			CLIENT_WINDOW_ICON.height,
@@ -250,65 +258,65 @@ void vk_createWindow(void)
 #endif
 			);
 
-    if(icon == NULL)
-    {
-        ri.Printf(PRINT_ALL, " SDL_CreateRGBSurface Failed. \n" );
-    }
+	if (icon == NULL)
+	{
+		ri.Printf(PRINT_ALL, " SDL_CreateRGBSurface Failed. \n" );
+	}
 
-	if(ri.Cvar_VariableIntegerValue( "com_abnormalExit" ) )
+	if (ri.Cvar_VariableIntegerValue( "com_abnormalExit" ) )
 	{
 		ri.Cvar_Set( "r_fullscreen", "0" );
         ri.Cvar_Set( "r_mode", "3" );
 		ri.Cvar_Set( "com_abnormalExit", "0" );
 	}
 
-    // Use this function to get a mask of the specified 
-    // subsystems which have previously been initialized. 
-    // If flags is 0 it returns a mask of all initialized subsystems, 
-    // otherwise it returns the initialization status of the specified subsystems. 
+	// Use this function to get a mask of the specified
+	// subsystems which have previously been initialized.
+	// If flags is 0 it returns a mask of all initialized subsystems,
+	// otherwise it returns the initialization status of the specified subsystems.
 	if (0 == SDL_WasInit(SDL_INIT_VIDEO))
 	{
-        ri.Printf(PRINT_ALL, " Video is not initialized before, so initial it.\n");
-        
+		ri.Printf(PRINT_ALL, " Video is not initialized before, so initial it.\n");
+
 		if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		{
 			ri.Printf(PRINT_ALL, " SDL_Init( SDL_INIT_VIDEO ) FAILED (%s)\n", SDL_GetError());
 		}
-        else
-        {
-    		ri.Printf(PRINT_ALL, " SDL using driver \"%s\"\n", SDL_GetCurrentVideoDriver( ));
-        }
-    }
-    else
-    {
-        ri.Printf(PRINT_ALL, " Video is already initialized.\n");
-    }
+		else
+		{
+			ri.Printf(PRINT_ALL, " SDL using driver \"%s\"\n", SDL_GetCurrentVideoDriver( ));
+		}
+	}
+	else
+	{
+		ri.Printf(PRINT_ALL, " Video is already initialized.\n");
+	}
 
 	if( 0 == VKimp_SetMode(r_mode->integer, r_fullscreen->integer) )
 	{
-        goto success;
+		goto success;
 	}
-    else
-    {
-        ri.Printf(PRINT_ALL, " Setting r_mode=%d, r_fullscreen=%d failed, falling back on r_mode=%d\n",
-                r_mode->integer, r_fullscreen->integer, 3 );
+	else
+	{
+		ri.Printf(PRINT_ALL, " Setting r_mode=%d, r_fullscreen=%d failed, falling back on r_mode=%d\n",
+				r_mode->integer, r_fullscreen->integer, 3 );
 
-        if( 0 == VKimp_SetMode(3, qfalse) )
-        {
-            goto success;
-        }
-        else
-        {
-            ri.Error(ERR_FATAL, "VKimp_Init() - could not load Vulkan subsystem: %s", SDL_GetError());
-        }
-    }
+		if( 0 == VKimp_SetMode(3, qfalse) )
+		{
+			goto success;
+		}
+		else
+		{
+			ri.Error(ERR_FATAL, "VKimp_Init() - could not load Vulkan subsystem: %s", SDL_GetError());
+		}
+	}
 
 
 success:
 
 	SDL_SetWindowIcon( window_sdl, icon );
 
-    SDL_FreeSurface( icon );
+	SDL_FreeSurface( icon );
 
 	// This depends on SDL_INIT_VIDEO, hence having it here
 	ri.IN_Init(window_sdl);

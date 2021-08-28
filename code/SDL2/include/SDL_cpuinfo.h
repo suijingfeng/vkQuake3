@@ -83,7 +83,9 @@
 #include <mm3dnow.h>
 #endif
 #if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
-#include <immintrin.h>
+  #if (defined(_M_IX86) || defined(_M_X64))
+    #include <immintrin.h>
+  #endif
 #else
 #if defined(__MMX__) && !defined(SDL_DISABLE_MMINTRIN_H)
 #include <mmintrin.h>
