@@ -61,7 +61,7 @@ void R_LoadTGA ( const char *name, unsigned char** pic, int *width, int *height)
 	//
 	// load the file
 	//
-	length = ri.FS_ReadFile ( name, &buffer);
+	length = ri.FS_ReadFile ( name, (void**)&buffer);
 	if (!buffer || length < 0) {
 		return;
 	}

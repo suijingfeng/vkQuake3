@@ -382,7 +382,7 @@ void RE_RegisterFont(const char *fontName, int pointSize, fontInfo_t *font)
 
 	int len = ri.FS_ReadFile(name, NULL);
 	if (len == sizeof(fontInfo_t)) {
-		ri.FS_ReadFile(name, &faceData);
+		ri.FS_ReadFile(name, (void**)&faceData);
 		fdOffset = 0;
 		fdFile = (unsigned char*)faceData;
 		for(i=0; i<GLYPHS_PER_FONT; i++) {
