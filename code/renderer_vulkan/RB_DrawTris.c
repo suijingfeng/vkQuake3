@@ -10,6 +10,16 @@ Draws triangle outlines for debugging
 */
 void RB_DrawTris (shaderCommands_t * pInput)
 {
+	if (vk.features.fillModeNonSolid == VK_FALSE) {
+		static qboolean printed = qfalse;
+		if (!printed) {
+			ri.Printf(PRINT_WARNING, "RB_ShowTris: fillModeNonSolid not supported.\n");
+			printed = qtrue;
+		}
+		return;
+	}
+
+
 	updateCurDescriptor( tr.whiteImage->descriptor_set, 0);
 
 	// VULKAN

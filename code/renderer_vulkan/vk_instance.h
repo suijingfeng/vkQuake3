@@ -136,6 +136,7 @@ const char * cvtResToStr(VkResult result);
 struct Vk_Instance {
 	VkInstance instance ;
 	VkPhysicalDevice physical_device;
+	VkPhysicalDeviceFeatures features;
 
     // Native platform surface or window objects are abstracted by surface objects,
     // which are represented by VkSurfaceKHR handles. The VK_KHR_surface extension

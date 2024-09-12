@@ -605,14 +605,10 @@ static void vk_createLogicalDevice(void)
     // has specific feature requirements it should check supported
     // features based on this query.
 
-	VkPhysicalDeviceFeatures features;
-	qvkGetPhysicalDeviceFeatures(vk.physical_device, &features);
-	if (features.shaderClipDistance == VK_FALSE)
+	qvkGetPhysicalDeviceFeatures(vk.physical_device, &vk.features);
+	if (vk.features.shaderClipDistance == VK_FALSE)
 		ri.Error(ERR_FATAL,
             "vk_create_device: shaderClipDistance feature is not supported");
-	if (features.fillModeNonSolid == VK_FALSE)
-	    ri.Error(ERR_FATAL,
-            "vk_create_device: fillModeNonSolid feature is not supported");
 
 
     VkDeviceCreateInfo device_desc;
@@ -625,7 +621,7 @@ static void vk_createLogicalDevice(void)
     device_desc.ppEnabledLayerNames = NULL;
     device_desc.enabledExtensionCount = 1;
     device_desc.ppEnabledExtensionNames = device_extensions;
-    device_desc.pEnabledFeatures = &features;
+    device_desc.pEnabledFeatures = &vk.features;
     
 
     // After selecting a physical device to use we need to set up a
