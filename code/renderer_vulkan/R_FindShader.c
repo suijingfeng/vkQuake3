@@ -420,7 +420,7 @@ static void Shader_DoSimpleCheck(char* name, char* p)
         if(0 == *token)
             break;
         char shaderName[64]={0};
-        strncpy(shaderName, token, sizeof(shaderName));
+        strlcpy(shaderName, token, sizeof(shaderName));
 
         int shaderLine = R_GetCurrentParseLine();
 
