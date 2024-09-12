@@ -610,9 +610,6 @@ static void vk_createLogicalDevice(void)
 	if (features.shaderClipDistance == VK_FALSE)
 		ri.Error(ERR_FATAL,
             "vk_create_device: shaderClipDistance feature is not supported");
-	if (features.fillModeNonSolid == VK_FALSE)
-	    ri.Error(ERR_FATAL,
-            "vk_create_device: fillModeNonSolid feature is not supported");
 
 
     VkDeviceCreateInfo device_desc;
