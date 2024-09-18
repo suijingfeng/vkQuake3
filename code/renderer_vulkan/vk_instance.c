@@ -247,9 +247,9 @@ static void vk_createInstance(void)
 	instanceCreateInfo.ppEnabledExtensionNames = ppInstanceExt;
 
 #ifndef NDEBUG
-    ri.Printf(PRINT_ALL, "Using VK_LAYER_LUNARG_standard_validation\n");
+    ri.Printf(PRINT_ALL, "Using VK_LAYER_KHRONOS_validation\n");
 
-    const char* const validation_layer_name = "VK_LAYER_LUNARG_standard_validation";    
+    const char* const validation_layer_name = "VK_LAYER_KHRONOS_validation";
     instanceCreateInfo.enabledLayerCount = 1;
 	instanceCreateInfo.ppEnabledLayerNames = &validation_layer_name;
 #else
