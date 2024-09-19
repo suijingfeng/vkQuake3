@@ -34,8 +34,7 @@ struct StageShaderModuleManager{
 	VkShaderModule single_texture_fs;
 	VkShaderModule multi_texture_vs;
 	VkShaderModule multi_texture_clipping_plane_vs;
-	VkShaderModule multi_texture_mul_fs;
-	VkShaderModule multi_texture_add_fs;
+	VkShaderModule multi_texture_fs;
 };
 
 
@@ -98,15 +97,10 @@ void vk_loadShaderModules(void)
     create_shader_module(multi_texture_clipping_plane_vert_spv, multi_texture_clipping_plane_vert_spv_size,
             &s_gShaderModules.multi_texture_clipping_plane_vs);
 
-    extern unsigned char multi_texture_mul_frag_spv[];
-    extern int multi_texture_mul_frag_spv_size;
-    create_shader_module(multi_texture_mul_frag_spv, multi_texture_mul_frag_spv_size,
-            &s_gShaderModules.multi_texture_mul_fs);
-
-    extern unsigned char multi_texture_add_frag_spv[];
-    extern int multi_texture_add_frag_spv_size;
-    create_shader_module(multi_texture_add_frag_spv, multi_texture_add_frag_spv_size,
-            &s_gShaderModules.multi_texture_add_fs);
+    extern unsigned char multi_texture_frag_spv[];
+    extern int multi_texture_frag_spv_size;
+    create_shader_module(multi_texture_frag_spv, multi_texture_frag_spv_size,
+            &s_gShaderModules.multi_texture_fs);
 }
 
 
@@ -125,15 +119,10 @@ void vk_specifyShaderModule(const enum Vk_Shader_Type shader_type, const VkBool3
         switch(shader_type)
         {
             case ST_MULTI_TEXURE_ADD:
-            {
-                *vs = s_gShaderModules.multi_texture_clipping_plane_vs;
-                *fs = s_gShaderModules.multi_texture_add_fs;
-            }break;
-
             case ST_MULTI_TEXURE_MUL:
             {
                 *vs = s_gShaderModules.multi_texture_clipping_plane_vs;
-                *fs = s_gShaderModules.multi_texture_mul_fs;
+                *fs = s_gShaderModules.multi_texture_fs;
             }break;
 
             case ST_SINGLE_TEXTURE:
@@ -148,15 +137,10 @@ void vk_specifyShaderModule(const enum Vk_Shader_Type shader_type, const VkBool3
         switch(shader_type)
         {
             case ST_MULTI_TEXURE_ADD:
-            {
-                *vs = s_gShaderModules.multi_texture_vs;
-                *fs = s_gShaderModules.multi_texture_add_fs;
-            }break;
-
             case ST_MULTI_TEXURE_MUL:
             {
                 *vs = s_gShaderModules.multi_texture_vs;
-                *fs = s_gShaderModules.multi_texture_mul_fs;
+                *fs = s_gShaderModules.multi_texture_fs;
             }break;
 
             case ST_SINGLE_TEXTURE:
@@ -179,6 +163,5 @@ void vk_destroyShaderModules(void)
 	qvkDestroyShaderModule(vk.device, s_gShaderModules.single_texture_fs, NULL);
 	qvkDestroyShaderModule(vk.device, s_gShaderModules.multi_texture_vs, NULL);
 	qvkDestroyShaderModule(vk.device, s_gShaderModules.multi_texture_clipping_plane_vs, NULL);
-	qvkDestroyShaderModule(vk.device, s_gShaderModules.multi_texture_mul_fs, NULL);
-	qvkDestroyShaderModule(vk.device, s_gShaderModules.multi_texture_add_fs, NULL);
+	qvkDestroyShaderModule(vk.device, s_gShaderModules.multi_texture_fs, NULL);
 }

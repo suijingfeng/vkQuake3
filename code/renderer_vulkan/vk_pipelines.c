@@ -199,6 +199,7 @@ static void vk_create_pipeline(const struct Vk_Pipeline_Def* def, VkPipeline* pP
 
 	struct Specialization_Data {
 		int32_t alpha_test_func;
+		int32_t color_op;
 	} specialization_data;
 
 	if ((def->state_bits & GLS_ATEST_BITS) == 0)
@@ -212,14 +213,20 @@ static void vk_create_pipeline(const struct Vk_Pipeline_Def* def, VkPipeline* pP
 	else
 		ri.Error(ERR_DROP, "create_pipeline: invalid alpha test state bits\n");
 
-	VkSpecializationMapEntry specialization_entries;
-	specialization_entries.constantID = 0;
-	specialization_entries.offset = offsetof(struct Specialization_Data, alpha_test_func);
-	specialization_entries.size = sizeof(int32_t);
+	specialization_data.color_op = def->shader_type == ST_MULTI_TEXURE_ADD;
+
+	VkSpecializationMapEntry specialization_entries[2];
+	specialization_entries[0].constantID = 0;
+	specialization_entries[0].offset = offsetof(struct Specialization_Data, alpha_test_func);
+	specialization_entries[0].size = sizeof(int32_t);
+
+	specialization_entries[1].constantID = 1;
+	specialization_entries[1].offset = offsetof(struct Specialization_Data, color_op);
+	specialization_entries[1].size = sizeof(int32_t);
 
 	VkSpecializationInfo specialization_info;
-	specialization_info.mapEntryCount = 1;
-	specialization_info.pMapEntries = &specialization_entries;
+	specialization_info.mapEntryCount = 2;
+	specialization_info.pMapEntries = specialization_entries;
 	specialization_info.dataSize = sizeof(struct Specialization_Data);
 	specialization_info.pData = &specialization_data;
 
