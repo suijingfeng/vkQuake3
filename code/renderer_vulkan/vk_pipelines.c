@@ -248,8 +248,7 @@ static void vk_create_pipeline(const struct Vk_Pipeline_Def* def, VkPipeline* pP
     // used in it. This is more effient than configuring the shader using 
     // variables at render time, because the compiler can do optimizations.
 
-	shaderStages[1].pSpecializationInfo =
-        (def->state_bits & GLS_ATEST_BITS) ? &specialization_info : NULL;
+	shaderStages[1].pSpecializationInfo = &specialization_info;
 
     vk_specifyShaderModule(def->shader_type, def->clipping_plane, &shaderStages[0].module, &shaderStages[1].module);
 
