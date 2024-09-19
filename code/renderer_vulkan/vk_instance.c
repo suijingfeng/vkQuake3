@@ -604,12 +604,7 @@ static void vk_createLogicalDevice(void)
     // Query fine-grained feature support for this device. If APP 
     // has specific feature requirements it should check supported
     // features based on this query.
-
 	qvkGetPhysicalDeviceFeatures(vk.physical_device, &vk.features);
-	if (vk.features.shaderClipDistance == VK_FALSE)
-		ri.Error(ERR_FATAL,
-            "vk_create_device: shaderClipDistance feature is not supported");
-
 
     VkDeviceCreateInfo device_desc;
     device_desc.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

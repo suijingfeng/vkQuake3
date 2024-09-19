@@ -114,7 +114,7 @@ void vk_specifyShaderModule(const enum Vk_Shader_Type shader_type, const VkBool3
     // to differnentiate between their behaviors
     // In this case we'll stick to the standard main.
 
-    if(isClippingPlane)
+    if(isClippingPlane && vk.features.shaderClipDistance)
     {
         switch(shader_type)
         {
