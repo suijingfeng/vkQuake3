@@ -7,7 +7,7 @@
 #include "vk_shade_geometry.h"
 #include "vk_shaders.h"
 #include "glConfig.h"
-
+#include "tr_backend.h"
 
 // vk_init have nothing to do with tr_init
 // vk_instance should be small
@@ -40,6 +40,9 @@ void vk_initialize(void)
     int height;
 
     R_GetWinResolution(&width, &height);
+
+    backEnd.viewParms.viewportWidth = width;
+    backEnd.viewParms.viewportHeight = height;
 
     // Depth attachment image.
     vk_createDepthAttachment(width, height);

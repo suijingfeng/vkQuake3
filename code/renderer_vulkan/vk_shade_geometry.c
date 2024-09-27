@@ -165,6 +165,8 @@ VkRect2D get_scissor_rect(void)
 	}
 	else
 	{
+		assert(backEnd.viewParms.viewportWidth > 0);
+		assert(backEnd.viewParms.viewportHeight > 0);
 		r.offset.x = backEnd.viewParms.viewportX;
         r.offset.y = backEnd.viewParms.viewportY;
         r.extent.width = backEnd.viewParms.viewportWidth;

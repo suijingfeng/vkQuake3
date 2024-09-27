@@ -1,6 +1,7 @@
 #include "ref_import.h"
 #include "tr_backend.h"
 #include "R_PrintMat.h"
+#include "glConfig.h"
 backEndState_t backEnd;
 
 
@@ -9,6 +10,11 @@ void R_ClearBackendState(void)
     ri.Printf(PRINT_ALL, " backend state cleared. \n");
 	// clear all our internal state
 	memset( &backEnd, 0, sizeof( backEnd ) );
+
+    int width, height;
+    R_GetWinResolution(&width, &height);
+    backEnd.viewParms.viewportWidth = width;
+    backEnd.viewParms.viewportHeight = height;
 }
 
 
