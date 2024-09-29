@@ -199,6 +199,8 @@ static void vk_create_pipeline(const struct Vk_Pipeline_Def* def, VkPipeline* pP
 
 	struct Specialization_Data {
 		int32_t alpha_test_func;
+		int32_t color_op;
+		int32_t clipping_plane;
 	} specialization_data;
 
 	if ((def->state_bits & GLS_ATEST_BITS) == 0)
@@ -212,14 +214,26 @@ static void vk_create_pipeline(const struct Vk_Pipeline_Def* def, VkPipeline* pP
 	else
 		ri.Error(ERR_DROP, "create_pipeline: invalid alpha test state bits\n");
 
-	VkSpecializationMapEntry specialization_entries;
-	specialization_entries.constantID = 0;
-	specialization_entries.offset = offsetof(struct Specialization_Data, alpha_test_func);
-	specialization_entries.size = sizeof(int32_t);
+	specialization_data.color_op = def->shader_type == ST_MULTI_TEXURE_ADD;
+
+	specialization_data.clipping_plane = def->clipping_plane && !vk.features.shaderClipDistance;
+
+	VkSpecializationMapEntry specialization_entries[3];
+	specialization_entries[0].constantID = 0;
+	specialization_entries[0].offset = offsetof(struct Specialization_Data, alpha_test_func);
+	specialization_entries[0].size = sizeof(int32_t);
+
+	specialization_entries[1].constantID = 1;
+	specialization_entries[1].offset = offsetof(struct Specialization_Data, color_op);
+	specialization_entries[1].size = sizeof(int32_t);
+
+	specialization_entries[2].constantID = 2;
+	specialization_entries[2].offset = offsetof(struct Specialization_Data, clipping_plane);
+	specialization_entries[2].size = sizeof(int32_t);
 
 	VkSpecializationInfo specialization_info;
-	specialization_info.mapEntryCount = 1;
-	specialization_info.pMapEntries = &specialization_entries;
+	specialization_info.mapEntryCount = 3;
+	specialization_info.pMapEntries = specialization_entries;
 	specialization_info.dataSize = sizeof(struct Specialization_Data);
 	specialization_info.pData = &specialization_data;
 
@@ -248,8 +262,8 @@ static void vk_create_pipeline(const struct Vk_Pipeline_Def* def, VkPipeline* pP
     // used in it. This is more effient than configuring the shader using 
     // variables at render time, because the compiler can do optimizations.
 
-	shaderStages[1].pSpecializationInfo =
-        (def->state_bits & GLS_ATEST_BITS) ? &specialization_info : NULL;
+	shaderStages[0].pSpecializationInfo = &specialization_info;
+	shaderStages[1].pSpecializationInfo = &specialization_info;
 
     vk_specifyShaderModule(def->shader_type, def->clipping_plane, &shaderStages[0].module, &shaderStages[1].module);
 

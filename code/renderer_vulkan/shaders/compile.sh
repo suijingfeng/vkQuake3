@@ -1,17 +1,15 @@
 #!/bin/bash
 
-# Set your VULKAN_SDK location before running
-VULKAN_SDK=~/vulkan/1.1.82.0/x86_64/
 if [[ ! -x "./bintoc" ]]
 then
 	gcc bintoc.c -o bintoc
 fi
 
 find -type f -name "*.vert" | \
-	while read f; do $VULKAN_SDK/bin/glslangValidator -V ${f} -o "Compiled/${f%.*}.vspv"; done
+	while read f; do glslangValidator -V ${f} -o "Compiled/${f%.*}.vspv"; done
 
 find -type f -name "*.frag" | \
-	while read f; do $VULKAN_SDK/bin/glslangValidator -V ${f} -o "Compiled/${f%.*}.fspv"; done
+	while read f; do glslangValidator -V ${f} -o "Compiled/${f%.*}.fspv"; done
 
 
 

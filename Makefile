@@ -1831,9 +1831,8 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/vk_depth_attachment.o \
   \
   $(B)/renderer_vulkan/vk_shaders.o \
-  $(B)/renderer_vulkan/multi_texture_add_frag.o \
   $(B)/renderer_vulkan/multi_texture_clipping_plane_vert.o \
-  $(B)/renderer_vulkan/multi_texture_mul_frag.o \
+  $(B)/renderer_vulkan/multi_texture_frag.o \
   $(B)/renderer_vulkan/multi_texture_vert.o \
   $(B)/renderer_vulkan/single_texture_clipping_plane_vert.o \
   $(B)/renderer_vulkan/single_texture_frag.o \
