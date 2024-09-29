@@ -420,7 +420,7 @@ static void Shader_DoSimpleCheck(char* name, char* p)
         if(0 == *token)
             break;
         char shaderName[64]={0};
-        strncpy(shaderName, token, sizeof(shaderName));
+        strlcpy(shaderName, token, sizeof(shaderName));
 
         int shaderLine = R_GetCurrentParseLine();
 
@@ -557,11 +557,7 @@ void ScanAndLoadShaderFiles( void )
 	// build single large buffer
     BuildSingleLargeBuffer(buffers, numShaderFiles, sum);
    
-    FunLogging("BuildSingleLargeBuffer.txt", s_shaderText);
-	
     R_Compress( s_shaderText );
-
-    FunLogging("after_R_Compress.txt", s_shaderText);
 
 
 	// free up memory

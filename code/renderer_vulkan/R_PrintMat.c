@@ -40,26 +40,3 @@ void printMat4x4f(const char* name, const float src[16])
         src[0], src[1], src[2], src[3], src[4], src[5], src[6], src[7], 
         src[8], src[9], src[10], src[11], src[12], src[13], src[14], src[15] );
 }
-
-
-static FILE* log_fp = NULL;
-
-
-void FunLogging(const char * name, char * pBuf )
-{
-
-    log_fp = fopen( name, "wt" );
-
-
-	if ( log_fp )
-	{
-		fprintf( log_fp, "%s", pBuf );
-	}
-    else
-    {
-        fprintf(stderr, "Error open %s\n", name);
-    }
-
-    fclose( log_fp );
-	log_fp = NULL;
-}
