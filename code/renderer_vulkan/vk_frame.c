@@ -438,8 +438,27 @@ void vk_begin_frame(void)
     
     // An application must wait until either the semaphore or fence is signaled
     // before accessing the image's data.
-	VK_CHECK(qvkAcquireNextImageKHR(vk.device, vk.swapchain, UINT64_MAX,
-        sema_imageAvailable, VK_NULL_HANDLE, &vk.idx_swapchain_image));
+    //
+    // VK_SUBOPTIMAL_KHR is a success code, meaning the swapchain can still be
+    // used to present but the surface properties no longer match exactly.
+    // This commonly happens on Wayland when the window is resized.
+    {
+        VkResult result = qvkAcquireNextImageKHR(vk.device, vk.swapchain, UINT64_MAX,
+            sema_imageAvailable, VK_NULL_HANDLE, &vk.idx_swapchain_image);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_ERROR_SURFACE_LOST_KHR)
+        {
+            qvkDeviceWaitIdle(vk.device);
+            vk_recreateSwapChain();
+            result = qvkAcquireNextImageKHR(vk.device, vk.swapchain, UINT64_MAX,
+                sema_imageAvailable, VK_NULL_HANDLE, &vk.idx_swapchain_image);
+        }
+        // VK_SUBOPTIMAL_KHR is acceptable - swapchain is still usable
+        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+        {
+            ri.Printf(PRINT_ALL, "Vulkan: error %s returned by qvkAcquireNextImageKHR\n",
+                cvtResToStr(result));
+        }
+    }
 
 
     //  User could call method vkWaitForFences to wait for completion. A fence is a 
@@ -632,7 +651,10 @@ void vk_end_frame(void)
     // queue is a queue that is capable of presentation to the target 
     // surface's platform on the same device as the image's swapchain.
     VkResult result = qvkQueuePresentKHR(vk.queue, &present_info);
-    if(result == VK_SUCCESS)
+    // VK_SUCCESS and VK_SUBOPTIMAL_KHR are both acceptable results.
+    // VK_SUBOPTIMAL_KHR means the swapchain can still be used but doesn't
+    // match the surface properties exactly (common on Wayland).
+    if(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR)
     {
         return;
     }
