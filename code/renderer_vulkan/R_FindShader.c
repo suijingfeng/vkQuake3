@@ -408,10 +408,8 @@ static void BuildSingleLargeBuffer(char* buffers[], const int nShaderFiles, cons
 }
 
 
-static void Shader_DoSimpleCheck(char* name, char* p)
+qboolean Shader_DoSimpleCheck(char* name, char* p)
 {
-    char* pBuf = p;
-
     R_BeginParseSession(name);
 
     while(1)
@@ -434,21 +432,18 @@ static void Shader_DoSimpleCheck(char* name, char* p)
                 ri.Printf(PRINT_WARNING, " (found \"%s\" on line %d)", token, R_GetCurrentParseLine());
             }
             ri.Printf(PRINT_WARNING, ".\n");
-            ri.FS_FreeFile(pBuf);
-            pBuf = NULL;
-            break;
+            return qfalse;
         }
 
         if(!SkipBracedSection(&p, 1))
         {
             ri.Printf(PRINT_WARNING, "WARNING: Ignoring shader file %s. Shader \"%s\" on line %d missing closing brace.\n",
                     name, shaderName, shaderLine);
-            ri.FS_FreeFile(pBuf);
-            pBuf = NULL;
-            break;
+            return qfalse;
         }
     }
 
+    return qtrue;
 }
 
 
@@ -548,7 +543,11 @@ void ScanAndLoadShaderFiles( void )
 		
 		// Do a simple check on the shader structure in that file
         // to make sure one bad shader file cannot fuck up all other shaders.
-	    Shader_DoSimpleCheck(filename, buffers[i]);
+	    if ( !Shader_DoSimpleCheck(filename, buffers[i]) ) {
+            ri.FS_FreeFile(buffers[i]);
+            buffers[i] = NULL;
+            continue;
+        }
 
 		if (buffers[i])
 			sum += summand;		
