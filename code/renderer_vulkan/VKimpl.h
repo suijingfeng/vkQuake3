@@ -20,6 +20,7 @@ void vk_destroyWindow(void);
 void vk_getInstanceProcAddrImpl(void);
 
 void vk_createSurfaceImpl(void);
+unsigned int vk_getRequiredInstanceExtensions(const char **names, unsigned int max);
 
 void vk_minimizeWindow( void );
 

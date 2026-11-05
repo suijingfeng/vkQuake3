@@ -242,35 +242,52 @@ static void vk_createInstance(void)
     // Extensions may be provided by layers as well as by a Vulkan implementation.
     //
     // check extensions availability
-	uint32_t nInsExt = 0;
-    // To retrieve a list of supported extensions before creating an instance
+	uint32_t nInsExt = 0, nRequired, nEnabled, i, j;
+	VkExtensionProperties *pInsExt;
+	const char **ppInstanceExt;
+	VkInstanceCreateFlags flags = 0;
+
+	// Enable only what is needed: the surface extensions SDL asks for, plus
+	// VK_KHR_portability_enumeration (MoltenVK) and VK_EXT_debug_report
+	// (r_vkValidation) when they exist.  Enabling every extension the loader
+	// reports is fragile: some depend on others, some conflict.
 	VK_CHECK( qvkEnumerateInstanceExtensionProperties( NULL, &nInsExt, NULL) );
+	pInsExt = malloc(sizeof(VkExtensionProperties) * (nInsExt ? nInsExt : 1));
+	VK_CHECK( qvkEnumerateInstanceExtensionProperties( NULL, &nInsExt, pInsExt) );
+	ri.Printf(PRINT_DEVELOPER, "--- Total %d instance extensions. --- \n", nInsExt);
 
-    assert(nInsExt > 0);
+	nRequired = vk_getRequiredInstanceExtensions(NULL, 0);
+	ppInstanceExt = malloc(sizeof(char *) * (nRequired + 2));
+	vk_getRequiredInstanceExtensions(ppInstanceExt, nRequired);
+	for (i = 0; i < nRequired; i++)
+	{
+		for (j = 0; j < nInsExt && strcmp(ppInstanceExt[i], pInsExt[j].extensionName); j++)
+			;
+		if (j == nInsExt)
+			ri.Error(ERR_FATAL, "Vulkan: instance extension %s, needed for the window surface, is not available", ppInstanceExt[i]);
+	}
+	nEnabled = nRequired;
 
-    ri.Printf(PRINT_ALL, "--- Total %d instance extensions. --- \n", nInsExt);
+	for (j = 0; j < nInsExt; j++)
+	{
+#ifdef VK_KHR_portability_enumeration
+		// MoltenVK (macOS/iOS) enumerates portability-subset devices only
+		// with this extension and flag
+		if (!strcmp(pInsExt[j].extensionName, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME))
+		{
+			ppInstanceExt[nEnabled++] = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+			flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+		}
+#endif
+		if (r_vkValidation->integer && !strcmp(pInsExt[j].extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME))
+			ppInstanceExt[nEnabled++] = VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
+	}
 
-    VkExtensionProperties *pInsExt = (VkExtensionProperties *) malloc(sizeof(VkExtensionProperties) * nInsExt);
-    
-    const char** ppInstanceExt = malloc( sizeof(char *) * (nInsExt) );
+	for (i = 0; i < nEnabled; i++)
+		ri.Printf(PRINT_ALL, " Enabling instance extension %s\n", ppInstanceExt[i]);
 
-    VK_CHECK(qvkEnumerateInstanceExtensionProperties( NULL, &nInsExt, pInsExt));
-
-    uint32_t i = 0;
-
-    // Each platform-specific extension is an instance extension.
-    // The application must enable instance extensions with vkCreateInstance
-    // before using them.
-
-    // TODO: CHECK OUT
-    // All of the instance wxtention enabled, Does this reasonable ?
-
-    for (i = 0; i < nInsExt; i++)
-    {    
-        ppInstanceExt[i] = pInsExt[i].extensionName;
-    }
-    
-    instanceCreateInfo.enabledExtensionCount = nInsExt;
+	instanceCreateInfo.flags = flags;
+	instanceCreateInfo.enabledExtensionCount = nEnabled;
 	instanceCreateInfo.ppEnabledExtensionNames = ppInstanceExt;
 
     instanceCreateInfo.enabledLayerCount = 0;
