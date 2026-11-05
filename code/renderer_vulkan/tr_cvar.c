@@ -75,7 +75,6 @@ cvar_t	*r_maxpolyverts;
 cvar_t* r_allowResize; // make window resizable
 cvar_t* r_mode;
 
-cvar_t* r_loadImgAPI;
 
 void R_Register( void ) 
 {
@@ -165,5 +164,4 @@ void R_Register( void )
 
     r_mode = ri.Cvar_Get( "r_mode", "-2", CVAR_ARCHIVE | CVAR_LATCH );
 
-    r_loadImgAPI = ri.Cvar_Get( "r_loadImgAPI", "0", CVAR_ARCHIVE | CVAR_LATCH );
 }

@@ -89,7 +89,6 @@ extern cvar_t* r_allowResize; // make window resizable
 extern cvar_t* r_mode;
 extern cvar_t* r_fullscreen;
 extern cvar_t* r_displayRefresh;
-extern cvar_t* r_loadImgAPI;
 
 void R_Register( void );
 

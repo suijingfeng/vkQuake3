@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "vk_instance.h"
 
 #include "tr_cvar.h"
-#include "icon_oa.h"
+#include "../sdl/sdl_icon.h"
 #include "glConfig.h"
 
 

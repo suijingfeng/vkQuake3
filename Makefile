@@ -1851,13 +1851,12 @@ Q3VKOBJ = \
   $(B)/renderer_vulkan/R_PortalPlane.o \
   $(B)/renderer_vulkan/R_PrintMat.o \
   \
-  $(B)/renderer_vulkan/R_LoadImage2.o \
   $(B)/renderer_vulkan/R_LoadImage.o \
-  $(B)/renderer_vulkan/R_ImageJPG.o \
-  $(B)/renderer_vulkan/R_ImageTGA.o \
-  $(B)/renderer_vulkan/R_ImagePNG.o \
-  $(B)/renderer_vulkan/R_ImageBMP.o \
-  $(B)/renderer_vulkan/R_ImagePCX.o \
+  $(B)/renderer_vulkan/tr_image_bmp.o \
+  $(B)/renderer_vulkan/tr_image_jpg.o \
+  $(B)/renderer_vulkan/tr_image_pcx.o \
+  $(B)/renderer_vulkan/tr_image_png.o \
+  $(B)/renderer_vulkan/tr_image_tga.o \
   \
   $(B)/renderer_vulkan/ref_import.o \
   $(B)/renderer_vulkan/render_export.o \
@@ -2881,6 +2880,9 @@ $(B)/renderer_vulkan/%.o: $(JPDIR)/%.c
 
 #$(B)/renderer_vulkan/%.o: $(RCOMMONDIR)/%.c
 #	$(DO_REF_CC)
+
+$(B)/renderer_vulkan/%.o: $(RCOMMONDIR)/%.c
+	$(DO_REF_CC)
 
 $(B)/renderer_vulkan/%.o: $(RVULKANDIR)/%.c
 	$(DO_REF_CC)

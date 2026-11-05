@@ -719,10 +719,7 @@ image_t* R_FindImageFile(const char *name, VkBool32 mipmap, VkBool32 allowPicmip
     uint32_t width = 0, height = 0;
     unsigned char* pic = NULL;
     
-    if(r_loadImgAPI->integer)
-        R_LoadImage2( name, &pic, &width, &height );
-    else
-        R_LoadImage( name, &pic, &width, &height );
+    R_LoadImage( name, &pic, &width, &height );
     
 
     if (pic == NULL)
