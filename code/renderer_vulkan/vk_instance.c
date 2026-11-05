@@ -257,7 +257,7 @@ static void vk_createInstance(void)
 	ri.Printf(PRINT_DEVELOPER, "--- Total %d instance extensions. --- \n", nInsExt);
 
 	nRequired = vk_getRequiredInstanceExtensions(NULL, 0);
-	ppInstanceExt = malloc(sizeof(char *) * (nRequired + 2));
+	ppInstanceExt = malloc(sizeof(char *) * (nRequired + 3));
 	vk_getRequiredInstanceExtensions(ppInstanceExt, nRequired);
 	for (i = 0; i < nRequired; i++)
 	{
@@ -277,6 +277,14 @@ static void vk_createInstance(void)
 		{
 			ppInstanceExt[nEnabled++] = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
 			flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+		}
+		// MoltenVK's devices need VK_KHR_portability_subset, which requires this
+		if (!strcmp(pInsExt[j].extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME))
+		{
+			for (i = 0; i < nEnabled && strcmp(ppInstanceExt[i], pInsExt[j].extensionName); i++)
+				;
+			if (i == nEnabled)
+				ppInstanceExt[nEnabled++] = VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
 		}
 #endif
 		if (r_vkValidation->integer && !strcmp(pInsExt[j].extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME))
@@ -326,7 +334,7 @@ static void vk_createInstance(void)
     }
     else 
     {
-        ri.Error(ERR_FATAL, "%d, returned by qvkCreateInstance.", e);
+        ri.Error(ERR_FATAL, "Vulkan: vkCreateInstance returned %s", cvtResToStr(e));
     }
    
     free(ppInstanceExt);
