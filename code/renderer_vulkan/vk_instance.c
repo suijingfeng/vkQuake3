@@ -760,11 +760,13 @@ void vk_clearProcAddress(void)
     ri.Printf( PRINT_ALL, " Destroy logical device: vk.device. \n" );
     // Device queues are implicitly cleaned up when the device is destroyed
     // so we don't need to do anything in clean up
-	qvkDestroyDevice(vk.device, NULL);
+    if (vk.device != VK_NULL_HANDLE && qvkDestroyDevice != NULL)
+        qvkDestroyDevice(vk.device, NULL);
     
     ri.Printf( PRINT_ALL, " Destroy surface: vk.surface. \n" );
     // make sure that the surface is destroyed before the instance
-    qvkDestroySurfaceKHR(vk.instance, vk.surface, NULL);
+    if (vk.surface != VK_NULL_HANDLE && qvkDestroySurfaceKHR != NULL)
+        qvkDestroySurfaceKHR(vk.instance, vk.surface, NULL);
 
 #ifndef NDEBUG
     ri.Printf( PRINT_ALL, " Destroy callback function: vk.h_debugCB. \n" );
@@ -773,7 +775,8 @@ void vk_clearProcAddress(void)
 #endif
 
     ri.Printf( PRINT_ALL, " Destroy instance: vk.instance. \n" );
-	qvkDestroyInstance(vk.instance, NULL);
+    if (vk.instance != VK_NULL_HANDLE && qvkDestroyInstance != NULL)
+        qvkDestroyInstance(vk.instance, NULL);
 
 // ===========================================================
     ri.Printf( PRINT_ALL, " clear all proc address \n" );
