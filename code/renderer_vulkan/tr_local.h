@@ -924,7 +924,7 @@ RENDERER BACK END COMMAND QUEUE
 #define	MAX_RENDER_COMMANDS	0x40000
 
 typedef struct {
-	byte	cmds[MAX_RENDER_COMMANDS];
+	byte	cmds[MAX_RENDER_COMMANDS] QALIGN(16);
 	int		used;
 } renderCommandList_t;
 

@@ -47,10 +47,16 @@ void* R_GetCommandBuffer( int bytes )
 {
 	renderCommandList_t	*cmdList = &BE_Commands;
 
+	// Commands hold viewParms_t and orientationr_t, whose matrices are
+	// QALIGN(16), so every command must start on a 16-byte boundary:
+	// cmds is 16-byte aligned and each command is padded to 16 bytes.
+	// R_IssueRenderCommands advances by the same padded sizes.
+	bytes = PAD( bytes, 16 );
+
 	// always leave room for the end of list command
-	if ( cmdList->used + bytes + 4 > MAX_RENDER_COMMANDS )
+	if ( cmdList->used + bytes + 16 > MAX_RENDER_COMMANDS )
     {
-		if ( bytes > MAX_RENDER_COMMANDS - 4 ) {
+		if ( bytes > MAX_RENDER_COMMANDS - 16 ) {
 			ri.Error( ERR_FATAL, "R_GetCommandBuffer: bad size %i", bytes );
 		}
 		// if we run out of room, just start dropping commands
@@ -504,7 +510,7 @@ void R_IssueRenderCommands( qboolean runPerformanceCounters )
                 backEnd.Color2D[2] = cmd->color[2] * 255;
                 backEnd.Color2D[3] = cmd->color[3] * 255;
 
-                data += sizeof(setColorCommand_t);
+                data += PAD( sizeof(setColorCommand_t), 16 );
             } break;
 
             case RC_STRETCH_PIC:
@@ -513,7 +519,7 @@ void R_IssueRenderCommands( qboolean runPerformanceCounters )
 
                 RB_StretchPic( cmd );
 
-                data += sizeof(stretchPicCommand_t);
+                data += PAD( sizeof(stretchPicCommand_t), 16 );
             } break;
 
             case RC_DRAW_SURFS:
@@ -531,7 +537,7 @@ void R_IssueRenderCommands( qboolean runPerformanceCounters )
 
                 RB_RenderDrawSurfList( cmd->drawSurfs, cmd->numDrawSurfs );
                 
-                data += sizeof(drawSurfsCommand_t);
+                data += PAD( sizeof(drawSurfsCommand_t), 16 );
             } break;
 
             case RC_DRAW_BUFFER:
@@ -543,7 +549,7 @@ void R_IssueRenderCommands( qboolean runPerformanceCounters )
                 // VULKAN
                 vk_begin_frame();
 
-                data += sizeof(drawBufferCommand_t);
+                data += PAD( sizeof(drawBufferCommand_t), 16 );
 
                 // begin_frame_called = qtrue;
             } break;
@@ -562,7 +568,7 @@ void R_IssueRenderCommands( qboolean runPerformanceCounters )
                 // VULKAN
                 vk_end_frame();
 
-                data += sizeof(swapBuffersCommand_t);
+                data += PAD( sizeof(swapBuffersCommand_t), 16 );
             } break;
 
             case RC_SCREENSHOT:
@@ -571,7 +577,7 @@ void R_IssueRenderCommands( qboolean runPerformanceCounters )
 
                 RB_TakeScreenshot( cmd->width, cmd->height, cmd->fileName, cmd->jpeg);
 
-                data += sizeof(screenshotCommand_t);
+                data += PAD( sizeof(screenshotCommand_t), 16 );
             } break;
 
 
@@ -581,7 +587,7 @@ void R_IssueRenderCommands( qboolean runPerformanceCounters )
 
                 RB_TakeVideoFrameCmd( cmd );
 
-                data += sizeof(videoFrameCommand_t);
+                data += PAD( sizeof(videoFrameCommand_t), 16 );
             } break;
 
             case RC_END_OF_LIST:
