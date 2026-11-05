@@ -169,7 +169,7 @@ static int VKimp_SetMode(int mode, qboolean fullscreen)
 	if( (tmp == 0) && (desktopMode.h > 0) )
     {
     	Uint32 f = desktopMode.format;
-        ri.Printf(PRINT_ALL, " bpp %i\t%s\t%i x %i, refresh_rate: %dHz\n", SDL_BITSPERPIXEL(f), SDL_GetPixelFormatName(f), desktopMode.w, desktopMode.h, desktopMode.refresh_rate);
+        ri.Printf(PRINT_DEVELOPER, " bpp %i\t%s\t%i x %i, refresh_rate: %dHz\n", SDL_BITSPERPIXEL(f), SDL_GetPixelFormatName(f), desktopMode.w, desktopMode.h, desktopMode.refresh_rate);
     }
     else if (SDL_GetDisplayMode(r_displayIndex->integer, 0, &desktopMode) != 0)
 	{
@@ -240,7 +240,7 @@ void vk_createWindow(void)
 	SDL_version v;
 	SDL_version *sdl_version = &v;
 	SDL_GetVersion(&v);
-	ri.Printf(PRINT_ALL, " Found SDL version %i.%i.%i\n",
+	ri.Printf(PRINT_DEVELOPER, " Found SDL version %i.%i.%i\n",
 		sdl_version->major,sdl_version->minor,sdl_version->patch);
 
 	r_displayIndex = ri.Cvar_Get( "r_displayIndex", "0", CVAR_ARCHIVE | CVAR_LATCH );
@@ -276,7 +276,7 @@ void vk_createWindow(void)
 	// otherwise it returns the initialization status of the specified subsystems.
 	if (0 == SDL_WasInit(SDL_INIT_VIDEO))
 	{
-		ri.Printf(PRINT_ALL, " Video is not initialized before, so initial it.\n");
+		ri.Printf(PRINT_DEVELOPER, " Video is not initialized before, so initial it.\n");
 
 		if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		{
@@ -289,7 +289,7 @@ void vk_createWindow(void)
 	}
 	else
 	{
-		ri.Printf(PRINT_ALL, " Video is already initialized.\n");
+		ri.Printf(PRINT_DEVELOPER, " Video is already initialized.\n");
 	}
 
 	if( 0 == VKimp_SetMode(r_mode->integer, r_fullscreen->integer) )
@@ -338,13 +338,13 @@ void vk_getInstanceProcAddrImpl(void)
         ri.Error(ERR_FATAL, "Failed to find entrypoint vkGetInstanceProcAddr\n"); 
     }
     
-    ri.Printf(PRINT_ALL,  " Get instance proc address. (using SDL2)\n");
+    ri.Printf(PRINT_DEVELOPER,  " Get instance proc address. (using SDL2)\n");
 }
 
 
 void vk_destroyWindow( void )
 {
-	ri.Printf(PRINT_ALL, " Destroy Window Subsystem.\n");
+	ri.Printf(PRINT_DEVELOPER, " Destroy Window Subsystem.\n");
 
 	ri.IN_Shutdown();
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
@@ -356,7 +356,7 @@ void vk_destroyWindow( void )
 
 void vk_createSurfaceImpl(void)
 {
-    ri.Printf(PRINT_ALL, " Create Surface: vk.surface.\n");
+    ri.Printf(PRINT_DEVELOPER, " Create Surface: vk.surface.\n");
 
     if(!SDL_Vulkan_CreateSurface(window_sdl, vk.instance, &vk.surface))
     {

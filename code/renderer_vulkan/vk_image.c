@@ -77,7 +77,7 @@ static void vk_createStagingBuffer(uint32_t size)
     memset(&StagBuf, 0, sizeof(StagBuf));
 
 
-    ri.Printf(PRINT_ALL, " Create Staging Buffer: %d\n", size);
+    ri.Printf(PRINT_DEVELOPER, " Create Staging Buffer: %d\n", size);
 
     {
         VkBufferCreateInfo buffer_desc;
@@ -123,7 +123,7 @@ static void vk_createStagingBuffer(uint32_t size)
 
         VK_CHECK(qvkBindBufferMemory(vk.device, StagBuf.buff, StagBuf.mappableMem, 0));
 
-        ri.Printf(PRINT_ALL, " Stagging buffer alignment: %ld, memoryTypeBits: 0x%x, Type Index: %d. \n",
+        ri.Printf(PRINT_DEVELOPER, " Stagging buffer alignment: %ld, memoryTypeBits: 0x%x, Type Index: %d. \n",
             memory_requirements.alignment, memory_requirements.memoryTypeBits, alloc_info.memoryTypeIndex);
     }
 }
@@ -131,7 +131,7 @@ static void vk_createStagingBuffer(uint32_t size)
 
 static void vk_destroy_staging_buffer(void)
 {
-    ri.Printf(PRINT_ALL, " Destroy staging buffer. \n");
+    ri.Printf(PRINT_DEVELOPER, " Destroy staging buffer. \n");
 
     if (StagBuf.buff != VK_NULL_HANDLE)
     {
@@ -331,15 +331,15 @@ static void vk_createImageAndBindWithMemory(image_t* pImg)
     ++devMemImg.Index;
 
 
-    ri.Printf(PRINT_ALL, " --- Device memory allocation --- \n");
+    ri.Printf(PRINT_DEVELOPER, " --- Device memory allocation --- \n");
 
-    ri.Printf(PRINT_ALL, "alignment: %ld, Type Index: %d. \n",
+    ri.Printf(PRINT_DEVELOPER, "alignment: %ld, Type Index: %d. \n",
             memory_requirements.alignment, alloc_info.memoryTypeIndex);
     
-    ri.Printf(PRINT_ALL, "Image chuck memory consumed: %d M \n",
+    ri.Printf(PRINT_DEVELOPER, "Image chuck memory consumed: %d M \n",
             devMemImg.Index * (IMAGE_CHUNK_SIZE >> 20) );
 
-    ri.Printf(PRINT_ALL, " --- ------------------------ --- \n");
+    ri.Printf(PRINT_DEVELOPER, " --- ------------------------ --- \n");
 }
 
 
@@ -414,7 +414,7 @@ static void vk_createImageViewAndDescriptorSet(image_t* pImage)
     /////  save it for destroy and update current descriptor
     pImage->descriptor_set = desSet;
 
-    //ri.Printf(PRINT_ALL, " Allocate Descriptor Sets \n");
+    //ri.Printf(PRINT_DEVELOPER, " Allocate Descriptor Sets \n");
     VkWriteDescriptorSet descriptor_write;
 
     VkDescriptorImageInfo image_info;
@@ -456,7 +456,7 @@ image_t* R_CreateImage( const char *name, unsigned char* pic, const uint32_t wid
     }
 
 
-    ri.Printf( PRINT_ALL, " Create Image: %s\n", name);
+    ri.Printf( PRINT_DEVELOPER, " Create Image: %s\n", name);
     
     // Create image_t object.
 
@@ -700,13 +700,13 @@ image_t* R_FindImageFile(const char *name, VkBool32 mipmap, VkBool32 allowPicmip
 			if ( strcmp( name, "*white" ) )
 			{
 				if ( image->mipmap != mipmap ) {
-					ri.Printf( PRINT_WARNING, "WARNING: reused image %s with mixed mipmap parm\n", name );
+					ri.Printf( PRINT_DEVELOPER, "WARNING: reused image %s with mixed mipmap parm\n", name );
 				}
 				if ( image->allowPicmip != allowPicmip ) {
-					ri.Printf( PRINT_WARNING, "WARNING: reused image %s with mixed allowPicmip parm\n", name );
+					ri.Printf( PRINT_DEVELOPER, "WARNING: reused image %s with mixed allowPicmip parm\n", name );
 				}
 				if ( image->wrapClampMode != glWrapClampMode ) {
-					ri.Printf( PRINT_WARNING, "WARNING: reused image %s with mixed glWrapClampMode parm\n", name );
+					ri.Printf( PRINT_DEVELOPER, "WARNING: reused image %s with mixed glWrapClampMode parm\n", name );
 				}
 			}
 			return image;
@@ -727,7 +727,7 @@ image_t* R_FindImageFile(const char *name, VkBool32 mipmap, VkBool32 allowPicmip
 
     if (pic == NULL)
     {
-        ri.Printf( PRINT_WARNING, "R_FindImageFile: Fail loading %s the from disk\n", name);
+        ri.Printf( PRINT_DEVELOPER, "R_FindImageFile: Fail loading %s the from disk\n", name);
         return NULL;
     }
 
@@ -748,7 +748,7 @@ void RE_UploadCinematic (int w, int h, int cols, int rows, const unsigned char *
     // if the scratchImage isn't in the format we want, specify it as a new texture
     if ( (cols != prtImage->uploadWidth) || (rows != prtImage->uploadHeight) )
     {
-        ri.Printf(PRINT_ALL, "w=%d, h=%d, cols=%d, rows=%d, client=%d, prtImage->width=%d, prtImage->height=%d\n", 
+        ri.Printf(PRINT_DEVELOPER, "w=%d, h=%d, cols=%d, rows=%d, client=%d, prtImage->width=%d, prtImage->height=%d\n", 
            w, h, cols, rows, client, prtImage->uploadWidth, prtImage->uploadHeight);
 
         prtImage->uploadWidth = cols;
@@ -1000,7 +1000,7 @@ void R_InitImages( void )
 static void vk_destroySingleImage( image_t* pImg )
 {
 
-   	ri.Printf(PRINT_ALL, " Destroy Image: %s \n", pImg->imgName); 
+   	ri.Printf(PRINT_DEVELOPER, " Destroy Image: %s \n", pImg->imgName); 
     if(pImg->descriptor_set != VK_NULL_HANDLE)
     {   
         //To free allocated descriptor sets

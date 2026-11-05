@@ -182,7 +182,7 @@ VkRect2D get_scissor_rect(void)
 	    if (r.offset.y + r.extent.height > height)
 		    r.extent.height = height - r.offset.y;
 
-        // ri.Printf(PRINT_ALL, "(%d, %d, %d, %d)\n",
+        // ri.Printf(PRINT_DEVELOPER, "(%d, %d, %d, %d)\n",
         // r.offset.x, r.offset.y, r.extent.width, r.extent.height);
     }
 
@@ -199,7 +199,7 @@ VkRect2D get_scissor_rect(void)
 
 void vk_createVertexBuffer(void)
 {
-    ri.Printf(PRINT_ALL, " Create vertex buffer: shadingDat.vertex_buffer \n");
+    ri.Printf(PRINT_DEVELOPER, " Create vertex buffer: shadingDat.vertex_buffer \n");
 
     VkBufferCreateInfo desc;
     desc.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -234,7 +234,7 @@ void vk_createVertexBuffer(void)
     alloc_info.memoryTypeIndex = find_memory_type(memory_type_bits, 
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    ri.Printf(PRINT_ALL, " Allocate device memory for Vertex Buffer: %ld bytes. \n",
+    ri.Printf(PRINT_DEVELOPER, " Allocate device memory for Vertex Buffer: %ld bytes. \n",
             alloc_info.allocationSize);
 
     VK_CHECK(qvkAllocateMemory(vk.device, &alloc_info, NULL, &shadingDat.vertex_buffer_memory));
@@ -251,7 +251,7 @@ void vk_createVertexBuffer(void)
 
 void vk_createIndexBuffer(void)
 {
-    ri.Printf(PRINT_ALL, " Create index buffer: shadingDat.index_buffer \n");
+    ri.Printf(PRINT_DEVELOPER, " Create index buffer: shadingDat.index_buffer \n");
 
     VkBufferCreateInfo desc;
     desc.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -286,7 +286,7 @@ void vk_createIndexBuffer(void)
     alloc_info.memoryTypeIndex = find_memory_type(memory_type_bits, 
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    ri.Printf(PRINT_ALL, " Allocate device memory for Index Buffer: %ld bytes. \n",
+    ri.Printf(PRINT_DEVELOPER, " Allocate device memory for Index Buffer: %ld bytes. \n",
             alloc_info.allocationSize);
 
     VK_CHECK(qvkAllocateMemory(vk.device, &alloc_info, NULL, &shadingDat.index_buffer_memory));
@@ -571,8 +571,8 @@ void vk_resetGeometryBuffer(void)
 
 void vk_destroy_shading_data(void)
 {
-    ri.Printf(PRINT_ALL, " Destroy vertex/index buffer: shadingDat.vertex_buffer shadingDat.index_buffer. \n");
-    ri.Printf(PRINT_ALL, " Free device memory: vertex_buffer_memory index_buffer_memory. \n");
+    ri.Printf(PRINT_DEVELOPER, " Destroy vertex/index buffer: shadingDat.vertex_buffer shadingDat.index_buffer. \n");
+    ri.Printf(PRINT_DEVELOPER, " Free device memory: vertex_buffer_memory index_buffer_memory. \n");
 
     qvkUnmapMemory(vk.device, shadingDat.vertex_buffer_memory);
 	qvkFreeMemory(vk.device, shadingDat.vertex_buffer_memory, NULL);
@@ -622,7 +622,7 @@ void vk_clearDepthStencilAttachments(void)
 void vk_clearColorAttachments(const float* color)
 {
 
-    // ri.Printf(PRINT_ALL, "vk_clearColorAttachments\n");
+    // ri.Printf(PRINT_DEVELOPER, "vk_clearColorAttachments\n");
 
     VkClearAttachment attachments[1];
     memset(attachments, 0, sizeof(VkClearAttachment));

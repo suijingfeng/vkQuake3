@@ -35,7 +35,7 @@ vkAcquireNextImageKHR.
 void vk_recreateSwapChain(void)
 {
 
-    ri.Printf( PRINT_ALL, " Recreate swap chain \n");
+    ri.Printf( PRINT_DEVELOPER, " Recreate swap chain \n");
 
     if( r_fullscreen->integer )
     {
@@ -81,7 +81,7 @@ void vk_createSwapChain(VkDevice device, VkSurfaceKHR surface, VkSurfaceFormatKH
     uint32_t image_count;
 
     {
-        ri.Printf(PRINT_ALL, "\n-------- Determine present mode --------\n");
+        ri.Printf(PRINT_DEVELOPER, "\n-------- Determine present mode --------\n");
         
         uint32_t nPM, i;
         qvkGetPhysicalDeviceSurfacePresentModesKHR(vk.physical_device, surface, &nPM, NULL);
@@ -90,7 +90,7 @@ void vk_createSwapChain(VkDevice device, VkSurfaceKHR surface, VkSurfaceFormatKH
 
         qvkGetPhysicalDeviceSurfacePresentModesKHR(vk.physical_device, surface, &nPM, pPresentModes);
 
-        ri.Printf(PRINT_ALL, "Minimaal mumber ImageCount required: %d, Total %d present mode supported: \n",
+        ri.Printf(PRINT_DEVELOPER, "Minimaal mumber ImageCount required: %d, Total %d present mode supported: \n",
                 vk.surface_caps.minImageCount, nPM);
 
         VkBool32 mailbox_supported = VK_FALSE;
@@ -101,21 +101,21 @@ void vk_createSwapChain(VkDevice device, VkSurfaceKHR surface, VkSurfaceFormatKH
             switch(pPresentModes[i])
             {
                 case VK_PRESENT_MODE_IMMEDIATE_KHR:
-                    ri.Printf(PRINT_ALL, " VK_PRESENT_MODE_IMMEDIATE_KHR \n");
+                    ri.Printf(PRINT_DEVELOPER, " VK_PRESENT_MODE_IMMEDIATE_KHR \n");
                     immediate_supported = VK_TRUE;
                     break;
                 case VK_PRESENT_MODE_MAILBOX_KHR:
-                    ri.Printf(PRINT_ALL, " VK_PRESENT_MODE_MAILBOX_KHR \n");
+                    ri.Printf(PRINT_DEVELOPER, " VK_PRESENT_MODE_MAILBOX_KHR \n");
                     mailbox_supported = VK_TRUE;
                     break;
                 case VK_PRESENT_MODE_FIFO_KHR:
-                    ri.Printf(PRINT_ALL, " VK_PRESENT_MODE_FIFO_KHR \n");
+                    ri.Printf(PRINT_DEVELOPER, " VK_PRESENT_MODE_FIFO_KHR \n");
                     break;
                 case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
-                    ri.Printf(PRINT_ALL, " VK_PRESENT_MODE_FIFO_RELAXED_KHR \n");
+                    ri.Printf(PRINT_DEVELOPER, " VK_PRESENT_MODE_FIFO_RELAXED_KHR \n");
                     break;
                 default:
-                    ri.Printf(PRINT_ALL, " This device do not support presentation %d\n", pPresentModes[i]);
+                    ri.Printf(PRINT_DEVELOPER, " This device do not support presentation %d\n", pPresentModes[i]);
                     break;
             }
         }
@@ -165,15 +165,15 @@ void vk_createSwapChain(VkDevice device, VkSurfaceKHR surface, VkSurfaceFormatKH
             image_count = MIN(image_count+1, vk.surface_caps.maxImageCount);
         }
         
-        ri.Printf(PRINT_ALL, " \n minImageCount: %d, maxImageCount: %d, setted: %d\n",
+        ri.Printf(PRINT_DEVELOPER, " \n minImageCount: %d, maxImageCount: %d, setted: %d\n",
         vk.surface_caps.minImageCount, vk.surface_caps.maxImageCount, image_count);
 
-        ri.Printf(PRINT_ALL, "\n-------- ----------------------- --------\n");
+        ri.Printf(PRINT_DEVELOPER, "\n-------- ----------------------- --------\n");
     }
 
 
     {
-        ri.Printf(PRINT_ALL, "\n-------- Create vk.swapchain --------\n");
+        ri.Printf(PRINT_DEVELOPER, "\n-------- Create vk.swapchain --------\n");
 
         // The swap extent is the resolution of the swap chain images and its almost 
         // always exactly equal to the resolution of the window that we're drawing to.
@@ -186,7 +186,7 @@ void vk_createSwapChain(VkDevice device, VkSurfaceKHR surface, VkSurfaceFormatKH
                     MAX(vk.surface_caps.minImageExtent.height, 480u) );
         }
 
-        ri.Printf(PRINT_ALL, " Surface capabilities, image_extent.width: %d, image_extent.height: %d\n",
+        ri.Printf(PRINT_DEVELOPER, " Surface capabilities, image_extent.width: %d, image_extent.height: %d\n",
                 image_extent.width, image_extent.height);
 
 
@@ -253,7 +253,7 @@ void vk_createSwapChain(VkDevice device, VkSurfaceKHR surface, VkSurfaceFormatKH
         // To obtain the number of presentable images for swapchain
         VK_CHECK(qvkGetSwapchainImagesKHR(device, vk.swapchain, &vk.swapchain_image_count, NULL));
 
-        ri.Printf(PRINT_ALL, " Swapchain image count: %d\n", vk.swapchain_image_count);
+        ri.Printf(PRINT_DEVELOPER, " Swapchain image count: %d\n", vk.swapchain_image_count);
 
         if( vk.swapchain_image_count > MAX_SWAPCHAIN_IMAGES )
             vk.swapchain_image_count = MAX_SWAPCHAIN_IMAGES;

@@ -69,7 +69,7 @@ static uint32_t s_numPipelines = 0;
 
 void R_PipelineList_f(void)
 {
-    ri.Printf(PRINT_ALL, " Total pipeline created: %d\n", s_numPipelines);
+    ri.Printf(PRINT_DEVELOPER, " Total pipeline created: %d\n", s_numPipelines);
 }
 
 
@@ -81,7 +81,7 @@ void R_PipelineList_f(void)
 
 void vk_createPipelineLayout(void)
 {
-    ri.Printf(PRINT_ALL, " Create: vk.descriptor_pool, vk.set_layout, vk.pipeline_layout\n");
+    ri.Printf(PRINT_DEVELOPER, " Create: vk.descriptor_pool, vk.set_layout, vk.pipeline_layout\n");
  
     // Like command buffers, descriptor sets are allocated from a pool. 
     // So we must first create the Descriptor pool.
@@ -729,7 +729,7 @@ void create_pipelines_for_each_stage(shaderStage_t *pStage, shader_t* pShader)
 void create_standard_pipelines(void)
 {
       
-    ri.Printf(PRINT_ALL, " Create skybox pipeline \n");
+    ri.Printf(PRINT_DEVELOPER, " Create skybox pipeline \n");
     {
 
         struct Vk_Pipeline_Def def;
@@ -745,7 +745,7 @@ void create_standard_pipelines(void)
         vk_create_pipeline(&def, &g_stdPipelines.skybox_pipeline);
     }
 
-    ri.Printf(PRINT_ALL, " Create Q3 stencil shadows pipeline \n");
+    ri.Printf(PRINT_DEVELOPER, " Create Q3 stencil shadows pipeline \n");
     {
         {
             struct Vk_Pipeline_Def def;
@@ -793,7 +793,7 @@ void create_standard_pipelines(void)
     }
 
 
-    ri.Printf(PRINT_ALL, " Create fog and dlights pipeline \n");
+    ri.Printf(PRINT_DEVELOPER, " Create fog and dlights pipeline \n");
     {
         struct Vk_Pipeline_Def def;
         memset(&def, 0, sizeof(def));
@@ -841,7 +841,7 @@ void create_standard_pipelines(void)
 
 
     // debug pipelines
-    ri.Printf(PRINT_ALL, " Create tris debug pipeline \n");
+    ri.Printf(PRINT_DEVELOPER, " Create tris debug pipeline \n");
     {
         struct Vk_Pipeline_Def def;
         memset(&def, 0, sizeof(def));
@@ -851,7 +851,7 @@ void create_standard_pipelines(void)
     }
 
     
-    ri.Printf(PRINT_ALL, " Create tris mirror debug pipeline \n");
+    ri.Printf(PRINT_DEVELOPER, " Create tris mirror debug pipeline \n");
     {
         struct Vk_Pipeline_Def def;
         memset(&def, 0, sizeof(def));
@@ -861,7 +861,7 @@ void create_standard_pipelines(void)
         vk_create_pipeline(&def, &g_stdPipelines.tris_mirror_debug_pipeline);
     }
 
-    ri.Printf(PRINT_ALL, " Create normals debug pipeline \n");
+    ri.Printf(PRINT_DEVELOPER, " Create normals debug pipeline \n");
     {
         struct Vk_Pipeline_Def def;
         memset(&def, 0, sizeof(def));
@@ -872,7 +872,7 @@ void create_standard_pipelines(void)
     }
 
 
-    ri.Printf(PRINT_ALL, " Create surface debug pipeline \n");
+    ri.Printf(PRINT_DEVELOPER, " Create surface debug pipeline \n");
     {
         struct Vk_Pipeline_Def def;
         memset(&def, 0, sizeof(def));
@@ -881,7 +881,7 @@ void create_standard_pipelines(void)
         vk_create_pipeline(&def, &g_stdPipelines.surface_debug_pipeline_solid);
     }
 
-    ri.Printf(PRINT_ALL, " Create surface debug outline pipeline \n");
+    ri.Printf(PRINT_DEVELOPER, " Create surface debug outline pipeline \n");
     {
         struct Vk_Pipeline_Def def;
         memset(&def, 0, sizeof(def));
@@ -891,7 +891,7 @@ void create_standard_pipelines(void)
         vk_create_pipeline(&def, &g_stdPipelines.surface_debug_pipeline_outline);
     }
     
-    ri.Printf(PRINT_ALL, " Create images debug pipeline \n");
+    ri.Printf(PRINT_DEVELOPER, " Create images debug pipeline \n");
     {
         struct Vk_Pipeline_Def def;
         memset(&def, 0, sizeof(def));

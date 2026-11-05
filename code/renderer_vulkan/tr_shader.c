@@ -579,7 +579,7 @@ static qboolean ParseStage( shaderStage_t *stage, char **text )
 				return qfalse;
 			}
             
-            //ri.Printf( PRINT_ALL, "CLAMPMAP: \n");
+            //ri.Printf( PRINT_DEVELOPER, "CLAMPMAP: \n");
 			
             stage->bundle[0].image[0] = R_FindImageFile(token, !shader.noMipMaps, !shader.noPicMip, GL_CLAMP);
 			if ( !stage->bundle[0].image[0] )
@@ -2059,7 +2059,7 @@ void setDefaultShader(void)
 
 void R_CreateDefaultShadingCmds(const char* name, image_t* image)
 {
-    // ri.Printf( PRINT_ALL, "R_CreateDefaultShade: shader %s, image: %s\n", name, image->imgName );
+    // ri.Printf( PRINT_DEVELOPER, "R_CreateDefaultShade: shader %s, image: %s\n", name, image->imgName );
 
     if ( shader.lightmapIndex == LIGHTMAP_NONE )
     {
@@ -2155,7 +2155,7 @@ CreateInternalShaders
 */
 static void CreateInternalShaders( void )
 {
-    ri.Printf( PRINT_ALL, "CreateInternalShaders\n" );
+    ri.Printf( PRINT_DEVELOPER, "CreateInternalShaders\n" );
 
 	tr.numShaders = 0;
 
@@ -2195,7 +2195,7 @@ static void CreateInternalShaders( void )
 
 static void CreateExternalShaders( void )
 {
-    ri.Printf( PRINT_ALL, "CreateExternalShaders\n" );
+    ri.Printf( PRINT_DEVELOPER, "CreateExternalShaders\n" );
 
 	tr.projectionShadowShader = R_FindShader( "projectionShadow", LIGHTMAP_NONE, qtrue );
 }
@@ -2204,7 +2204,7 @@ static void CreateExternalShaders( void )
 void R_InitShaders( void )
 {
 	
-    ri.Printf( PRINT_ALL, "Initializing Shaders\n" );
+    ri.Printf( PRINT_DEVELOPER, "Initializing Shaders\n" );
     
     R_ClearShaderHashTable();
 

@@ -507,7 +507,7 @@ static void SetShaderTextHashTableSizes( void )
 #define	MAX_SHADER_FILES	4096
 void ScanAndLoadShaderFiles( void )
 {
-    ri.Printf( PRINT_ALL, "ScanAndLoadShaderFiles\n" );
+    ri.Printf( PRINT_DEVELOPER, "ScanAndLoadShaderFiles\n" );
 
 	char *buffers[MAX_SHADER_FILES] = {0};
 	int numShaderFiles = 0;
@@ -535,7 +535,7 @@ void ScanAndLoadShaderFiles( void )
 		char filename[128] = {0};
 
 		snprintf( filename, sizeof( filename ), "scripts/%s", shaderFiles[i] );
-		ri.Printf( PRINT_ALL, "...loading '%s'\n", filename );
+		ri.Printf( PRINT_DEVELOPER, "...loading '%s'\n", filename );
 		long summand = ri.FS_ReadFile( filename, (void**)&buffers[i] );
 		
 		if ( !buffers[i] )

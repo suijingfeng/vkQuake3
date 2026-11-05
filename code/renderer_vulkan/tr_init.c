@@ -208,7 +208,7 @@ void RE_BeginRegistration(glconfig_t * pGlCfg)
 
 	tr.registered = qtrue;
 
-   	ri.Printf(PRINT_ALL, "RE_BeginRegistration finished.\n");
+   	ri.Printf(PRINT_DEVELOPER, "RE_BeginRegistration finished.\n");
 }
 
 /*
