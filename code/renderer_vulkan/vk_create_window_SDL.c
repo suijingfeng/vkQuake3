@@ -323,6 +323,29 @@ success:
 }
 
 
+/*
+ * The instance extensions SDL needs for the window surface.  With names
+ * NULL, only returns how many there are.
+ */
+unsigned int vk_getRequiredInstanceExtensions(const char **names, unsigned int max)
+{
+	unsigned int count = 0;
+
+	if (!SDL_Vulkan_GetInstanceExtensions(window_sdl, &count, NULL))
+		ri.Error(ERR_FATAL, "SDL_Vulkan_GetInstanceExtensions(): %s", SDL_GetError());
+
+	if (names != NULL)
+	{
+		if (count > max)
+			count = max;
+		if (!SDL_Vulkan_GetInstanceExtensions(window_sdl, &count, names))
+			ri.Error(ERR_FATAL, "SDL_Vulkan_GetInstanceExtensions(): %s", SDL_GetError());
+	}
+
+	return count;
+}
+
+
 void vk_getInstanceProcAddrImpl(void)
 {
 	ri.Printf(PRINT_ALL, " *** Vulkan Initialization ***\n");
