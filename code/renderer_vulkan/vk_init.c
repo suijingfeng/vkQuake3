@@ -86,20 +86,27 @@ void vk_shutdown(void)
 {
     ri.Printf( PRINT_ALL, "vk_shutdown()\n" );
 
-    vk_destroyDepthAttachment();
+    // After a fatal error part-way through vk_initialize() only some
+    // of these objects exist and the device functions that destroy them
+    // may not be loaded; the process is exiting, so release just the
+    // device and instance (vk_clearProcAddress) then.
+    if (vk.isInitialized)
+    {
+        vk_destroyDepthAttachment();
 
-    vk_destroyFrameBuffers();
+        vk_destroyFrameBuffers();
 
-    vk_destroy_shading_data();
+        vk_destroy_shading_data();
 
-    vk_destroy_sync_primitives();
-    
-    vk_destroyShaderModules();
+        vk_destroy_sync_primitives();
 
-//
-    vk_destroyGlobalStagePipeline();
-//
-    vk_destroy_commands();
+        vk_destroyShaderModules();
+
+    //
+        vk_destroyGlobalStagePipeline();
+    //
+        vk_destroy_commands();
+    }
 
 	vk_clearProcAddress();
 

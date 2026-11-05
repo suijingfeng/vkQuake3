@@ -173,7 +173,10 @@ void RE_Shutdown( qboolean destroyWindow )
 
     // contains vulkan resources/state, reinitialized on a map change.
 
-    vk_destroyShaderStagePipeline();
+    // nothing to destroy, and no device functions to do it with, after
+    // an error part-way through vk_initialize()
+    if ( vk.isInitialized )
+        vk_destroyShaderStagePipeline();
  
 
     vk_resetGeometryBuffer();
