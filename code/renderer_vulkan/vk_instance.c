@@ -4,6 +4,7 @@
 #include "VKimpl.h"
 #include "vk_instance.h"
 #include "tr_globals.h"
+#include "tr_cvar.h"
 #include "vk_image.h"
 #include "vk_instance.h"
 #include "vk_shade_geometry.h"
@@ -41,10 +42,9 @@ PFN_vkGetPhysicalDeviceSurfaceFormatsKHR		qvkGetPhysicalDeviceSurfaceFormatsKHR;
 PFN_vkGetPhysicalDeviceSurfacePresentModesKHR	qvkGetPhysicalDeviceSurfacePresentModesKHR;
 PFN_vkGetPhysicalDeviceSurfaceSupportKHR		qvkGetPhysicalDeviceSurfaceSupportKHR;
 
-#ifndef NDEBUG
+PFN_vkEnumerateInstanceLayerProperties			qvkEnumerateInstanceLayerProperties;
 PFN_vkCreateDebugReportCallbackEXT				qvkCreateDebugReportCallbackEXT;
 PFN_vkDestroyDebugReportCallbackEXT				qvkDestroyDebugReportCallbackEXT;
-#endif
 
 PFN_vkAllocateCommandBuffers					qvkAllocateCommandBuffers;
 PFN_vkAllocateDescriptorSets					qvkAllocateDescriptorSets;
@@ -124,7 +124,30 @@ PFN_vkQueuePresentKHR							qvkQueuePresentKHR;
 
 
 
-#ifndef NDEBUG
+static const char * const validation_layer_name = "VK_LAYER_KHRONOS_validation";
+
+static qboolean vk_isInstanceLayerAvailable(const char *name)
+{
+    uint32_t count = 0, i;
+    VkLayerProperties *layers;
+    qboolean found = qfalse;
+
+    if (qvkEnumerateInstanceLayerProperties(&count, NULL) != VK_SUCCESS || count == 0)
+        return qfalse;
+
+    layers = malloc(sizeof(*layers) * count);
+    if (layers == NULL)
+        return qfalse;
+
+    if (qvkEnumerateInstanceLayerProperties(&count, layers) == VK_SUCCESS)
+        for (i = 0; i < count; i++)
+            if (!strcmp(layers[i].layerName, name))
+                found = qtrue;
+
+    free(layers);
+    return found;
+}
+
 
 VKAPI_ATTR VkBool32 VKAPI_CALL vk_DebugCallback(
         VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT object_type,
@@ -138,6 +161,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_DebugCallback(
 
 static void vk_createDebugCallback( PFN_vkDebugReportCallbackEXT qvkDebugCB)
 {
+    if (qvkCreateDebugReportCallbackEXT == NULL)
+    {
+        ri.Printf( PRINT_WARNING, "r_vkValidation: VK_EXT_debug_report is not available, no debug callback\n" );
+        return;
+    }
+
     ri.Printf( PRINT_ALL, " vk_createDebugCallback() \n" ); 
     
     VkDebugReportCallbackCreateInfoEXT desc;
@@ -151,8 +180,6 @@ static void vk_createDebugCallback( PFN_vkDebugReportCallbackEXT qvkDebugCB)
 
     VK_CHECK(qvkCreateDebugReportCallbackEXT(vk.instance, &desc, NULL, &vk.h_debugCB));
 }
-
-#endif
 
 
 static void vk_createInstance(void)
@@ -246,16 +273,22 @@ static void vk_createInstance(void)
     instanceCreateInfo.enabledExtensionCount = nInsExt;
 	instanceCreateInfo.ppEnabledExtensionNames = ppInstanceExt;
 
-#ifndef NDEBUG
-    ri.Printf(PRINT_ALL, "Using VK_LAYER_KHRONOS_validation\n");
-
-    const char* const validation_layer_name = "VK_LAYER_KHRONOS_validation";
-    instanceCreateInfo.enabledLayerCount = 1;
-	instanceCreateInfo.ppEnabledLayerNames = &validation_layer_name;
-#else
     instanceCreateInfo.enabledLayerCount = 0;
 	instanceCreateInfo.ppEnabledLayerNames = NULL;
-#endif
+
+    if (r_vkValidation->integer)
+    {
+        if (vk_isInstanceLayerAvailable(validation_layer_name))
+        {
+            ri.Printf(PRINT_ALL, "Using %s\n", validation_layer_name);
+            instanceCreateInfo.enabledLayerCount = 1;
+            instanceCreateInfo.ppEnabledLayerNames = &validation_layer_name;
+        }
+        else
+        {
+            ri.Printf(PRINT_WARNING, "r_vkValidation is set, but %s is not installed\n", validation_layer_name);
+        }
+    }
 
 
     VkResult e = qvkCreateInstance(&instanceCreateInfo, NULL, &vk.instance);
@@ -300,6 +333,7 @@ static void vk_loadGlobalFunctions(void)
 
 	INIT_INSTANCE_FUNCTION(vkCreateInstance)
 	INIT_INSTANCE_FUNCTION(vkEnumerateInstanceExtensionProperties)
+	INIT_INSTANCE_FUNCTION(vkEnumerateInstanceLayerProperties)
 
     //
 	// Get instance level functions.
@@ -326,10 +360,11 @@ static void vk_loadGlobalFunctions(void)
 	INIT_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfaceSupportKHR)
    
 
-#ifndef NDEBUG
-    INIT_INSTANCE_FUNCTION(vkCreateDebugReportCallbackEXT)
-	INIT_INSTANCE_FUNCTION(vkDestroyDebugReportCallbackEXT)	//
-#endif
+    // optional: only present with VK_EXT_debug_report, used by r_vkValidation
+    qvkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)
+        qvkGetInstanceProcAddr(vk.instance, "vkCreateDebugReportCallbackEXT");
+    qvkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)
+        qvkGetInstanceProcAddr(vk.instance, "vkDestroyDebugReportCallbackEXT");
 
     #undef INIT_INSTANCE_FUNCTION
 
@@ -728,10 +763,8 @@ void vk_getProcAddress(void)
 {
     vk_loadGlobalFunctions();
 
-#ifndef NDEBUG
-	// Create debug callback.
-    vk_createDebugCallback(vk_DebugCallback);
-#endif
+    if (r_vkValidation->integer)
+        vk_createDebugCallback(vk_DebugCallback);
 
     // The window surface needs to be created right after the instance creation,
     // because it can actually influence the presentation mode selection.
@@ -766,11 +799,12 @@ void vk_clearProcAddress(void)
     // make sure that the surface is destroyed before the instance
     qvkDestroySurfaceKHR(vk.instance, vk.surface, NULL);
 
-#ifndef NDEBUG
-    ri.Printf( PRINT_ALL, " Destroy callback function: vk.h_debugCB. \n" );
-
-	qvkDestroyDebugReportCallbackEXT(vk.instance, vk.h_debugCB, NULL);
-#endif
+    if (vk.h_debugCB != VK_NULL_HANDLE && qvkDestroyDebugReportCallbackEXT != NULL)
+    {
+        ri.Printf( PRINT_ALL, " Destroy callback function: vk.h_debugCB. \n" );
+        qvkDestroyDebugReportCallbackEXT(vk.instance, vk.h_debugCB, NULL);
+        vk.h_debugCB = VK_NULL_HANDLE;
+    }
 
     ri.Printf( PRINT_ALL, " Destroy instance: vk.instance. \n" );
 	qvkDestroyInstance(vk.instance, NULL);
@@ -797,10 +831,9 @@ void vk_clearProcAddress(void)
 	qvkGetPhysicalDeviceSurfaceFormatsKHR		= NULL;
 	qvkGetPhysicalDeviceSurfacePresentModesKHR	= NULL;
 	qvkGetPhysicalDeviceSurfaceSupportKHR		= NULL;
-#ifndef NDEBUG
+	qvkEnumerateInstanceLayerProperties			= NULL;
 	qvkCreateDebugReportCallbackEXT				= NULL;
 	qvkDestroyDebugReportCallbackEXT			= NULL;
-#endif
 
 	qvkAllocateCommandBuffers					= NULL;
 	qvkAllocateDescriptorSets					= NULL;

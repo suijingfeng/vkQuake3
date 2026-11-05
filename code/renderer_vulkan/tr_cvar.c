@@ -76,6 +76,7 @@ cvar_t* r_allowResize; // make window resizable
 cvar_t* r_mode;
 
 cvar_t* r_loadImgAPI;
+cvar_t* r_vkValidation;
 
 void R_Register( void ) 
 {
@@ -166,4 +167,12 @@ void R_Register( void )
     r_mode = ri.Cvar_Get( "r_mode", "-2", CVAR_ARCHIVE | CVAR_LATCH );
 
     r_loadImgAPI = ri.Cvar_Get( "r_loadImgAPI", "0", CVAR_ARCHIVE | CVAR_LATCH );
+
+    // Khronos validation layer and its debug report callback, if the layer
+    // is installed; on by default in debug builds only
+#ifdef NDEBUG
+    r_vkValidation = ri.Cvar_Get( "r_vkValidation", "0", CVAR_ARCHIVE | CVAR_LATCH );
+#else
+    r_vkValidation = ri.Cvar_Get( "r_vkValidation", "1", CVAR_ARCHIVE | CVAR_LATCH );
+#endif
 }

@@ -27,10 +27,10 @@ extern PFN_vkGetPhysicalDeviceSurfaceFormatsKHR		    qvkGetPhysicalDeviceSurface
 extern PFN_vkGetPhysicalDeviceSurfacePresentModesKHR	qvkGetPhysicalDeviceSurfacePresentModesKHR;
 extern PFN_vkGetPhysicalDeviceSurfaceSupportKHR		    qvkGetPhysicalDeviceSurfaceSupportKHR;
 
-#ifndef NDEBUG
+extern PFN_vkEnumerateInstanceLayerProperties			qvkEnumerateInstanceLayerProperties;
+// NULL unless VK_EXT_debug_report is available (see r_vkValidation)
 extern PFN_vkCreateDebugReportCallbackEXT				qvkCreateDebugReportCallbackEXT;
 extern PFN_vkDestroyDebugReportCallbackEXT				qvkDestroyDebugReportCallbackEXT;
-#endif
 
 extern PFN_vkAllocateCommandBuffers					    qvkAllocateCommandBuffers;
 extern PFN_vkAllocateDescriptorSets					    qvkAllocateDescriptorSets;
@@ -196,9 +196,8 @@ struct Vk_Instance {
 
     VkBool32 isInitialized;
 
-#ifndef NDEBUG
+    // VK_NULL_HANDLE unless r_vkValidation set it up
     VkDebugReportCallbackEXT h_debugCB;
-#endif
 };
 
 
