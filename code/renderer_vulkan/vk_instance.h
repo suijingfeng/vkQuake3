@@ -116,17 +116,16 @@ void vk_clearProcAddress(void);
 
 const char * cvtResToStr(VkResult result);
 
-#ifndef NDEDBG
+// Vulkan error codes are negative; the renderer cannot go on after any of
+// them, so they are fatal.  Positive results (VK_INCOMPLETE,
+// VK_SUBOPTIMAL_KHR, VK_TIMEOUT, ...) are informational.
 #define VK_CHECK(function_call) { \
 	VkResult result = function_call; \
-	if (result != VK_SUCCESS) \
-		ri.Printf(PRINT_ALL, \
-        "Vulkan: error %s returned by %s \n", cvtResToStr(result), #function_call); \
+	if (result < 0) \
+		ri.Error(ERR_FATAL, "Vulkan: %s returned %s", #function_call, cvtResToStr(result)); \
+	else if (result != VK_SUCCESS) \
+		ri.Printf(PRINT_DEVELOPER, "Vulkan: %s returned %s\n", #function_call, cvtResToStr(result)); \
 }
-#else
-#define VK_CHECK(function_call)	\
-	function_call;
-#endif
 
 
 #define MAX_SWAPCHAIN_IMAGES    8
