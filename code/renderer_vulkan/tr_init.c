@@ -179,7 +179,11 @@ void RE_Shutdown( qboolean destroyWindow )
     vk_resetGeometryBuffer();
 
 	if ( tr.registered )
-    {	
+    {
+		// run what console commands queued this frame, e.g. a screenshot
+		// before quit or vid_restart, as the GL renderers do
+		R_IssueRenderCommands( qfalse );
+
 		vk_destroyImageRes();
         tr.registered = qfalse;
 	}
