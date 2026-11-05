@@ -4,6 +4,7 @@
 #include "VKimpl.h"
 #include "vk_instance.h"
 #include "tr_globals.h"
+#include "tr_cvar.h"
 #include "vk_image.h"
 #include "vk_instance.h"
 #include "vk_shade_geometry.h"
@@ -41,10 +42,9 @@ PFN_vkGetPhysicalDeviceSurfaceFormatsKHR		qvkGetPhysicalDeviceSurfaceFormatsKHR;
 PFN_vkGetPhysicalDeviceSurfacePresentModesKHR	qvkGetPhysicalDeviceSurfacePresentModesKHR;
 PFN_vkGetPhysicalDeviceSurfaceSupportKHR		qvkGetPhysicalDeviceSurfaceSupportKHR;
 
-#ifndef NDEBUG
+PFN_vkEnumerateInstanceLayerProperties			qvkEnumerateInstanceLayerProperties;
 PFN_vkCreateDebugReportCallbackEXT				qvkCreateDebugReportCallbackEXT;
 PFN_vkDestroyDebugReportCallbackEXT				qvkDestroyDebugReportCallbackEXT;
-#endif
 
 PFN_vkAllocateCommandBuffers					qvkAllocateCommandBuffers;
 PFN_vkAllocateDescriptorSets					qvkAllocateDescriptorSets;
@@ -124,7 +124,30 @@ PFN_vkQueuePresentKHR							qvkQueuePresentKHR;
 
 
 
-#ifndef NDEBUG
+static const char * const validation_layer_name = "VK_LAYER_KHRONOS_validation";
+
+static qboolean vk_isInstanceLayerAvailable(const char *name)
+{
+    uint32_t count = 0, i;
+    VkLayerProperties *layers;
+    qboolean found = qfalse;
+
+    if (qvkEnumerateInstanceLayerProperties(&count, NULL) != VK_SUCCESS || count == 0)
+        return qfalse;
+
+    layers = malloc(sizeof(*layers) * count);
+    if (layers == NULL)
+        return qfalse;
+
+    if (qvkEnumerateInstanceLayerProperties(&count, layers) == VK_SUCCESS)
+        for (i = 0; i < count; i++)
+            if (!strcmp(layers[i].layerName, name))
+                found = qtrue;
+
+    free(layers);
+    return found;
+}
+
 
 VKAPI_ATTR VkBool32 VKAPI_CALL vk_DebugCallback(
         VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT object_type,
@@ -138,6 +161,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_DebugCallback(
 
 static void vk_createDebugCallback( PFN_vkDebugReportCallbackEXT qvkDebugCB)
 {
+    if (qvkCreateDebugReportCallbackEXT == NULL)
+    {
+        ri.Printf( PRINT_WARNING, "r_vkValidation: VK_EXT_debug_report is not available, no debug callback\n" );
+        return;
+    }
+
     ri.Printf( PRINT_ALL, " vk_createDebugCallback() \n" ); 
     
     VkDebugReportCallbackCreateInfoEXT desc;
@@ -151,8 +180,6 @@ static void vk_createDebugCallback( PFN_vkDebugReportCallbackEXT qvkDebugCB)
 
     VK_CHECK(qvkCreateDebugReportCallbackEXT(vk.instance, &desc, NULL, &vk.h_debugCB));
 }
-
-#endif
 
 
 static void vk_createInstance(void)
@@ -215,47 +242,78 @@ static void vk_createInstance(void)
     // Extensions may be provided by layers as well as by a Vulkan implementation.
     //
     // check extensions availability
-	uint32_t nInsExt = 0;
-    // To retrieve a list of supported extensions before creating an instance
+	uint32_t nInsExt = 0, nRequired, nEnabled, i, j;
+	VkExtensionProperties *pInsExt;
+	const char **ppInstanceExt;
+	VkInstanceCreateFlags flags = 0;
+
+	// Enable only what is needed: the surface extensions SDL asks for, plus
+	// VK_KHR_portability_enumeration (MoltenVK) and VK_EXT_debug_report
+	// (r_vkValidation) when they exist.  Enabling every extension the loader
+	// reports is fragile: some depend on others, some conflict.
 	VK_CHECK( qvkEnumerateInstanceExtensionProperties( NULL, &nInsExt, NULL) );
+	pInsExt = malloc(sizeof(VkExtensionProperties) * (nInsExt ? nInsExt : 1));
+	VK_CHECK( qvkEnumerateInstanceExtensionProperties( NULL, &nInsExt, pInsExt) );
+	ri.Printf(PRINT_DEVELOPER, "--- Total %d instance extensions. --- \n", nInsExt);
 
-    assert(nInsExt > 0);
+	nRequired = vk_getRequiredInstanceExtensions(NULL, 0);
+	ppInstanceExt = malloc(sizeof(char *) * (nRequired + 3));
+	vk_getRequiredInstanceExtensions(ppInstanceExt, nRequired);
+	for (i = 0; i < nRequired; i++)
+	{
+		for (j = 0; j < nInsExt && strcmp(ppInstanceExt[i], pInsExt[j].extensionName); j++)
+			;
+		if (j == nInsExt)
+			ri.Error(ERR_FATAL, "Vulkan: instance extension %s, needed for the window surface, is not available", ppInstanceExt[i]);
+	}
+	nEnabled = nRequired;
 
-    ri.Printf(PRINT_ALL, "--- Total %d instance extensions. --- \n", nInsExt);
+	for (j = 0; j < nInsExt; j++)
+	{
+#ifdef VK_KHR_portability_enumeration
+		// MoltenVK (macOS/iOS) enumerates portability-subset devices only
+		// with this extension and flag
+		if (!strcmp(pInsExt[j].extensionName, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME))
+		{
+			ppInstanceExt[nEnabled++] = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+			flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+		}
+		// MoltenVK's devices need VK_KHR_portability_subset, which requires this
+		if (!strcmp(pInsExt[j].extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME))
+		{
+			for (i = 0; i < nEnabled && strcmp(ppInstanceExt[i], pInsExt[j].extensionName); i++)
+				;
+			if (i == nEnabled)
+				ppInstanceExt[nEnabled++] = VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
+		}
+#endif
+		if (r_vkValidation->integer && !strcmp(pInsExt[j].extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME))
+			ppInstanceExt[nEnabled++] = VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
+	}
 
-    VkExtensionProperties *pInsExt = (VkExtensionProperties *) malloc(sizeof(VkExtensionProperties) * nInsExt);
-    
-    const char** ppInstanceExt = malloc( sizeof(char *) * (nInsExt) );
+	for (i = 0; i < nEnabled; i++)
+		ri.Printf(PRINT_ALL, " Enabling instance extension %s\n", ppInstanceExt[i]);
 
-    VK_CHECK(qvkEnumerateInstanceExtensionProperties( NULL, &nInsExt, pInsExt));
-
-    uint32_t i = 0;
-
-    // Each platform-specific extension is an instance extension.
-    // The application must enable instance extensions with vkCreateInstance
-    // before using them.
-
-    // TODO: CHECK OUT
-    // All of the instance wxtention enabled, Does this reasonable ?
-
-    for (i = 0; i < nInsExt; i++)
-    {    
-        ppInstanceExt[i] = pInsExt[i].extensionName;
-    }
-    
-    instanceCreateInfo.enabledExtensionCount = nInsExt;
+	instanceCreateInfo.flags = flags;
+	instanceCreateInfo.enabledExtensionCount = nEnabled;
 	instanceCreateInfo.ppEnabledExtensionNames = ppInstanceExt;
 
-#ifndef NDEBUG
-    ri.Printf(PRINT_ALL, "Using VK_LAYER_KHRONOS_validation\n");
-
-    const char* const validation_layer_name = "VK_LAYER_KHRONOS_validation";
-    instanceCreateInfo.enabledLayerCount = 1;
-	instanceCreateInfo.ppEnabledLayerNames = &validation_layer_name;
-#else
     instanceCreateInfo.enabledLayerCount = 0;
 	instanceCreateInfo.ppEnabledLayerNames = NULL;
-#endif
+
+    if (r_vkValidation->integer)
+    {
+        if (vk_isInstanceLayerAvailable(validation_layer_name))
+        {
+            ri.Printf(PRINT_ALL, "Using %s\n", validation_layer_name);
+            instanceCreateInfo.enabledLayerCount = 1;
+            instanceCreateInfo.ppEnabledLayerNames = &validation_layer_name;
+        }
+        else
+        {
+            ri.Printf(PRINT_WARNING, "r_vkValidation is set, but %s is not installed\n", validation_layer_name);
+        }
+    }
 
 
     VkResult e = qvkCreateInstance(&instanceCreateInfo, NULL, &vk.instance);
@@ -276,7 +334,7 @@ static void vk_createInstance(void)
     }
     else 
     {
-        ri.Error(ERR_FATAL, "%d, returned by qvkCreateInstance.", e);
+        ri.Error(ERR_FATAL, "Vulkan: vkCreateInstance returned %s", cvtResToStr(e));
     }
    
     free(ppInstanceExt);
@@ -300,6 +358,7 @@ static void vk_loadGlobalFunctions(void)
 
 	INIT_INSTANCE_FUNCTION(vkCreateInstance)
 	INIT_INSTANCE_FUNCTION(vkEnumerateInstanceExtensionProperties)
+	INIT_INSTANCE_FUNCTION(vkEnumerateInstanceLayerProperties)
 
     //
 	// Get instance level functions.
@@ -326,10 +385,11 @@ static void vk_loadGlobalFunctions(void)
 	INIT_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfaceSupportKHR)
    
 
-#ifndef NDEBUG
-    INIT_INSTANCE_FUNCTION(vkCreateDebugReportCallbackEXT)
-	INIT_INSTANCE_FUNCTION(vkDestroyDebugReportCallbackEXT)	//
-#endif
+    // optional: only present with VK_EXT_debug_report, used by r_vkValidation
+    qvkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)
+        qvkGetInstanceProcAddr(vk.instance, "vkCreateDebugReportCallbackEXT");
+    qvkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)
+        qvkGetInstanceProcAddr(vk.instance, "vkDestroyDebugReportCallbackEXT");
 
     #undef INIT_INSTANCE_FUNCTION
 
@@ -728,10 +788,8 @@ void vk_getProcAddress(void)
 {
     vk_loadGlobalFunctions();
 
-#ifndef NDEBUG
-	// Create debug callback.
-    vk_createDebugCallback(vk_DebugCallback);
-#endif
+    if (r_vkValidation->integer)
+        vk_createDebugCallback(vk_DebugCallback);
 
     // The window surface needs to be created right after the instance creation,
     // because it can actually influence the presentation mode selection.
@@ -766,11 +824,12 @@ void vk_clearProcAddress(void)
     // make sure that the surface is destroyed before the instance
     qvkDestroySurfaceKHR(vk.instance, vk.surface, NULL);
 
-#ifndef NDEBUG
-    ri.Printf( PRINT_ALL, " Destroy callback function: vk.h_debugCB. \n" );
-
-	qvkDestroyDebugReportCallbackEXT(vk.instance, vk.h_debugCB, NULL);
-#endif
+    if (vk.h_debugCB != VK_NULL_HANDLE && qvkDestroyDebugReportCallbackEXT != NULL)
+    {
+        ri.Printf( PRINT_ALL, " Destroy callback function: vk.h_debugCB. \n" );
+        qvkDestroyDebugReportCallbackEXT(vk.instance, vk.h_debugCB, NULL);
+        vk.h_debugCB = VK_NULL_HANDLE;
+    }
 
     ri.Printf( PRINT_ALL, " Destroy instance: vk.instance. \n" );
 	qvkDestroyInstance(vk.instance, NULL);
@@ -797,10 +856,9 @@ void vk_clearProcAddress(void)
 	qvkGetPhysicalDeviceSurfaceFormatsKHR		= NULL;
 	qvkGetPhysicalDeviceSurfacePresentModesKHR	= NULL;
 	qvkGetPhysicalDeviceSurfaceSupportKHR		= NULL;
-#ifndef NDEBUG
+	qvkEnumerateInstanceLayerProperties			= NULL;
 	qvkCreateDebugReportCallbackEXT				= NULL;
 	qvkDestroyDebugReportCallbackEXT			= NULL;
-#endif
 
 	qvkAllocateCommandBuffers					= NULL;
 	qvkAllocateDescriptorSets					= NULL;
