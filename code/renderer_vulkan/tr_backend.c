@@ -7,7 +7,7 @@ backEndState_t backEnd;
 
 void R_ClearBackendState(void)
 {
-    ri.Printf(PRINT_ALL, " backend state cleared. \n");
+    ri.Printf(PRINT_DEVELOPER, " backend state cleared. \n");
 	// clear all our internal state
 	memset( &backEnd, 0, sizeof( backEnd ) );
 

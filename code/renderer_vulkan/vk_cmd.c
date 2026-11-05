@@ -149,9 +149,9 @@ void vk_destroy_commands(void)
     // Command buffers will be automatically freed when their
     // command pool is destroyed, so it don't need an explicit 
     // cleanup.
-    ri.Printf( PRINT_ALL, " Free command buffers: vk.command_buffer. \n" );     
+    ri.Printf( PRINT_DEVELOPER, " Free command buffers: vk.command_buffer. \n" );     
     qvkFreeCommandBuffers(vk.device, vk.command_pool, 1, &vk.command_buffer); 
-    ri.Printf( PRINT_ALL, " Destroy command pool: vk.command_pool. \n" );
+    ri.Printf( PRINT_DEVELOPER, " Destroy command pool: vk.command_pool. \n" );
     qvkDestroyCommandPool(vk.device, vk.command_pool, NULL);
 }
 

@@ -138,7 +138,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_DebugCallback(
 
 static void vk_createDebugCallback( PFN_vkDebugReportCallbackEXT qvkDebugCB)
 {
-    ri.Printf( PRINT_ALL, " vk_createDebugCallback() \n" ); 
+    ri.Printf( PRINT_DEVELOPER, " vk_createDebugCallback() \n" ); 
     
     VkDebugReportCallbackCreateInfoEXT desc;
     desc.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
@@ -161,7 +161,7 @@ static void vk_createInstance(void)
     // is stored in a VkInstance object. Creating a VkInstance object 
     // initializes the Vulkan library and allows the application to pass
     // information about itself to the implementation.
-    ri.Printf(PRINT_ALL, " Creating instance: vk.instance\n");
+    ri.Printf(PRINT_DEVELOPER, " Creating instance: vk.instance\n");
 	
     // The version of Vulkan that is supported by an instance may be 
     // different than the version of Vulkan supported by a device or
@@ -221,7 +221,7 @@ static void vk_createInstance(void)
 
     assert(nInsExt > 0);
 
-    ri.Printf(PRINT_ALL, "--- Total %d instance extensions. --- \n", nInsExt);
+    ri.Printf(PRINT_DEVELOPER, "--- Total %d instance extensions. --- \n", nInsExt);
 
     VkExtensionProperties *pInsExt = (VkExtensionProperties *) malloc(sizeof(VkExtensionProperties) * nInsExt);
     
@@ -247,7 +247,7 @@ static void vk_createInstance(void)
 	instanceCreateInfo.ppEnabledExtensionNames = ppInstanceExt;
 
 #ifndef NDEBUG
-    ri.Printf(PRINT_ALL, "Using VK_LAYER_KHRONOS_validation\n");
+    ri.Printf(PRINT_DEVELOPER, "Using VK_LAYER_KHRONOS_validation\n");
 
     const char* const validation_layer_name = "VK_LAYER_KHRONOS_validation";
     instanceCreateInfo.enabledLayerCount = 1;
@@ -261,7 +261,7 @@ static void vk_createInstance(void)
     VkResult e = qvkCreateInstance(&instanceCreateInfo, NULL, &vk.instance);
     if(e == VK_SUCCESS)
     {
-        ri.Printf(PRINT_ALL, "--- Vulkan create instance success! ---\n\n");
+        ri.Printf(PRINT_DEVELOPER, "--- Vulkan create instance success! ---\n\n");
     }
     else if (e == VK_ERROR_INCOMPATIBLE_DRIVER)
 	{
@@ -288,7 +288,7 @@ static void vk_createInstance(void)
 
 static void vk_loadGlobalFunctions(void)
 {
-    ri.Printf(PRINT_ALL, " Loading vulkan instance functions \n");
+    ri.Printf(PRINT_DEVELOPER, " Loading vulkan instance functions \n");
 
     vk_getInstanceProcAddrImpl();
 
@@ -333,7 +333,7 @@ static void vk_loadGlobalFunctions(void)
 
     #undef INIT_INSTANCE_FUNCTION
 
-    ri.Printf(PRINT_ALL, " Init global functions done. \n");
+    ri.Printf(PRINT_DEVELOPER, " Init global functions done. \n");
 }
 
 ////////////////////////////////
@@ -362,9 +362,9 @@ static void vk_selectPhysicalDevice(void)
 	
     free(pPhyDev);
 
-    ri.Printf(PRINT_ALL, " Total %d graphics card, the first one is choosed. \n", gpu_count);
+    ri.Printf(PRINT_DEVELOPER, " Total %d graphics card, the first one is choosed. \n", gpu_count);
 
-    ri.Printf(PRINT_ALL, " Get physical device memory properties: vk.devMemProperties \n");
+    ri.Printf(PRINT_DEVELOPER, " Get physical device memory properties: vk.devMemProperties \n");
     qvkGetPhysicalDeviceMemoryProperties(vk.physical_device, &vk.devMemProperties);
 }
 
@@ -374,7 +374,7 @@ static void vk_selectSurfaceFormat(void)
 {
     uint32_t nSurfmt;
     
-    ri.Printf(PRINT_ALL, "\n -------- vk_selectSurfaceFormat() -------- \n");
+    ri.Printf(PRINT_DEVELOPER, "\n -------- vk_selectSurfaceFormat() -------- \n");
 
 
     // Get the numbers of VkFormat's that are supported
@@ -396,13 +396,13 @@ static void vk_selectSurfaceFormat(void)
         // special case that means we can choose any format
         vk.surface_format.format = VK_FORMAT_B8G8R8A8_UNORM;
         vk.surface_format.colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
-        ri.Printf(PRINT_ALL, "VK_FORMAT_R8G8B8A8_UNORM\n");
-        ri.Printf(PRINT_ALL, "VK_COLORSPACE_SRGB_NONLINEAR_KHR\n");
+        ri.Printf(PRINT_DEVELOPER, "VK_FORMAT_R8G8B8A8_UNORM\n");
+        ri.Printf(PRINT_DEVELOPER, "VK_COLORSPACE_SRGB_NONLINEAR_KHR\n");
     }
     else
     {
         uint32_t i;
-        ri.Printf(PRINT_ALL, " Total %d surface formats supported, we choose: \n", nSurfmt);
+        ri.Printf(PRINT_DEVELOPER, " Total %d surface formats supported, we choose: \n", nSurfmt);
 
         for( i = 0; i < nSurfmt; i++)
         {
@@ -410,8 +410,8 @@ static void vk_selectSurfaceFormat(void)
                 ( pSurfFmts[i].colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR) )
             {
 
-                ri.Printf(PRINT_ALL, " format = VK_FORMAT_B8G8R8A8_UNORM \n");
-                ri.Printf(PRINT_ALL, " colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR \n");
+                ri.Printf(PRINT_DEVELOPER, " format = VK_FORMAT_B8G8R8A8_UNORM \n");
+                ri.Printf(PRINT_DEVELOPER, " colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR \n");
                 
                 vk.surface_format = pSurfFmts[i];
                 break;
@@ -450,16 +450,16 @@ static void vk_selectSurfaceFormat(void)
     
     // Check if the device supports blitting to linear images 
     if ( props.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT )
-        ri.Printf(PRINT_ALL, "--- Linear TilingFeatures supported. ---\n");
+        ri.Printf(PRINT_DEVELOPER, "--- Linear TilingFeatures supported. ---\n");
 
     if ( props.linearTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT ) 
     {
-        ri.Printf(PRINT_ALL, "--- Blitting from linear tiled images supported. ---\n");
+        ri.Printf(PRINT_DEVELOPER, "--- Blitting from linear tiled images supported. ---\n");
     }
 
     if ( props.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT )
     {
-        ri.Printf(PRINT_ALL, "--- Blitting from optimal tiled images supported. ---\n");
+        ri.Printf(PRINT_DEVELOPER, "--- Blitting from optimal tiled images supported. ---\n");
         vk.isBlitSupported = VK_TRUE;
     }
 
@@ -468,7 +468,7 @@ static void vk_selectSurfaceFormat(void)
     qvkGetPhysicalDeviceFormatProperties(vk.physical_device, VK_FORMAT_D24_UNORM_S8_UINT, &props);
     if ( props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT )
     {
-        ri.Printf(PRINT_ALL, " VK_FORMAT_D24_UNORM_S8_UINT optimal Tiling feature supported.\n");
+        ri.Printf(PRINT_DEVELOPER, " VK_FORMAT_D24_UNORM_S8_UINT optimal Tiling feature supported.\n");
         vk.fmt_DepthStencil = VK_FORMAT_D24_UNORM_S8_UINT;
     }
     else
@@ -477,7 +477,7 @@ static void vk_selectSurfaceFormat(void)
 
         if ( props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT )
         {
-            ri.Printf(PRINT_ALL, " VK_FORMAT_D32_SFLOAT_S8_UINT optimal Tiling feature supported.\n");
+            ri.Printf(PRINT_DEVELOPER, " VK_FORMAT_D32_SFLOAT_S8_UINT optimal Tiling feature supported.\n");
             vk.fmt_DepthStencil = VK_FORMAT_D32_SFLOAT_S8_UINT;
         }
         else
@@ -489,7 +489,7 @@ static void vk_selectSurfaceFormat(void)
         }
     }
 
-    ri.Printf(PRINT_ALL, " -------- --------------------------- --------\n");
+    ri.Printf(PRINT_DEVELOPER, " -------- --------------------------- --------\n");
 }
 
 
@@ -535,7 +535,7 @@ static void vk_selectQueueFamilyForPresentation(void)
         {
             vk.queue_family_index = i;
             
-            ri.Printf(PRINT_ALL, " Queue family for presentation selected: %d\n",
+            ri.Printf(PRINT_DEVELOPER, " Queue family for presentation selected: %d\n",
                     vk.queue_family_index);
 
             break;
@@ -566,7 +566,7 @@ static void vk_createLogicalDevice(void)
     VkBool32 swapchainExtFound = 0;
 
     // To query the numbers of extensions available to a given physical device
-    ri.Printf( PRINT_ALL, " Check for VK_KHR_swapchain extension. \n" );
+    ri.Printf( PRINT_DEVELOPER, " Check for VK_KHR_swapchain extension. \n" );
 
     qvkEnumerateDeviceExtensionProperties( vk.physical_device, NULL, &nDevExts, NULL);
 
@@ -626,7 +626,7 @@ static void vk_createLogicalDevice(void)
     // specify which queues to create now that we've queried which
     // queue families are available. You can create multiple logical
     // devices from the same physical device if you have varying requirements.
-    ri.Printf( PRINT_ALL, " Create logical device: vk.device \n" );
+    ri.Printf( PRINT_DEVELOPER, " Create logical device: vk.device \n" );
     VK_CHECK(qvkCreateDevice(vk.physical_device, &device_desc, NULL, &vk.device));
 
 }
@@ -634,7 +634,7 @@ static void vk_createLogicalDevice(void)
 
 static void vk_loadDeviceFunctions(void)
 {
-    ri.Printf( PRINT_ALL, " Loading device level function. \n" );
+    ri.Printf( PRINT_DEVELOPER, " Loading device level function. \n" );
 
     #define INIT_DEVICE_FUNCTION(func)                              \
     q##func = (PFN_ ## func)qvkGetDeviceProcAddr(vk.device, #func); \
@@ -757,26 +757,26 @@ void vk_getProcAddress(void)
 void vk_clearProcAddress(void)
 {
 
-    ri.Printf( PRINT_ALL, " Destroy logical device: vk.device. \n" );
+    ri.Printf( PRINT_DEVELOPER, " Destroy logical device: vk.device. \n" );
     // Device queues are implicitly cleaned up when the device is destroyed
     // so we don't need to do anything in clean up
 	qvkDestroyDevice(vk.device, NULL);
     
-    ri.Printf( PRINT_ALL, " Destroy surface: vk.surface. \n" );
+    ri.Printf( PRINT_DEVELOPER, " Destroy surface: vk.surface. \n" );
     // make sure that the surface is destroyed before the instance
     qvkDestroySurfaceKHR(vk.instance, vk.surface, NULL);
 
 #ifndef NDEBUG
-    ri.Printf( PRINT_ALL, " Destroy callback function: vk.h_debugCB. \n" );
+    ri.Printf( PRINT_DEVELOPER, " Destroy callback function: vk.h_debugCB. \n" );
 
 	qvkDestroyDebugReportCallbackEXT(vk.instance, vk.h_debugCB, NULL);
 #endif
 
-    ri.Printf( PRINT_ALL, " Destroy instance: vk.instance. \n" );
+    ri.Printf( PRINT_DEVELOPER, " Destroy instance: vk.instance. \n" );
 	qvkDestroyInstance(vk.instance, NULL);
 
 // ===========================================================
-    ri.Printf( PRINT_ALL, " clear all proc address \n" );
+    ri.Printf( PRINT_DEVELOPER, " clear all proc address \n" );
 
 	qvkCreateInstance                           = NULL;
 	qvkEnumerateInstanceExtensionProperties		= NULL;

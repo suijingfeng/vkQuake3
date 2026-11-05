@@ -232,7 +232,7 @@ R_LoadVisibility
 */
 static	void R_LoadVisibility( lump_t *l )
 {
-    ri.Printf (PRINT_ALL, "\n---R_LoadVisibility---\n");
+    ri.Printf (PRINT_DEVELOPER, "\n---R_LoadVisibility---\n");
 
 	unsigned char* buf;
 
@@ -1317,7 +1317,7 @@ R_LoadSubmodels
 static	void R_LoadSubmodels( lump_t *l )
 {
 
-    ri.Printf (PRINT_ALL, "\n---R_LoadSubmodels---\n");
+    ri.Printf (PRINT_DEVELOPER, "\n---R_LoadSubmodels---\n");
 
 
 	dmodel_t	*in;
@@ -1349,7 +1349,7 @@ static	void R_LoadSubmodels( lump_t *l )
         {
             ri.Printf(PRINT_WARNING, "R_AllocModel: MAX_MOD_KNOWN.\n");
 	    }
-        ri.Printf( PRINT_ALL, "Allocate Memory for %s model. \n", model->name);
+        ri.Printf( PRINT_DEVELOPER, "Allocate Memory for %s model. \n", model->name);
 
 		for (j=0 ; j<3 ; j++) {
 			out->bounds[0][j] = LittleFloat (in->mins[j]);
@@ -1386,7 +1386,7 @@ R_LoadNodesAndLeafs
 */
 static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump)
 {
-    ri.Printf (PRINT_ALL, "\n---R_LoadNodesAndLeafs---\n");
+    ri.Printf (PRINT_DEVELOPER, "\n---R_LoadNodesAndLeafs---\n");
 
 	int			i, j, p;
 	dnode_t		*in;
@@ -1494,7 +1494,7 @@ R_LoadMarksurfaces
 */
 static	void R_LoadMarksurfaces (lump_t *l)
 {
-    ri.Printf (PRINT_ALL, "\n---R_LoadMarksurfaces---\n");
+    ri.Printf (PRINT_DEVELOPER, "\n---R_LoadMarksurfaces---\n");
 	int		i, j, count;
 	msurface_t **out;
 	
@@ -1669,7 +1669,7 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump ) {
 
 void R_LoadLightGrid( lump_t *l )
 {
-    ri.Printf (PRINT_ALL, "\n---R_LoadLightGrid---\n");
+    ri.Printf (PRINT_DEVELOPER, "\n---R_LoadLightGrid---\n");
     
 
 	int		i;
@@ -1717,7 +1717,7 @@ void RE_RemapShader(const char *oldShader, const char *newShader, const char *ti
 void R_LoadEntities( lump_t *l )
 {
 
-    ri.Printf (PRINT_ALL, "\n---R_LoadEntities---\n");
+    ri.Printf (PRINT_DEVELOPER, "\n---R_LoadEntities---\n");
 
 
 	char *p, *token, *s;

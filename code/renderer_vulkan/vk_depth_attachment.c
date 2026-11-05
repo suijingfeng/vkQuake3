@@ -11,7 +11,7 @@ void vk_createDepthAttachment(int Width, int Height)
     // The difference is that the swap chain will not automatically create
     // depth image for us. We need only s single depth image, because only
     // one draw operation is running at once.
-    ri.Printf(PRINT_ALL, " Create depth image: vk.depth_image, %d x %d. \n", Width, Height);
+    ri.Printf(PRINT_DEVELOPER, " Create depth image: vk.depth_image, %d x %d. \n", Width, Height);
     {
         VkImageCreateInfo desc;
         desc.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -34,7 +34,7 @@ void vk_createDepthAttachment(int Width, int Height)
         VK_CHECK(qvkCreateImage(vk.device, &desc, NULL, &vk.depth_image));
     }
 
-    ri.Printf(PRINT_ALL, " Allocate device local memory for depth image: vk.depth_image_memory. \n");
+    ri.Printf(PRINT_DEVELOPER, " Allocate device local memory for depth image: vk.depth_image_memory. \n");
     {
         VkMemoryRequirements memory_requirements;
         qvkGetImageMemoryRequirements(vk.device, vk.depth_image, &memory_requirements);
@@ -50,7 +50,7 @@ void vk_createDepthAttachment(int Width, int Height)
     }
 
 
-    ri.Printf(PRINT_ALL, " Create image view for depth image: vk.depth_image_view. \n");
+    ri.Printf(PRINT_DEVELOPER, " Create image view for depth image: vk.depth_image_view. \n");
     {
         VkImageViewCreateInfo desc;
         desc.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

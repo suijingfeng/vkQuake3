@@ -29,10 +29,10 @@ void vk_initialize(void)
 	// we have to create a command pool before we can create command buffers
     // command pools manage the memory that is used to store the buffers and
     // command buffers are allocated from them.
-    ri.Printf(PRINT_ALL, " Create command pool: vk.command_pool \n");
+    ri.Printf(PRINT_DEVELOPER, " Create command pool: vk.command_pool \n");
     vk_create_command_pool(&vk.command_pool);
     
-    ri.Printf(PRINT_ALL, " Create command buffer: vk.command_buffer \n");
+    ri.Printf(PRINT_DEVELOPER, " Create command buffer: vk.command_buffer \n");
     vk_create_command_buffer(vk.command_pool, &vk.command_buffer);
 
 
@@ -84,7 +84,7 @@ VkBool32 isVKinitialied(void)
 // Shutdown vulkan subsystem by releasing resources acquired by Vk_Instance.
 void vk_shutdown(void)
 {
-    ri.Printf( PRINT_ALL, "vk_shutdown()\n" );
+    ri.Printf( PRINT_DEVELOPER, "vk_shutdown()\n" );
 
     vk_destroyDepthAttachment();
 
@@ -103,7 +103,7 @@ void vk_shutdown(void)
 
 	vk_clearProcAddress();
 
-    ri.Printf( PRINT_ALL, " clear vk struct: vk \n" );
+    ri.Printf( PRINT_DEVELOPER, " clear vk struct: vk \n" );
 	memset(&vk, 0, sizeof(vk));
 
 

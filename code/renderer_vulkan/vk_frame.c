@@ -122,7 +122,7 @@ void vk_create_sync_primitives(void)
 
 void vk_destroy_sync_primitives(void)
 {
-    ri.Printf(PRINT_ALL, " Destroy sema_imageAvailable sema_renderFinished fence_renderFinished\n");
+    ri.Printf(PRINT_DEVELOPER, " Destroy sema_imageAvailable sema_renderFinished fence_renderFinished\n");
 
     qvkDestroySemaphore(vk.device, sema_imageAvailable, NULL);
 	qvkDestroySemaphore(vk.device, sema_renderFinished, NULL);
@@ -253,7 +253,7 @@ static void vk_createRenderPass(VkDevice device)
 
 void vk_createFrameBuffers(uint32_t w, uint32_t h) 
 {
-    ri.Printf(PRINT_ALL, " Create RenderPass:  vk.render_pass \n");
+    ri.Printf(PRINT_DEVELOPER, " Create RenderPass:  vk.render_pass \n");
 	//
 	// Renderpass.
 	// A render pass represents a collection of attachments, subpasses,
@@ -345,7 +345,7 @@ void vk_createFrameBuffers(uint32_t w, uint32_t h)
     // in the swap chain and use the one that corresponds to the retrieved
     // image at draw time.
 
-    ri.Printf(PRINT_ALL, " Create vk.framebuffers \n");
+    ri.Printf(PRINT_DEVELOPER, " Create vk.framebuffers \n");
 
     // Render passes operate in conjunction with framebuffers. 
     // Framebuffers represent a collection of specific memory
@@ -407,7 +407,7 @@ void vk_destroyFrameBuffers(void)
 {
     // we should delete the framebuffers before the image views
     // and the render pass that they are based on.
-    ri.Printf(PRINT_ALL, " Destroy vk.framebuffers vk.swapchain_image_views vk.swapchain\n");
+    ri.Printf(PRINT_DEVELOPER, " Destroy vk.framebuffers vk.swapchain_image_views vk.swapchain\n");
 
     uint32_t i;
 	for (i = 0; i < vk.swapchain_image_count; i++)

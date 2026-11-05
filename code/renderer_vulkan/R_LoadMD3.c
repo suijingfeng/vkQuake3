@@ -194,7 +194,7 @@ qhandle_t R_RegisterMD3(const char* name, model_t* mod)
 		}
         else
         {
-            ri.Printf(PRINT_WARNING, "R_RegisterMD3: couldn't load %s\n", name);
+            ri.Printf(PRINT_DEVELOPER, "R_RegisterMD3: couldn't load %s\n", name);
 
 	        mod->type = MOD_BAD;
 	        return 0;
@@ -202,7 +202,7 @@ qhandle_t R_RegisterMD3(const char* name, model_t* mod)
     }
     else
     {
-        ri.Printf(PRINT_WARNING, "R_RegisterMD3: failed loading %s from disk. \n", name);
+        ri.Printf(PRINT_DEVELOPER, "R_RegisterMD3: failed loading %s from disk. \n", name);
     }
 
 
@@ -247,7 +247,7 @@ qhandle_t R_RegisterMD3(const char* name, model_t* mod)
 	if(numLoaded)
 	    return mod->index;
     else
-        ri.Printf(PRINT_WARNING, "R_RegisterMD3: couldn't load %s\n", name);
+        ri.Printf(PRINT_DEVELOPER, "R_RegisterMD3: couldn't load %s\n", name);
 
 
 /*

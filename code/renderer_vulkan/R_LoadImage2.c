@@ -118,10 +118,10 @@ void R_LoadImage2(const char *name, unsigned char **pic, uint32_t* width, uint32
         
         if( *pic == NULL )
         {
-            ri.Printf( PRINT_WARNING, "%s not present.\n", name);
+            ri.Printf( PRINT_DEVELOPER, "%s not present.\n", name);
         }
         // else
-        //    ri.Printf( PRINT_ALL, "%s without a extension, using %s instead. \n", name, altname);
+        //    ri.Printf( PRINT_DEVELOPER, "%s without a extension, using %s instead. \n", name, altname);
 
     }
 }

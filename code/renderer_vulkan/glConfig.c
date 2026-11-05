@@ -147,7 +147,7 @@ void R_GetGlConfig(glconfig_t * const pCfg)
 
 void R_glConfigInit(void)
 {
-    ri.Printf(PRINT_ALL,  "--- R_glConfigInit() ---\n");
+    ri.Printf(PRINT_DEVELOPER,  "--- R_glConfigInit() ---\n");
 
     // These values force the UI to disable driver selection
 	glConfig.driverType = GLDRV_ICD;
