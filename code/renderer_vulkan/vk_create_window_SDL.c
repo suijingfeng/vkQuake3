@@ -232,6 +232,45 @@ static int VKimp_SetMode(int mode, qboolean fullscreen)
 /*
  * This routine is responsible for initializing the OS specific portions of Vulkan
  */
+/*
+ * SDL loads the Vulkan library by name, which on macOS finds it only on
+ * dyld's search path: not in Homebrew's lib directory on Apple silicon, nor
+ * in the app bundle, and DYLD_LIBRARY_PATH is stripped from a game started
+ * from a script or from Finder. After SDL's search (and the SDL_VULKAN_LIBRARY
+ * hint) try the usual places, the loader first so that layers work.
+ */
+static int vk_loadLibrary( void )
+{
+#ifdef __APPLE__
+	static const char *paths[] = {
+		"@executable_path/libvulkan.1.dylib",
+		"@executable_path/libMoltenVK.dylib",
+		"/opt/homebrew/lib/libvulkan.1.dylib",
+		"/usr/local/lib/libvulkan.1.dylib",
+		"/opt/homebrew/lib/libMoltenVK.dylib",
+		"/usr/local/lib/libMoltenVK.dylib",
+	};
+	int i;
+#endif
+
+	if ( SDL_Vulkan_LoadLibrary( NULL ) == 0 )
+		return 0;
+
+#ifdef __APPLE__
+	for ( i = 0; i < ARRAY_LEN( paths ); i++ )
+	{
+		if ( SDL_Vulkan_LoadLibrary( paths[i] ) == 0 )
+		{
+			ri.Printf( PRINT_DEVELOPER, "Vulkan: loaded %s\n", paths[i] );
+			return 0;
+		}
+	}
+#endif
+
+	return -1;
+}
+
+
 void vk_createWindow(void)
 {
 	ri.Printf(PRINT_ALL, "\n...Creating window (using SDL2)...\n");
@@ -292,6 +331,11 @@ void vk_createWindow(void)
 		ri.Printf(PRINT_ALL, " Video is already initialized.\n");
 	}
 
+	// SDL loads the Vulkan library itself for an SDL_WINDOW_VULKAN window,
+	// by name only: load it first so that vk_loadLibrary's search applies
+	if ( vk_loadLibrary() != 0 )
+		ri.Error( ERR_FATAL, "Vulkan: cannot load the Vulkan library: %s", SDL_GetError() );
+
 	if( 0 == VKimp_SetMode(r_mode->integer, r_fullscreen->integer) )
 	{
 		goto success;
@@ -326,7 +370,7 @@ success:
 void vk_getInstanceProcAddrImpl(void)
 {
 	ri.Printf(PRINT_ALL, " *** Vulkan Initialization ***\n");
-    int code = SDL_Vulkan_LoadLibrary(NULL);
+    int code = vk_loadLibrary();
     if (code) {
         ri.Error(ERR_FATAL, "Failed to load Vulkan library (code %d): %s", code, SDL_GetError());
     }
