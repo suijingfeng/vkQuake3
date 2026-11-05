@@ -212,7 +212,7 @@ extern void RE_SaveJPG(char * filename, int quality, int image_width, int image_
 
 void RB_TakeScreenshot( int width, int height, char *fileName, VkBool32 isJpeg)
 {
-    ri.Printf(PRINT_ALL, "read %dx%d pixels from GPU\n", width, height);
+    ri.Printf(PRINT_DEVELOPER, "read %dx%d pixels from GPU\n", width, height);
     const uint32_t cnPixels = width * height; 
 
     if(isJpeg)
